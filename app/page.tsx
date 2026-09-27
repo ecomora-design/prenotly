@@ -11,10 +11,11 @@ import FAQ from "@/components/FAQ";
 import ContactCTA from "@/components/ContactCTA";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import StickyCTA from "@/components/StickyCTA";
 
 export default function Home() {
   return (
-    <main>
+    <main className="pb-20 md:pb-0">
       <Navbar />
       <Hero />
       <Problem />
@@ -27,6 +28,7 @@ export default function Home() {
       <FAQ />
       <ContactCTA />
       <Footer />
+      <StickyCTA />
       <WhatsAppButton />
     </main>
   );
