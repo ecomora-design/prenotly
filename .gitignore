@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Variabili d'ambiente (MAI caricare)
+.env
+.env.local
+.env*.local
+
+# Script helper
+convert-icons.mjs
