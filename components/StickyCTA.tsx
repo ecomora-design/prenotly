@@ -1,20 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageCircle, ArrowRight } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 export default function StickyCTA() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
-      // Appare dopo 600px di scroll, nasconde in fondo
       const y = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const nearBottom = y > docHeight - 200;
       setShow(y > 600 && !nearBottom);
     };
-
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -29,16 +27,16 @@ export default function StickyCTA() {
             <p className="text-[13px] font-bold text-night leading-tight">
               Prova gratis 14 giorni
             </p>
-            <p className="text-[11px] text-gray-500">Senza carta di credito</p>
+            <p className="text-[11px] text-gray-500">Scrivici su WhatsApp</p>
           </div>
           <a
-            href="https://wa.me/393884027650?text=Ciao%20Prenotly!%20Vorrei%20iniziare%20la%20prova%20gratuita"
+            href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20iniziare%20la%20prova%20gratuita"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-wa hover:bg-waDark text-white px-5 py-3 rounded-full font-bold text-sm inline-flex items-center gap-2 active:scale-95 transition shrink-0 shadow-lg shadow-wa/30"
           >
             <MessageCircle size={16} />
-            Inizia ora
+            Scrivici
           </a>
         </div>
       </div>

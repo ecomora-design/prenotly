@@ -2,10 +2,29 @@ import { MessageCircle, Mail } from "lucide-react";
 
 export default function Footer() {
   const cols = [
-    { title: "Prodotto", links: ["Come funziona", "Funzioni", "FAQ", "Demo"] },
-    { title: "Ristoranti", links: ["Ristoranti", "Pizzerie", "Bar & Bistrot", "Asporto"] },
-    { title: "Servizi", links: ["Parrucchieri", "Estetiste", "Studi medici", "Palestre"] },
-    { title: "Legale", links: ["Privacy", "Cookie", "Termini"] },
+    { title: "Prodotto", links: [
+      { label: "Come funziona", href: "/#come-funziona" },
+      { label: "Funzioni", href: "/#funzioni" },
+      { label: "FAQ", href: "/#faq" },
+      { label: "Contatti", href: "/#demo" },
+    ]},
+    { title: "Ristoranti", links: [
+      { label: "Ristoranti", href: "/ristoranti" },
+      { label: "Pizzerie", href: "/ristoranti" },
+      { label: "Bar & Bistrot", href: "/ristoranti" },
+      { label: "Asporto", href: "/ristoranti" },
+    ]},
+    { title: "Servizi", links: [
+      { label: "Parrucchieri", href: "/parrucchieri" },
+      { label: "Estetiste", href: "/parrucchieri" },
+      { label: "Studi medici", href: "/parrucchieri" },
+      { label: "Palestre", href: "/parrucchieri" },
+    ]},
+    { title: "Legale", links: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Cookie Policy", href: "/privacy" },
+      { label: "Termini di servizio", href: "/privacy" },
+    ]},
   ];
 
   return (
@@ -22,13 +41,13 @@ export default function Footer() {
             </p>
             <div className="flex flex-col gap-2 text-sm">
               <a
-                href="https://wa.me/393884027650"
+                href="https://wa.me/393934842118"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-700 hover:text-wa transition"
               >
                 <MessageCircle size={16} className="text-wa" />
-                +39 388 402 7650
+                +39 393 484 2118
               </a>
               <a
                 href="mailto:info@prenotly-italia.it"
@@ -45,9 +64,9 @@ export default function Footer() {
               <h4 className="font-semibold text-night mb-3 text-sm">{c.title}</h4>
               <ul className="space-y-2 text-sm text-gray-600">
                 {c.links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="hover:text-wa transition">
-                      {l}
+                  <li key={l.label}>
+                    <a href={l.href} className="hover:text-wa transition">
+                      {l.label}
                     </a>
                   </li>
                 ))}
@@ -57,7 +76,9 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-gray-200 text-sm text-gray-500 flex flex-col md:flex-row justify-between gap-3">
-          <p>© {new Date().getFullYear()} Prenotly · prenotly-italia.it · P.IVA 00000000000</p>
+          <p>
+            © {new Date().getFullYear()} Prenotly · P.IVA 01800600882 · prenotly-italia.it
+          </p>
           <p>Made in Italy 🇮🇹</p>
         </div>
       </div>

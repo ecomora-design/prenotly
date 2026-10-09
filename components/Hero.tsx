@@ -1,11 +1,10 @@
 "use client";
 import { motion } from "framer-motion";
-import { CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
+import { CheckCircle2, MessageCircle, ArrowRight } from "lucide-react";
 
 export default function Hero() {
   return (
     <section className="relative pt-24 pb-12 md:pt-40 md:pb-28 bg-gradient-to-b from-white via-soft to-white overflow-hidden">
-      {/* Sfondo decorativo mobile */}
       <div className="absolute top-0 right-0 w-72 h-72 bg-wa/10 rounded-full blur-3xl -z-0 md:hidden" />
       <div className="absolute top-40 left-0 w-64 h-64 bg-violet-200/30 rounded-full blur-3xl -z-0 md:hidden" />
 
@@ -17,8 +16,7 @@ export default function Hero() {
           className="text-center md:text-left"
         >
           <span className="inline-flex items-center gap-2 bg-wa/10 text-waDark text-xs md:text-sm font-semibold px-3.5 md:px-4 py-1.5 rounded-full mb-5">
-            <Sparkles size={14} className="animate-pulse-soft" />
-            Il software che lavora al posto tuo
+            🚀 Il software che lavora al posto tuo
           </span>
 
           <h1 className="text-[34px] leading-[1.1] md:text-6xl md:leading-tight font-bold text-night">
@@ -41,11 +39,13 @@ export default function Hero() {
 
           <div className="mt-7 md:mt-8 flex flex-col sm:flex-row gap-3 justify-center md:justify-start max-w-sm mx-auto md:max-w-none">
             <a
-              href="#demo"
+              href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20provare%20gratis"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-wa hover:bg-waDark text-white px-6 md:px-7 py-4 md:py-3.5 rounded-full font-bold text-[15px] md:text-base transition shadow-lg shadow-wa/30 inline-flex items-center justify-center gap-2 active:scale-[0.97]"
             >
-              Voglio provarlo gratis
-              <ArrowRight size={18} />
+              <MessageCircle size={18} />
+              Provalo gratis su WhatsApp
             </a>
             <a
               href="#come-funziona"
@@ -65,7 +65,6 @@ export default function Hero() {
           </ul>
         </motion.div>
 
-        {/* Mockup mobile ottimizzato */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -73,7 +72,6 @@ export default function Hero() {
           className="relative max-w-[340px] md:max-w-md mx-auto w-full"
         >
           <div className="relative">
-            {/* Web app dietro */}
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-4 md:p-5 animate-float-slow mb-[-24px] ml-[-4px] md:ml-[-10px]">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -109,7 +107,6 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* WhatsApp davanti */}
             <div className="bg-night rounded-3xl shadow-2xl p-4 md:p-5 animate-float ml-auto max-w-[260px] md:max-w-[280px]">
               <div className="flex items-center gap-1.5 mb-3">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-400" />

@@ -18,18 +18,18 @@ export default function ContactCTA() {
         </p>
 
         <p className="text-white/80 text-base md:text-lg mb-10">
-          Attiva Prenotly oggi. In 10 minuti hai il tuo spazio online, la segreteria WhatsApp pronta, e il primo cliente che riceve conferma automatica.
+          Scrivici su WhatsApp. In 10 minuti hai il tuo spazio online, la segreteria pronta, e il primo cliente che riceve conferma automatica.
         </p>
 
         <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center mb-10">
           <a
-            href="https://wa.me/393884027650?text=Ciao%20Prenotly!%20Vorrei%20iniziare%20la%20prova%20gratuita"
+            href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20iniziare%20la%20prova%20gratuita"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 bg-wa hover:bg-waDark px-7 py-4 rounded-full font-bold transition shadow-xl shadow-wa/30 active:scale-95"
           >
             <MessageCircle size={20} />
-            Inizia la prova gratuita
+            Scrivici su WhatsApp
           </a>
           <a
             href="mailto:info@prenotly-italia.it"

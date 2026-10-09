@@ -14,11 +14,11 @@ export default function FAQ() {
     },
     {
       q: "La segreteria risponde davvero come farei io?",
-      a: "Sì, e anche meglio. Viene addestrata con il tuo tono, i tuoi orari, i tuoi servizi, le tue regole. Sa cosa dire e cosa non dire, quando confermare e quando passarti la conversazione. E soprattutto: non si stanca mai, non sbaglia mai, non prende ferie. Anche quando tu stacchi, lei continua a lavorare."
+      a: "Sì, e anche meglio. Viene addestrata con il tuo tono, i tuoi orari, i tuoi servizi, le tue regole. Sa cosa dire e cosa non dire, quando confermare e quando passarti la conversazione. E soprattutto: non si stanca mai, non sbaglia mai, non prende ferie."
     },
     {
       q: "Come gestisce i doppioni e gli slot già occupati?",
-      a: "Legge il tuo calendario in tempo reale. Se uno slot è già prenotato, non lo mostra nemmeno al cliente: gli propone automaticamente il primo orario libero. Se il cliente prova a forzare, la segreteria gli spiega gentilmente che non è disponibile. Zero doppioni, zero sovrapposizioni, zero imbarazzi."
+      a: "Legge il tuo calendario in tempo reale. Se uno slot è già prenotato, non lo mostra nemmeno al cliente: gli propone automaticamente il primo orario libero. Zero doppioni, zero sovrapposizioni, zero imbarazzi."
     },
     {
       q: "Se un cliente vuole parlare con me, cosa succede?",
@@ -26,15 +26,15 @@ export default function FAQ() {
     },
     {
       q: "Quanto costa e cosa include?",
-      a: "Dipende dal volume: quante prenotazioni/ordini ricevi al mese, quanti operatori sei, se vuoi anche la parte di pagamento online. Iniziamo sempre con una demo gratuita e una prova di 14 giorni. Poi decidiamo insieme il piano più adatto. Niente contratti lunghi, niente costi nascosti, disdici quando vuoi."
+      a: "Dipende dal volume: quante prenotazioni/ordini ricevi al mese, quanti operatori sei, se vuoi anche la parte di pagamento online. Iniziamo sempre con una prova gratuita di 14 giorni. Poi decidiamo insieme il piano più adatto. Niente contratti lunghi, niente costi nascosti."
     },
     {
       q: "Quanto tempo ci vuole per partire?",
-      a: "Dieci minuti. Ti creiamo il tuo spazio, carichiamo menu o servizi, colleghiamo il numero WhatsApp, e sei online. Se hai già i dati pronti, possiamo farlo insieme in una call da 15 minuti. Se preferisci farlo da solo, hai una guida passo-passo."
+      a: "Dieci minuti. Ti creiamo il tuo spazio, carichiamo menu o servizi, colleghiamo il numero WhatsApp, e sei online. Se hai già i dati pronti, possiamo farlo insieme in una call da 15 minuti."
     },
     {
       q: "E se non funziona o non mi trovo bene?",
-      a: "Non ti chiediamo di crederci sulla fiducia. Provalo gratis per 14 giorni, con i tuoi dati reali, i tuoi clienti veri. Se non fa per te, disdici con un click. Nessun vincolo, nessuna penale. Preferiamo un cliente felice in meno che uno scontento in più."
+      a: "Non ti chiediamo di crederci sulla fiducia. Provalo gratis per 14 giorni, con i tuoi dati reali, i tuoi clienti veri. Se non fa per te, disdici con un click. Nessun vincolo, nessuna penale."
     },
   ];
 
@@ -80,7 +80,7 @@ export default function FAQ() {
           <p className="text-gray-600 mb-4">Non hai trovato quello che cercavi?</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <a
-              href="https://wa.me/393884027650?text=Ciao%20Prenotly!%20Ho%20una%20domanda"
+              href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Ho%20una%20domanda"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-wa hover:bg-waDark text-white px-6 py-3 rounded-full font-semibold transition active:scale-95 w-full sm:w-auto justify-center"

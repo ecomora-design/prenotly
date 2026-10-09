@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageCircle } from "lucide-react";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -12,20 +12,16 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Blocca scroll quando menu mobile aperto
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
   }, [open]);
 
   const links = [
-    { href: "#come-funziona", label: "Come funziona" },
-    { href: "#funzioni", label: "Funzioni" },
-    { href: "#settori", label: "Per chi è" },
-    { href: "#faq", label: "FAQ" },
+    { href: "/ristoranti", label: "Ristoranti" },
+    { href: "/parrucchieri", label: "Parrucchieri" },
+    { href: "/#come-funziona", label: "Come funziona" },
+    { href: "/#faq", label: "FAQ" },
   ];
 
   return (
@@ -42,26 +38,23 @@ export default function Navbar() {
             Prenot<span className="text-wa">ly</span>
           </a>
 
-          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
             {links.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                className="text-gray-700 hover:text-wa transition"
-              >
+              <a key={l.href} href={l.href} className="text-gray-700 hover:text-wa transition">
                 {l.label}
               </a>
             ))}
             <a
-              href="#demo"
-              className="bg-wa hover:bg-waDark text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg shadow-wa/20"
+              href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20provare%20gratis"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-wa hover:bg-waDark text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg shadow-wa/20 inline-flex items-center gap-2"
             >
-              Richiedi una demo
+              <MessageCircle size={16} />
+              Prova gratis
             </a>
           </div>
 
-          {/* Mobile menu button */}
           <button
             className="md:hidden text-night p-2 -mr-2"
             onClick={() => setOpen(!open)}
@@ -72,7 +65,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu fullscreen */}
       {open && (
         <div className="fixed inset-0 z-40 bg-white pt-20 px-6 md:hidden">
           <div className="flex flex-col gap-1">
@@ -86,12 +78,16 @@ export default function Navbar() {
                 {l.label}
               </a>
             ))}
+
             <a
-              href="#demo"
+              href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20provare%20gratis"
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="bg-wa text-white px-6 py-4 rounded-full text-center font-semibold mt-6 active:bg-waDark"
+              className="bg-wa text-white px-6 py-4 rounded-full text-center font-semibold mt-6 inline-flex items-center justify-center gap-2"
             >
-              Richiedi una demo
+              <MessageCircle size={18} />
+              Prova gratis
             </a>
           </div>
         </div>
