@@ -49,7 +49,7 @@ export default function SignupPage() {
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-night mb-2">Crea il tuo account</h1>
-            <p className="text-sm text-gray-500">14 giorni gratis. Nessuna carta di credito.</p>
+            <p className="text-sm text-gray-500">Demo gratuita 48 ore. Nessuna carta di credito.</p>
           </div>
 
           {error && (
@@ -133,7 +133,7 @@ export default function SignupPage() {
         </div>
 
         <ul className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-gray-500">
-          {["14 giorni gratis", "Nessuna carta", "Disdici quando vuoi"].map((t) => (
+          {["Demo gratuita 48 ore", "Nessuna carta", "Disdici quando vuoi"].map((t) => (
             <li key={t} className="flex items-center gap-1.5">
               <CheckCircle2 size={14} className="text-wa" /> {t}
             </li>

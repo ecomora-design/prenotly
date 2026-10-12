@@ -26,7 +26,7 @@ export default function FAQ() {
     },
     {
       q: "Quanto costa e cosa include?",
-      a: "Dipende dal volume: quante prenotazioni/ordini ricevi al mese, quanti operatori sei, se vuoi anche la parte di pagamento online. Iniziamo sempre con una prova gratuita di 14 giorni. Poi decidiamo insieme il piano più adatto. Niente contratti lunghi, niente costi nascosti."
+      a: "Dipende dal volume: quante prenotazioni/ordini ricevi al mese, quanti operatori sei, se vuoi anche la parte di pagamento online. Iniziamo sempre con una demo gratuita 48 ore di Demo 48 ore. Poi decidiamo insieme il piano più adatto. Niente contratti lunghi, niente costi nascosti."
     },
     {
       q: "Quanto tempo ci vuole per partire?",
@@ -34,7 +34,7 @@ export default function FAQ() {
     },
     {
       q: "E se non funziona o non mi trovo bene?",
-      a: "Non ti chiediamo di crederci sulla fiducia. Provalo gratis per 14 giorni, con i tuoi dati reali, i tuoi clienti veri. Se non fa per te, disdici con un click. Nessun vincolo, nessuna penale."
+      a: "Non ti chiediamo di crederci sulla fiducia. Provalo gratis per Demo 48 ore, con i tuoi dati reali, i tuoi clienti veri. Se non fa per te, disdici con un click. Nessun vincolo, nessuna penale."
     },
   ];
 
@@ -89,10 +89,10 @@ export default function FAQ() {
               Scrivici su WhatsApp
             </a>
             <a
-              href="mailto:info@prenotly-italia.it"
+              href="mailto:movisicily@gmail.com"
               className="inline-flex items-center gap-2 border border-gray-300 hover:border-wa text-night px-6 py-3 rounded-full font-semibold transition active:scale-95 w-full sm:w-auto justify-center"
             >
-              info@prenotly-italia.it
+              movisicily@gmail.com
             </a>
           </div>
         </div>

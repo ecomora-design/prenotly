@@ -50,7 +50,7 @@ export default function PrivacyPage() {
               <div className="bg-soft rounded-xl p-4 mt-3 text-sm">
                 <p className="font-semibold text-night">Prenotly</p>
                 <p>Partita IVA: 01800600882</p>
-                <p>Email: info@prenotly-italia.it</p>
+                <p>Email: movisicily@gmail.com</p>
                 <p>WhatsApp: +39 393 484 2118</p>
                 <p>Sito web: prenotly-italia.it</p>
               </div>
@@ -168,8 +168,8 @@ export default function PrivacyPage() {
               </ul>
               <p className="mt-3">
                 Per esercitare questi diritti, scrivi a{" "}
-                <a href="mailto:info@prenotly-italia.it" className="text-wa font-semibold hover:underline">
-                  info@prenotly-italia.it
+                <a href="mailto:movisicily@gmail.com" className="text-wa font-semibold hover:underline">
+                  movisicily@gmail.com
                 </a>
                 .
               </p>
@@ -207,8 +207,8 @@ export default function PrivacyPage() {
             <div className="bg-wa/5 border border-wa/20 rounded-2xl p-5 md:p-6 mt-8">
               <p className="text-sm text-night">
                 <strong>Hai domande sulla privacy?</strong> Scrivici a{" "}
-                <a href="mailto:info@prenotly-italia.it" className="text-wa font-semibold hover:underline">
-                  info@prenotly-italia.it
+                <a href="mailto:movisicily@gmail.com" className="text-wa font-semibold hover:underline">
+                  movisicily@gmail.com
                 </a>{" "}
                 oppure su WhatsApp al{" "}
                 <a href="https://wa.me/393934842118" target="_blank" rel="noopener noreferrer" className="text-wa font-semibold hover:underline">

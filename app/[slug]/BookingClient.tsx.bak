@@ -1,0 +1,390 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import {
+  ChevronRight, Clock, MessageCircle, CheckCircle2,
+  Scissors, ArrowLeft
+} from "lucide-react";
+
+type Service = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  price: number;
+  duration_minutes: number | null;
+};
+
+type Props = {
+  tenantName: string;
+  whatsappNumber: string;
+  services: Service[];
+  openingHours: Record<string, string> | null;
+  brandColor?: string;
+  logoUrl?: string | null;
+};
+
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+const DAY_LABELS = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+const DAY_SHORT = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
+const MONTHS = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+
+export default function BookingClient({
+  tenantName,
+  whatsappNumber,
+  services,
+  openingHours,
+  brandColor = "#8B5CF6",
+  logoUrl,
+}: Props) {
+  const [step, setStep] = useState<"service" | "datetime" | "confirm" | "done">("service");
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const servicesByCategory = useMemo(() => {
+    const grouped: Record<string, Service[]> = {};
+    services.forEach((s) => {
+      const cat = s.category || "Servizi";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(s);
+    });
+    return grouped;
+  }, [services]);
+
+  const availableDays = useMemo(() => {
+    const days: Date[] = [];
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const dayKey = DAY_KEYS[d.getDay()];
+      const hours = openingHours?.[dayKey];
+      if (hours && hours !== "chiuso") days.push(d);
+    }
+    return days;
+  }, [openingHours]);
+
+  const timeSlots = useMemo(() => {
+    if (!selectedDate || !selectedService) return [];
+    const dayKey = DAY_KEYS[selectedDate.getDay()];
+    const hours = openingHours?.[dayKey];
+    if (!hours || hours === "chiuso") return [];
+
+    const [start, end] = hours.split("-");
+    const [startH, startM] = start.split(":").map(Number);
+    const [endH, endM] = end.split(":").map(Number);
+    const duration = selectedService.duration_minutes || 30;
+    const slots: string[] = [];
+
+    const startDate = new Date(selectedDate);
+    startDate.setHours(startH, startM, 0, 0);
+    const endDate = new Date(selectedDate);
+    endDate.setHours(endH, endM, 0, 0);
+
+    const now = new Date();
+    const isToday = selectedDate.toDateString() === now.toDateString();
+    if (isToday) now.setHours(now.getHours() + 1);
+
+    let current = new Date(startDate);
+    while (current.getTime() + duration * 60000 <= endDate.getTime()) {
+      if (!isToday || current >= now) {
+        slots.push(current.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }));
+      }
+      current = new Date(current.getTime() + 30 * 60000);
+    }
+    return slots;
+  }, [selectedDate, selectedService, openingHours]);
+
+  const buildWhatsAppMessage = () => {
+    const lines: string[] = [];
+    lines.push(`💇 *Nuova prenotazione - ${tenantName}*`);
+    lines.push("");
+    if (selectedService) lines.push(`*Servizio:* ${selectedService.name}`);
+    if (selectedService?.duration_minutes) lines.push(`*Durata:* ${selectedService.duration_minutes} min`);
+    if (selectedDate) {
+      lines.push(`*Data:* ${DAY_LABELS[selectedDate.getDay()]} ${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()]}`);
+    }
+    if (selectedTime) lines.push(`*Orario:* ${selectedTime}`);
+    if (selectedService) lines.push(`*Prezzo:* €${Number(selectedService.price).toFixed(2)}`);
+    lines.push("");
+    if (customerName) lines.push(`_Nome:_ ${customerName}`);
+    if (customerPhone) lines.push(`_Telefono:_ ${customerPhone}`);
+    if (notes) lines.push(`_Note:_ ${notes}`);
+    return lines.join("\n");
+  };
+
+  const sendToWhatsApp = () => {
+    const phone = whatsappNumber.replace(/\s|\+|-/g, "");
+    const msg = encodeURIComponent(buildWhatsAppMessage());
+    window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+    setStep("done");
+  };
+
+  return (
+    <div className="min-h-screen bg-soft pb-24">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {step !== "service" && step !== "done" && (
+              <button
+                onClick={() => {
+                  if (step === "datetime") setStep("service");
+                  if (step === "confirm") setStep("datetime");
+                }}
+                className="p-1.5 -ml-1.5 rounded-full hover:bg-soft active:bg-gray-100"
+              >
+                <ArrowLeft size={20} className="text-night" />
+              </button>
+            )}
+            <div>
+              <h1 className="text-base font-bold text-night leading-tight">{tenantName}</h1>
+              <p className="text-xs text-gray-500">
+                {step === "service" && "Scegli un servizio"}
+                {step === "datetime" && "Scegli data e ora"}
+                {step === "confirm" && "Conferma prenotazione"}
+                {step === "done" && "Prenotazione inviata"}
+              </p>
+            </div>
+          </div>
+          {logoUrl ? (
+            <img src={logoUrl} alt={tenantName} className="w-10 h-10 rounded-full object-cover border border-gray-100" />
+          ) : (
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: brandColor }}>
+              {tenantName.charAt(0)}
+            </div>
+          )}
+        </div>
+
+        {step !== "done" && (
+          <div className="max-w-3xl mx-auto px-4 pb-3">
+            <div className="flex gap-1.5">
+              {["service", "datetime", "confirm"].map((s) => (
+                <div
+                  key={s}
+                  className={`h-1 flex-1 rounded-full transition-all ${
+                    step === s || (s === "service" && step !== "service") || (s === "datetime" && step === "confirm")
+                      ? "" : "bg-gray-200"
+                  }`}
+                  style={
+                    step === s || (s === "service" && step !== "service") || (s === "datetime" && step === "confirm")
+                      ? { backgroundColor: brandColor } : undefined
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </header>
+
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        {step === "service" && (
+          <div>
+            <h2 className="text-2xl font-bold text-night mb-1">Cosa vuoi prenotare?</h2>
+            <p className="text-sm text-gray-500 mb-6">Scegli il servizio che preferisci</p>
+
+            {Object.entries(servicesByCategory).map(([category, items]) => (
+              <div key={category} className="mb-8">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{category}</h3>
+                <div className="space-y-2">
+                  {items.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => { setSelectedService(item); setStep("datetime"); }}
+                      className="w-full bg-white rounded-2xl p-4 flex justify-between items-center gap-3 hover:shadow-md active:scale-[0.98] transition text-left"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-night text-sm">{item.name}</h4>
+                        {item.description && (
+                          <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{item.description}</p>
+                        )}
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className="font-bold text-night text-sm">€{Number(item.price).toFixed(2)}</span>
+                          {item.duration_minutes && (
+                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                              <Clock size={11} /> {item.duration_minutes} min
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight size={18} className="text-gray-400 shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {step === "datetime" && selectedService && (
+          <div>
+            <div className="bg-white border rounded-2xl p-4 mb-6" style={{ borderColor: `${brandColor}30`, backgroundColor: `${brandColor}08` }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: brandColor }}>
+                  <Scissors size={18} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-night text-sm">{selectedService.name}</p>
+                  <p className="text-xs text-gray-600">
+                    €{Number(selectedService.price).toFixed(2)} · {selectedService.duration_minutes} min
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <h2 className="text-xl font-bold text-night mb-4">Scegli il giorno</h2>
+
+            <div className="scroll-x flex gap-2 pb-3 mb-6 -mx-4 px-4">
+              {availableDays.map((d) => {
+                const active = selectedDate?.toDateString() === d.toDateString();
+                return (
+                  <button
+                    key={d.toISOString()}
+                    onClick={() => { setSelectedDate(d); setSelectedTime(null); }}
+                    className={`w-16 py-3 rounded-2xl flex flex-col items-center transition shrink-0 ${active ? "text-white shadow-lg" : "bg-white text-night hover:bg-gray-50"}`}
+                    style={active ? { backgroundColor: brandColor } : undefined}
+                  >
+                    <span className={`text-[10px] font-semibold uppercase ${active ? "text-white/80" : "text-gray-500"}`}>
+                      {DAY_SHORT[d.getDay()]}
+                    </span>
+                    <span className="text-xl font-bold mt-0.5">{d.getDate()}</span>
+                    <span className={`text-[10px] ${active ? "text-white/70" : "text-gray-400"}`}>
+                      {MONTHS[d.getMonth()].slice(0, 3)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedDate && (
+              <>
+                <h2 className="text-xl font-bold text-night mb-4">Scegli l&apos;orario</h2>
+                {timeSlots.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-6 text-center text-gray-500 text-sm">
+                    Nessun orario disponibile. Prova un altro giorno.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {timeSlots.map((t) => {
+                      const active = selectedTime === t;
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => setSelectedTime(t)}
+                          className={`py-3 rounded-xl border-2 text-sm font-semibold transition ${active ? "text-white" : "border-gray-200 bg-white text-night"}`}
+                          style={active ? { backgroundColor: brandColor, borderColor: brandColor } : undefined}
+                        >
+                          {t}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+            <button
+              onClick={() => setStep("confirm")}
+              disabled={!selectedDate || !selectedTime}
+              className="w-full mt-8 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-full font-bold transition active:scale-[0.98]"
+              style={!selectedDate || !selectedTime ? undefined : { backgroundColor: brandColor }}
+            >
+              Continua
+            </button>
+          </div>
+        )}
+
+        {step === "confirm" && selectedService && selectedDate && selectedTime && (
+          <div>
+            <h2 className="text-2xl font-bold text-night mb-6">I tuoi dati</h2>
+
+            <div className="bg-white rounded-2xl p-4 mb-6">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-3">Riepilogo</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Servizio</span>
+                  <span className="font-semibold text-night">{selectedService.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Data</span>
+                  <span className="font-semibold text-night">
+                    {DAY_LABELS[selectedDate.getDay()]} {selectedDate.getDate()} {MONTHS[selectedDate.getMonth()]}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Orario</span>
+                  <span className="font-semibold text-night">{selectedTime}</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-gray-100">
+                  <span className="text-gray-600">Prezzo</span>
+                  <span className="font-bold text-night">€{Number(selectedService.price).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            <label className="block mb-4">
+              <span className="text-sm font-semibold text-night mb-2 block">Il tuo nome *</span>
+              <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Mario Rossi" className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none" />
+            </label>
+
+            <label className="block mb-4">
+              <span className="text-sm font-semibold text-night mb-2 block">Telefono *</span>
+              <input type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="+39 333 1234567" className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none" />
+            </label>
+
+            <label className="block mb-6">
+              <span className="text-sm font-semibold text-night mb-2 block">Note (opzionale)</span>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Es. capelli molto lunghi..." rows={2} className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none resize-none" />
+            </label>
+
+            <button
+              onClick={sendToWhatsApp}
+              disabled={!customerName || !customerPhone}
+              className="w-full disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-full font-bold transition active:scale-[0.98] flex items-center justify-center gap-2"
+              style={!customerName || !customerPhone ? undefined : { backgroundColor: brandColor }}
+            >
+              <MessageCircle size={20} />
+              Conferma su WhatsApp
+            </button>
+
+            <p className="text-xs text-gray-500 text-center mt-3">
+              Si aprirà WhatsApp con la prenotazione pronta.
+            </p>
+          </div>
+        )}
+
+        {step === "done" && (
+          <div className="text-center py-12">
+            <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: `${brandColor}15` }}>
+              <CheckCircle2 size={40} style={{ color: brandColor }} />
+            </div>
+            <h2 className="text-2xl font-bold text-night mb-3">Prenotazione inviata!</h2>
+            <p className="text-gray-600 mb-8 max-w-sm mx-auto">
+              Ti aspettiamo <strong className="text-night">
+                {selectedDate && DAY_LABELS[selectedDate.getDay()].toLowerCase()} {selectedDate?.getDate()} {selectedDate && MONTHS[selectedDate.getMonth()].toLowerCase()}
+              </strong> alle <strong className="text-night">{selectedTime}</strong>.
+            </p>
+            <button
+              onClick={() => {
+                setStep("service");
+                setSelectedService(null);
+                setSelectedDate(null);
+                setSelectedTime(null);
+                setCustomerName("");
+                setCustomerPhone("");
+                setNotes("");
+              }}
+              className="text-white px-8 py-3.5 rounded-full font-bold transition"
+              style={{ backgroundColor: brandColor }}
+            >
+              Prenota un altro servizio
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

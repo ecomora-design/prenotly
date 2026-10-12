@@ -5,7 +5,7 @@ export default function ContactCTA() {
     <section id="demo" className="py-20 md:py-32 bg-gradient-to-br from-night via-night to-waDark text-white">
       <div className="container-x max-w-3xl text-center">
         <span className="inline-block bg-wa/20 text-wa text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-          Prova gratuita · 14 giorni · Nessuna carta
+          Demo gratuita 48 ore · Demo 48 ore · Nessuna carta
         </span>
 
         <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
@@ -32,11 +32,11 @@ export default function ContactCTA() {
             Scrivici su WhatsApp
           </a>
           <a
-            href="mailto:info@prenotly-italia.it"
+            href="mailto:movisicily@gmail.com"
             className="inline-flex items-center justify-center gap-2 border border-white/30 hover:bg-white/10 px-7 py-4 rounded-full font-bold transition active:scale-95"
           >
             <Mail size={20} />
-            info@prenotly-italia.it
+            movisicily@gmail.com
           </a>
         </div>
 

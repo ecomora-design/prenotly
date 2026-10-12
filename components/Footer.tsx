@@ -50,11 +50,11 @@ export default function Footer() {
                 +39 393 484 2118
               </a>
               <a
-                href="mailto:info@prenotly-italia.it"
+                href="mailto:movisicily@gmail.com"
                 className="flex items-center gap-2 text-gray-700 hover:text-wa transition break-all"
               >
                 <Mail size={16} className="text-wa" />
-                info@prenotly-italia.it
+                movisicily@gmail.com
               </a>
             </div>
           </div>

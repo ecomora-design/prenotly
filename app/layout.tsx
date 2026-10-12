@@ -4,9 +4,9 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Prenotly — Ordini e prenotazioni su WhatsApp, automatici",
+  title: "Prenotly — Tre software per ristoranti, beauty e attività su misura",
   description:
-    "Prenotly gestisce ordini e prenotazioni al posto tuo: software per ristoranti, parrucchieri e servizi. Tutto su WhatsApp, automatico.",
+    "Prenotly Food per ristoranti (da €29,99/mese), Prenotly Beauty per parrucchieri e centri estetici (da €29,99/mese), Prenotly Service per software su misura. Prenotazioni e ordini automatici su WhatsApp.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

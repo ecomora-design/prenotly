@@ -25,7 +25,7 @@ export default function StickyCTA() {
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-bold text-night leading-tight">
-              Prova gratis 14 giorni
+              Demo gratuita 48 ore Demo 48 ore
             </p>
             <p className="text-[11px] text-gray-500">Scrivici su WhatsApp</p>
           </div>
