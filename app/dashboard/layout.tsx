@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import OnboardingGuide from "@/components/OnboardingGuide";
 import {
-  LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarDays, Inbox, CreditCard,
+  LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarDays, Inbox, CreditCard, QrCode,
   Settings, LogOut, Menu, X, Loader2, ExternalLink,
   Users
 } from "lucide-react";
@@ -106,6 +106,7 @@ export default function DashboardLayout({
           { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
         ]),
     { href: "/dashboard/clienti", label: "Clienti", icon: Users },
+    { href: "/dashboard/qr", label: "QR Code", icon: QrCode },
     { href: "/dashboard/pagamenti", label: "Pagamenti", icon: CreditCard },
     ...(isAdmin
       ? [{ href: "/admin/richieste", label: "🛠️ Richieste Service", icon: Inbox }]
