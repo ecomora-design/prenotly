@@ -21,6 +21,9 @@ type Tenant = {
   trial_ends_at: string | null;
   logo_url: string | null;
   brand_color: string | null;
+  has_table_booking: boolean | null;
+  has_online_payments: boolean | null;
+  plan_type: string | null;
 };
 
 export default function DashboardPage() {
