@@ -25,7 +25,7 @@ export default function DashboardFlow() {
     {
       icon: MessageCircle,
       title: "Ricevi tutto su WhatsApp",
-      text: "Ogni ordine o appuntamento arriva sul tuo numero WhatsApp, già confermato dalla segreteria automatica.",
+      text: "Ogni ordine o appuntamento arriva sul tuo numero WhatsApp, già confermato dalil sistema automatica.",
     },
     {
       icon: CreditCard,

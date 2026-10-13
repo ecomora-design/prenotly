@@ -146,7 +146,7 @@ export default function AbbonamentoPage() {
           <ul className="space-y-3 py-6">
             {[
               "Web app personalizzata online 12 mesi",
-              "Segreteria WhatsApp automatica 24/7",
+              "Automazioni WhatsApp automatica 24/7",
               "Dashboard completa per gestire tutto",
               "Menu/Servizi illimitati",
               "Ordini e prenotazioni illimitati",
@@ -205,7 +205,7 @@ export default function AbbonamentoPage() {
           <li className="flex items-start gap-3">
             <CheckCircle2 size={16} className="text-wa mt-0.5 shrink-0" />
             <span className="text-gray-700">
-              <strong className="text-night">Segreteria WhatsApp attiva</strong> che risponde ai tuoi clienti 24/7
+              <strong className="text-night">Automazioni WhatsApp attiva</strong> che risponde ai tuoi clienti 24/7
             </span>
           </li>
           <li className="flex items-start gap-3">

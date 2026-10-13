@@ -7,7 +7,7 @@ export default function TwoSouls() {
       icon: Utensils,
       emoji: "🍕",
       title: "Ristoranti & Asporto",
-      text: "Menu digitale con foto, prezzi e descrizioni. Il cliente sceglie, riempie il carrello, seleziona orario e tipo (asporto o domicilio). La segreteria conferma e ti avvisa quando l'ordine è pronto.",
+      text: "Menu digitale con foto, prezzi e descrizioni. Il cliente sceglie, riempie il carrello, seleziona orario e tipo (asporto o domicilio). Il sistema conferma e ti avvisa quando l'ordine è pronto.",
       features: [
         "Menu digitale con foto e categorie",
         "Carrello e checkout dal telefono",
@@ -23,7 +23,7 @@ export default function TwoSouls() {
       icon: Scissors,
       emoji: "💇",
       title: "Parrucchieri & Servizi",
-      text: "Calendario intelligente che mostra solo gli orari davvero liberi. Il cliente prenota in 3 tap, la segreteria WhatsApp conferma e sincronizza l'appuntamento con Google Calendar.",
+      text: "Calendario intelligente che mostra solo gli orari davvero liberi. Il cliente prenota in 3 tap, la automazioni WhatsApp conferma e sincronizza l'appuntamento con Google Calendar.",
       features: [
         "Calendario con slot liberi in tempo reale",
         "Prenotazione in 3 tap dal telefono",

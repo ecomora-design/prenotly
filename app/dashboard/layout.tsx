@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import OnboardingGuide from "@/components/OnboardingGuide";
 import {
   LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarDays, Inbox, CreditCard,
   Settings, LogOut, Menu, X, Loader2, ExternalLink,
@@ -35,6 +36,7 @@ export default function DashboardLayout({
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [user, setUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -51,12 +53,29 @@ export default function DashboardLayout({
       if (!link || !link.tenants) { router.push("/onboarding"); return; }
 
       setTenant(link.tenants as unknown as Tenant);
+
+      // Se onboarding non completato, mostralo
+      const tenants = link.tenants as any;
+      if (tenants.onboarding_completed === false) {
+        setShowOnboarding(true);
+      }
+
       setLoading(false);
     }
     load();
   }, []);
 
   useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
+
+  const handleCompleteOnboarding = async () => {
+    if (!tenant) return;
+    const supabase = createClient();
+    await supabase
+      .from("tenants")
+      .update({ onboarding_completed: true })
+      .eq("id", tenant.id);
+    setShowOnboarding(false);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -108,6 +127,14 @@ export default function DashboardLayout({
           ⏰ <strong>Demo attiva</strong> — {trialHoursLeft} ore rimanenti.{" "}
           <Link href="/dashboard/abbonamento" className="underline font-bold">Attiva ora</Link>
         </div>
+      )}
+
+      {showOnboarding && (
+        <OnboardingGuide
+          isFood={tenant.product_type === "food" || tenant.business_type === "restaurant"}
+          businessSlug={tenant.slug}
+          onComplete={handleCompleteOnboarding}
+        />
       )}
 
       <div className="flex">

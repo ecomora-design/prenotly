@@ -1,53 +1,50 @@
-import { MessageCircle, Mail, CheckCircle2 } from "lucide-react";
+import { MessageCircle, Check } from "lucide-react";
+import Link from "next/link";
 
 export default function ContactCTA() {
   return (
-    <section id="demo" className="py-20 md:py-32 bg-gradient-to-br from-night via-night to-waDark text-white">
-      <div className="container-x max-w-3xl text-center">
-        <span className="inline-block bg-wa/20 text-wa text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-          Demo gratuita 48 ore · Demo 48 ore · Nessuna carta
-        </span>
-
-        <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
-          Mentre leggi questa pagina,<br className="hidden md:block" />
-          qualcuno sta provando a prenotare da te.
+    <section className="py-20 md:py-28 bg-night text-white">
+      <div className="container-x max-w-2xl text-center">
+        <p className="text-xs font-bold text-wa uppercase tracking-widest mb-4">
+          Prova gratuita
+        </p>
+        <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight mb-5">
+          48 ore gratis.
+          <br />
+          Poi decidi tu.
         </h2>
-
-        <p className="text-white/80 text-base md:text-lg mb-4">
-          Rispondi? O lasci che vada dalla concorrenza?
+        <p className="text-white/60 text-base md:text-lg mb-8 max-w-lg mx-auto">
+          Attiva il tuo spazio, testa il menu o l&apos;agenda con i tuoi dati reali.
+          Se non fa per te, disdici con un click.
         </p>
 
-        <p className="text-white/80 text-base md:text-lg mb-10">
-          Scrivici su WhatsApp. In 10 minuti hai il tuo spazio online, la segreteria pronta, e il primo cliente che riceve conferma automatica.
-        </p>
-
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center mb-10">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto sm:max-w-none">
+          <Link
+            href="/signup"
+            className="bg-wa hover:bg-wa/90 text-white px-7 py-4 rounded-full font-semibold transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
+          >
+            Inizia ora
+          </Link>
           <a
-            href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20iniziare%20la%20prova%20gratuita"
+            href="https://wa.me/message/LLEKTVFCRCPVB1"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-wa hover:bg-waDark px-7 py-4 rounded-full font-bold transition shadow-xl shadow-wa/30 active:scale-95"
+            className="border border-white/20 hover:border-white text-white px-7 py-4 rounded-full font-semibold transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
           >
-            <MessageCircle size={20} />
-            Scrivici su WhatsApp
-          </a>
-          <a
-            href="mailto:movisicily@gmail.com"
-            className="inline-flex items-center justify-center gap-2 border border-white/30 hover:bg-white/10 px-7 py-4 rounded-full font-bold transition active:scale-95"
-          >
-            <Mail size={20} />
-            movisicily@gmail.com
+            <MessageCircle size={18} />
+            Scrivici
           </a>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/70">
+        <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] text-white/40">
           {[
+            "Nessuna carta richiesta",
             "Setup in 10 minuti",
-            "Zero carta di credito",
             "Disdici quando vuoi",
           ].map((t) => (
-            <span key={t} className="flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-wa" /> {t}
+            <span key={t} className="flex items-center gap-1.5">
+              <Check size={14} className="text-wa" />
+              {t}
             </span>
           ))}
         </div>

@@ -28,7 +28,7 @@ export default function PrezziPage() {
         "Menu digitale personalizzabile",
         "Ordini asporto e domicilio",
         "Prenotazioni tavoli con slot orari",
-        "Segreteria WhatsApp automatica",
+        "Automazioni WhatsApp automatica",
         "Dashboard completa",
         "Web app brandizzata",
         "Aggiornamenti illimitati",
@@ -57,7 +57,7 @@ export default function PrezziPage() {
         "Scelta del tipo di servizio",
         "Sync con Google Calendar",
         "Promemoria anti no-show",
-        "Segreteria WhatsApp automatica",
+        "Automazioni WhatsApp automatica",
         "Dashboard completa",
         "Web app brandizzata",
       ],
@@ -220,7 +220,7 @@ export default function PrezziPage() {
           </div>
 
           <p className="text-center text-gray-500 text-sm mt-10 max-w-2xl mx-auto">
-            Tutti i piani includono <strong className="text-night">dashboard</strong>, <strong className="text-night">segreteria WhatsApp</strong>, <strong className="text-night">web app brandizzata</strong> e <strong className="text-night">aggiornamenti gratuiti</strong>.
+            Tutti i piani includono <strong className="text-night">dashboard</strong>, <strong className="text-night">automazioni WhatsApp</strong>, <strong className="text-night">web app brandizzata</strong> e <strong className="text-night">aggiornamenti gratuiti</strong>.
           </p>
         </div>
       </section>
@@ -283,7 +283,7 @@ export default function PrezziPage() {
                 <Check size={22} /> Con Prenotly
               </h3>
               <ul className="space-y-3 text-gray-700 text-sm">
-                <li>✅ Segreteria WhatsApp attiva 24/7</li>
+                <li>✅ Automazioni WhatsApp attiva 24/7</li>
                 <li>✅ Agenda digitale sempre aggiornata</li>
                 <li>✅ Promemoria anti no-show (fino -80%)</li>
                 <li>✅ Zero commissioni sulle prenotazioni</li>
