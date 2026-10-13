@@ -5,15 +5,9 @@ import CookieBanner from "@/components/CookieBanner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Prenotly — Tre software per ristoranti, beauty e attività su misura",
+  title: "Prenotly — Prenotazioni e ordini su WhatsApp",
   description:
-    "Prenotly Food per ristoranti (da €29,99/mese), Prenotly Beauty per parrucchieri e centri estetici (da €29,99/mese), Prenotly Service per software su misura. Prenotazioni e ordini automatici su WhatsApp.",
-  manifest: "/manifest.webmanifest",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Prenotly",
-  },
+    "Il software italiano per ristoranti, beauty e professionisti. Prenotazioni e ordini automatici su WhatsApp.",
   icons: {
     icon: "/icon-192.png",
     apple: "/apple-touch-icon.png",

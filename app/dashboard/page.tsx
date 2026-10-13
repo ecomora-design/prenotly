@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { motion } from "framer-motion";
 import {
-  ShoppingBag, Calendar, ExternalLink, Plus, ArrowRight,
-  TrendingUp, Clock, Loader2, CheckCircle2
+  Loader2, ShoppingBag, Calendar, Users, QrCode, Plus,
+  ArrowRight, TrendingUp, Clock, ExternalLink, Sparkles,
+  CheckCircle2, Utensils, Settings, Eye, BarChart3, Zap
 } from "lucide-react";
 
 type Tenant = {
@@ -17,6 +19,8 @@ type Tenant = {
   product_type: string | null;
   subscription_status: string | null;
   trial_ends_at: string | null;
+  logo_url: string | null;
+  brand_color: string | null;
 };
 
 export default function DashboardPage() {
@@ -25,49 +29,67 @@ export default function DashboardPage() {
 
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [counts, setCounts] = useState({ bookings: 0, orders: 0, services: 0 });
+  const [counts, setCounts] = useState({
+    bookings: 0,
+    orders: 0,
+    services: 0,
+    customers: 0,
+    todayOrders: 0,
+    todayBookings: 0,
+  });
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+      if (!user) { router.push("/login"); return; }
 
       const { data: link } = await supabase
         .from("tenant_users")
-        .select("tenant_id, tenants(id, slug, business_name, business_type, product_type, subscription_status, trial_ends_at)")
+        .select("tenant_id, tenants(*)")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (!link || !link.tenants) {
-        router.push("/onboarding");
-        return;
-      }
+      if (!link || !link.tenants) { router.push("/onboarding"); return; }
 
       const t = link.tenants as unknown as Tenant;
       setTenant(t);
 
-      const { count: bCount } = await supabase
-        .from("bookings")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", t.id);
+      // Statistiche
+      const [b, o, s, c] = await Promise.all([
+        supabase.from("bookings").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
+        supabase.from("orders").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
+        supabase.from("services").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
+        supabase.from("customers").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
+      ]);
 
-      const { count: oCount } = await supabase
-        .from("orders")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", t.id);
+      // Oggi
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
 
-      const { count: sCount } = await supabase
-        .from("services")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", t.id);
+      const [todayO, todayB] = await Promise.all([
+        supabase
+          .from("orders")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", t.id)
+          .gte("created_at", todayStart.toISOString())
+          .lte("created_at", todayEnd.toISOString()),
+        supabase
+          .from("bookings")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", t.id)
+          .gte("scheduled_at", todayStart.toISOString())
+          .lte("scheduled_at", todayEnd.toISOString()),
+      ]);
 
       setCounts({
-        bookings: bCount || 0,
-        orders: oCount || 0,
-        services: sCount || 0,
+        bookings: b.count || 0,
+        orders: o.count || 0,
+        services: s.count || 0,
+        customers: c.count || 0,
+        todayOrders: todayO.count || 0,
+        todayBookings: todayB.count || 0,
       });
 
       setLoading(false);
@@ -78,204 +100,360 @@ export default function DashboardPage() {
   if (loading || !tenant) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin text-wa" size={32} />
+        <Loader2 className="animate-spin text-waDark" size={32} />
       </div>
     );
   }
 
   const isFood = tenant.product_type === "food" || tenant.business_type === "restaurant";
-
+  const brandColor = tenant.brand_color || (isFood ? "#25D366" : "#8B5CF6");
   const trialHoursLeft = tenant.trial_ends_at
     ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60)))
     : 0;
 
+  const firstName = tenant.business_name.split(" ")[0];
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera";
+
+  const mainStats = isFood
+    ? [
+        {
+          icon: ShoppingBag,
+          label: "Ordini totali",
+          value: counts.orders,
+          today: counts.todayOrders,
+          href: "/dashboard/ordini",
+          color: brandColor,
+        },
+        {
+          icon: Utensils,
+          label: "Piatti nel menu",
+          value: counts.services,
+          href: "/dashboard/servizi",
+          color: brandColor,
+        },
+      ]
+    : [
+        {
+          icon: Calendar,
+          label: "Prenotazioni totali",
+          value: counts.bookings,
+          today: counts.todayBookings,
+          href: "/dashboard/prenotazioni",
+          color: brandColor,
+        },
+        {
+          icon: Utensils,
+          label: "Servizi attivi",
+          value: counts.services,
+          href: "/dashboard/servizi",
+          color: brandColor,
+        },
+      ];
+
   return (
     <div className="max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-night mb-1">
-          Ciao! 👋
+      {/* WELCOME */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6 md:mb-8"
+      >
+        <h1 className="text-2xl md:text-3xl font-bold text-night tracking-tight">
+          {greeting}, {firstName} 👋
         </h1>
-        <p className="text-gray-500 text-sm md:text-base">
-          Ecco cosa sta succedendo su <strong className="text-night">{tenant.business_name}</strong>
+        <p className="text-night/50 text-sm md:text-base mt-1">
+          {showWelcomeMsg(counts, isFood)}
         </p>
-      </div>
+      </motion.div>
 
-      {/* Card stato trial */}
+      {/* CARD TRIAL */}
       {tenant.subscription_status === "trial" && trialHoursLeft > 0 && (
-        <div className="bg-gradient-to-r from-wa to-waDark rounded-2xl p-5 md:p-6 text-white mb-6 shadow-lg">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Clock size={18} />
-                <p className="font-bold">Demo attiva</p>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="rounded-3xl p-6 md:p-7 mb-6 text-white shadow-xl overflow-hidden relative"
+          style={{ backgroundColor: brandColor }}
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20" />
+          <div className="relative flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock size={16} />
+                <span className="text-xs font-bold uppercase tracking-wider opacity-90">
+                  Demo attiva
+                </span>
               </div>
-              <p className="text-white/90 text-sm">
-                Ti restano <strong>{trialHoursLeft} ore</strong> di prova gratuita.
+              <p className="text-2xl md:text-3xl font-bold tracking-tight">
+                {trialHoursLeft} ore rimanenti
+              </p>
+              <p className="text-sm opacity-90 mt-1">
+                Attiva l&apos;abbonamento per non perdere l&apos;accesso
               </p>
             </div>
             <Link
               href="/dashboard/abbonamento"
-              className="bg-white text-waDark px-5 py-2.5 rounded-full font-bold text-sm hover:bg-gray-100 transition inline-flex items-center gap-2 shrink-0"
+              className="bg-white text-night px-6 py-3.5 rounded-2xl font-bold text-sm hover:bg-white/90 transition inline-flex items-center justify-center gap-2 shrink-0 active:scale-[0.98]"
             >
               Attiva ora
               <ArrowRight size={16} />
             </Link>
           </div>
-        </div>
+        </motion.div>
       )}
 
+      {/* BANNER ATTIVO */}
       {tenant.subscription_status === "active" && (
-        <div className="bg-green-50 border border-green-100 rounded-2xl p-5 mb-6 flex items-center gap-3">
-          <CheckCircle2 className="text-green-600 shrink-0" size={24} />
-          <div>
-            <p className="font-bold text-night text-sm">Abbonamento attivo</p>
-            <p className="text-gray-600 text-xs">Tutto regolare. Grazie per averci scelto!</p>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-white rounded-2xl p-4 mb-6 flex items-center gap-3 border border-green-100"
+        >
+          <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+            <CheckCircle2 size={20} className="text-green-600" />
           </div>
-        </div>
-      )}
-
-      {/* Link pubblico */}
-      <div className="bg-white rounded-2xl p-5 mb-6 shadow-sm">
-        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">
-          Il tuo link pubblico
-        </p>
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm font-mono text-night break-all">
-            prenotly-italia.it/{tenant.slug}
-          </p>
-          <Link
-            href={`/${tenant.slug}`}
-            target="_blank"
-            className="bg-wa hover:bg-waDark text-white px-4 py-2 rounded-full font-semibold text-xs inline-flex items-center gap-2 active:scale-95 transition shrink-0"
-          >
-            <ExternalLink size={14} />
-            Apri
-          </Link>
-        </div>
-      </div>
-
-      {/* Statistiche */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-wa/10 flex items-center justify-center">
-              <Utensils2 className="text-waDark" size={16} />
-            </div>
-            <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
-              {isFood ? "Menu" : "Servizi"}
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-night text-sm">Abbonamento attivo</p>
+            <p className="text-xs text-night/50">
+              Tutto regolare. Grazie per averci scelto!
             </p>
           </div>
-          <p className="text-3xl font-bold text-night">{counts.services}</p>
-          <Link href="/dashboard/servizi" className="text-xs text-waDark font-semibold mt-2 inline-block">
+          <Link
+            href="/dashboard/abbonamento"
+            className="text-xs font-semibold text-night/60 hover:text-night shrink-0 transition"
+          >
             Gestisci →
           </Link>
-        </div>
+        </motion.div>
+      )}
 
-        {isFood ? (
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                <ShoppingBag className="text-blue-600" size={16} />
+      {/* STATS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {mainStats.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + i * 0.05 }}
+          >
+            <Link
+              href={stat.href}
+              className="block bg-white rounded-3xl p-6 border border-night/5 hover:border-night/15 hover:shadow-lg transition group"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: `${stat.color}15` }}
+                >
+                  <stat.icon size={22} style={{ color: stat.color }} />
+                </div>
+                <ArrowRight
+                  size={18}
+                  className="text-night/20 group-hover:text-night group-hover:translate-x-1 transition-all"
+                />
               </div>
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
-                Ordini
+              <p className="text-3xl md:text-4xl font-bold text-night tracking-tight">
+                {stat.value}
               </p>
-            </div>
-            <p className="text-3xl font-bold text-night">{counts.orders}</p>
-            <Link href="/dashboard/ordini" className="text-xs text-blue-600 font-semibold mt-2 inline-block">
-              Vedi tutti →
-            </Link>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-                <Calendar className="text-violet-500" size={16} />
-              </div>
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
-                Prenotazioni
+              <p className="text-xs font-semibold text-night/50 uppercase tracking-wider mt-1">
+                {stat.label}
               </p>
-            </div>
-            <p className="text-3xl font-bold text-night">{counts.bookings}</p>
-            <Link href="/dashboard/prenotazioni" className="text-xs text-violet-500 font-semibold mt-2 inline-block">
-              Vedi tutte →
+              {stat.today !== undefined && stat.today > 0 && (
+                <div
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
+                  style={{ backgroundColor: `${stat.color}15`, color: stat.color }}
+                >
+                  <TrendingUp size={12} />
+                  {stat.today} oggi
+                </div>
+              )}
             </Link>
-          </div>
-        )}
+          </motion.div>
+        ))}
 
-        <div className="bg-white rounded-2xl p-5 shadow-sm col-span-2 lg:col-span-1">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
-              <TrendingUp className="text-green-600" size={16} />
+        {/* Clienti */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Link
+            href="/dashboard/clienti"
+            className="block bg-white rounded-3xl p-6 border border-night/5 hover:border-night/15 hover:shadow-lg transition group"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+                <Users size={22} className="text-blue-600" />
+              </div>
+              <ArrowRight
+                size={18}
+                className="text-night/20 group-hover:text-night group-hover:translate-x-1 transition-all"
+              />
             </div>
-            <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
-              Stato
+            <p className="text-3xl md:text-4xl font-bold text-night tracking-tight">
+              {counts.customers}
+            </p>
+            <p className="text-xs font-semibold text-night/50 uppercase tracking-wider mt-1">
+              Clienti nel database
+            </p>
+          </Link>
+        </motion.div>
+      </div>
+
+      {/* LINK PUBBLICO — CARD GRANDE */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="bg-night rounded-3xl p-6 md:p-8 mb-6 text-white overflow-hidden relative"
+      >
+        <div className="absolute top-0 right-0 w-72 h-72 bg-wa/20 rounded-full blur-3xl -mr-20 -mt-20" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center gap-5">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <Eye size={14} className="text-wa" />
+              <span className="text-xs font-bold text-wa uppercase tracking-wider">
+                La tua pagina pubblica
+              </span>
+            </div>
+            <p className="text-lg md:text-2xl font-bold truncate mb-1">
+              prenotly-italia.it/{tenant.slug}
+            </p>
+            <p className="text-sm text-white/60">
+              Condividila con i clienti: la useranno per ordinare o prenotare
             </p>
           </div>
-          <p className="text-sm font-semibold text-waDark">
-            {tenant.subscription_status === "active" ? "✅ Attivo" : "⏰ Demo"}
-          </p>
+
+          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+            <Link
+              href={`/${tenant.slug}`}
+              target="_blank"
+              className="bg-white text-night px-6 py-3.5 rounded-2xl font-bold text-sm hover:bg-white/90 transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
+            >
+              <ExternalLink size={16} />
+              Vedi pagina
+            </Link>
+            <Link
+              href="/dashboard/qr"
+              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition inline-flex items-center justify-center gap-2 active:scale-[0.98] border border-white/10"
+            >
+              <QrCode size={16} />
+              QR Code
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* AZIONI RAPIDE */}
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-night mb-4">Azioni rapide</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            {
+              icon: Plus,
+              label: isFood ? "Aggiungi piatto" : "Aggiungi servizio",
+              href: "/dashboard/servizi",
+            },
+            {
+              icon: QrCode,
+              label: "Scarica QR Code",
+              href: "/dashboard/qr",
+            },
+            {
+              icon: Settings,
+              label: "Personalizza",
+              href: "/dashboard/impostazioni",
+            },
+            {
+              icon: isFood ? ShoppingBag : Calendar,
+              label: isFood ? "Vedi ordini" : "Vedi agenda",
+              href: isFood ? "/dashboard/ordini" : "/dashboard/prenotazioni",
+            },
+          ].map((action, i) => (
+            <motion.div
+              key={action.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.03 }}
+            >
+              <Link
+                href={action.href}
+                className="bg-white rounded-2xl p-5 border border-night/5 hover:border-night/15 hover:shadow-md transition flex flex-col items-start gap-3 group"
+              >
+                <div
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: `${brandColor}15` }}
+                >
+                  <action.icon size={20} style={{ color: brandColor }} />
+                </div>
+                <p className="text-sm font-semibold text-night leading-tight">
+                  {action.label}
+                </p>
+              </Link>
+            </motion.div>
+          ))}
         </div>
       </div>
 
-      {/* Azioni rapide */}
-      <h2 className="text-lg font-bold text-night mb-4">Azioni rapide</h2>
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Link
-          href="/dashboard/servizi"
-          className="bg-white rounded-2xl p-5 hover:shadow-lg transition flex items-center gap-4"
-        >
-          <div className="w-12 h-12 rounded-xl bg-wa/10 flex items-center justify-center shrink-0">
-            <Plus className="text-waDark" size={22} />
+      {/* SUGGERIMENTI */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="bg-white rounded-3xl p-6 border border-night/5 mt-6"
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-2xl bg-yellow-50 flex items-center justify-center">
+            <Zap size={18} className="text-yellow-600" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-night">
-              {isFood ? "Aggiungi un piatto" : "Aggiungi un servizio"}
-            </p>
-            <p className="text-xs text-gray-500">
-              {isFood ? "Crea il tuo menu" : "Crea il tuo listino"}
-            </p>
+          <div>
+            <h2 className="font-bold text-night text-sm">Come far decollare la tua attività</h2>
+            <p className="text-xs text-night/50">3 cose che funzionano subito</p>
           </div>
-          <ArrowRight size={18} className="text-gray-400 shrink-0" />
-        </Link>
+        </div>
 
-        <Link
-          href="/dashboard/impostazioni"
-          className="bg-white rounded-2xl p-5 hover:shadow-lg transition flex items-center gap-4"
-        >
-          <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-            <Settings2 className="text-violet-500" size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-night">Personalizza la tua web app</p>
-            <p className="text-xs text-gray-500">Colori, logo, orari</p>
-          </div>
-          <ArrowRight size={18} className="text-gray-400 shrink-0" />
-        </Link>
-      </div>
+        <div className="space-y-3">
+          {[
+            {
+              n: "1",
+              text: "Metti il link in bio su Instagram o nella descrizione Google Maps",
+            },
+            {
+              n: "2",
+              text: "Scarica il QR Code e mettilo sui tavoli o sul bancone",
+            },
+            {
+              n: "3",
+              text: "Fai un ordine di test dal tuo stesso link per vedere come funziona",
+            },
+          ].map((tip) => (
+            <div key={tip.n} className="flex items-start gap-3">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
+              >
+                {tip.n}
+              </div>
+              <p className="text-sm text-night/70 leading-relaxed pt-1">{tip.text}</p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
 
-// Icone import inline per non appesantire gli import sopra
-function Utensils2({ size = 16, className = "" }: { size?: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-      <path d="M7 2v20" />
-      <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-    </svg>
-  );
-}
-
-function Settings2({ size = 16, className = "" }: { size?: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M20 7h-9" />
-      <path d="M14 17H5" />
-      <circle cx="17" cy="17" r="3" />
-      <circle cx="7" cy="7" r="3" />
-    </svg>
-  );
+function showWelcomeMsg(counts: any, isFood: boolean) {
+  const total = isFood ? counts.orders : counts.bookings;
+  if (total === 0) {
+    return "Inizia a ricevere prenotazioni e ordini: è tutto pronto.";
+  }
+  if (total < 5) {
+    return `Hai già ricevuto ${total} ${isFood ? (total === 1 ? "ordine" : "ordini") : (total === 1 ? "prenotazione" : "prenotazioni")}! 🎉`;
+  }
+  return `Stai andando forte: ${total} ${isFood ? "ordini" : "prenotazioni"} totali.`;
 }

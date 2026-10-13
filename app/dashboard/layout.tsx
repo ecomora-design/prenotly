@@ -6,9 +6,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import OnboardingGuide from "@/components/OnboardingGuide";
 import {
-  LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarDays, Inbox, CreditCard, QrCode,
-  Settings, LogOut, Menu, X, Loader2, ExternalLink,
-  Users
+  LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarDays,
+  CreditCard, QrCode, Settings, LogOut, Menu, X, Loader2,
+  ExternalLink, Users, ChevronRight, Sparkles, Bell
 } from "lucide-react";
 
 type Tenant = {
@@ -19,9 +19,9 @@ type Tenant = {
   product_type: string | null;
   subscription_status: string | null;
   trial_ends_at: string | null;
+  logo_url: string | null;
+  brand_color: string | null;
 };
-
-const ADMIN_EMAIL = "movisicily@gmail.com";
 
 export default function DashboardLayout({
   children,
@@ -45,18 +45,17 @@ export default function DashboardLayout({
 
       const { data: link } = await supabase
         .from("tenant_users")
-        .select("tenant_id, tenants(id, slug, business_name, business_type, product_type, subscription_status, trial_ends_at)")
+        .select("tenant_id, tenants(*)")
         .eq("user_id", user.id)
         .maybeSingle();
 
       setUser(user);
       if (!link || !link.tenants) { router.push("/onboarding"); return; }
 
-      setTenant(link.tenants as unknown as Tenant);
+      const t = link.tenants as any;
+      setTenant(t);
 
-      // Se onboarding non completato, mostralo
-      const tenants = link.tenants as any;
-      if (tenants.onboarding_completed === false) {
+      if (t.onboarding_completed === false) {
         setShowOnboarding(true);
       }
 
@@ -69,7 +68,6 @@ export default function DashboardLayout({
 
   const handleCompleteOnboarding = async () => {
     if (!tenant) return;
-    const supabase = createClient();
     await supabase
       .from("tenants")
       .update({ onboarding_completed: true })
@@ -85,8 +83,11 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-soft">
-        <Loader2 className="animate-spin text-wa" size={32} />
+      <main className="min-h-screen flex items-center justify-center bg-cream">
+        <div className="text-center">
+          <Loader2 className="animate-spin text-waDark mx-auto mb-3" size={32} />
+          <p className="text-sm text-night/40 font-medium">Caricamento...</p>
+        </div>
       </main>
     );
   }
@@ -94,7 +95,7 @@ export default function DashboardLayout({
   if (!tenant) return null;
 
   const isFood = tenant.product_type === "food" || tenant.business_type === "restaurant";
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const brandColor = tenant.brand_color || (isFood ? "#25D366" : "#8B5CF6");
 
   const navItems = [
     { href: "/dashboard", label: "Panoramica", icon: LayoutDashboard },
@@ -107,10 +108,6 @@ export default function DashboardLayout({
         ]),
     { href: "/dashboard/clienti", label: "Clienti", icon: Users },
     { href: "/dashboard/qr", label: "QR Code", icon: QrCode },
-    { href: "/dashboard/pagamenti", label: "Pagamenti", icon: CreditCard },
-    ...(isAdmin
-      ? [{ href: "/admin/richieste", label: "🛠️ Richieste Service", icon: Inbox }]
-      : []),
     { href: "/dashboard/impostazioni", label: "Impostazioni", icon: Settings },
     { href: "/dashboard/abbonamento", label: "Abbonamento", icon: CreditCard },
   ];
@@ -122,46 +119,83 @@ export default function DashboardLayout({
   const showTrialBanner = tenant.subscription_status === "trial" && trialHoursLeft > 0;
 
   return (
-    <div className="min-h-screen bg-soft">
-      {showTrialBanner && (
-        <div className="bg-gradient-to-r from-waDark to-wa text-white px-4 py-2.5 text-center text-xs md:text-sm sticky top-0 z-40">
-          ⏰ <strong>Demo attiva</strong> — {trialHoursLeft} ore rimanenti.{" "}
-          <Link href="/dashboard/abbonamento" className="underline font-bold">Attiva ora</Link>
-        </div>
-      )}
-
+    <div className="min-h-screen bg-cream">
       {showOnboarding && (
         <OnboardingGuide
-          isFood={tenant.product_type === "food" || tenant.business_type === "restaurant"}
+          isFood={isFood}
           businessSlug={tenant.slug}
           onComplete={handleCompleteOnboarding}
         />
       )}
 
+      {/* Banner trial */}
+      {showTrialBanner && (
+        <div
+          className="text-white px-4 py-3 text-center text-xs md:text-sm sticky top-0 z-40"
+          style={{ backgroundColor: brandColor }}
+        >
+          <div className="container-x flex items-center justify-center gap-2">
+            <Sparkles size={14} className="shrink-0" />
+            <span>
+              Demo attiva — <strong>{trialHoursLeft} ore rimanenti</strong>
+            </span>
+            <Link
+              href="/dashboard/abbonamento"
+              className="bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 font-bold transition shrink-0 ml-2"
+            >
+              Attiva ora
+            </Link>
+          </div>
+        </div>
+      )}
+
       <div className="flex">
-        <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-100 min-h-screen sticky top-0 h-screen">
-          <div className="p-5 border-b border-gray-100">
+        {/* SIDEBAR DESKTOP */}
+        <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-night/5 min-h-screen sticky top-0 h-screen">
+          {/* Logo */}
+          <div className="p-6 border-b border-night/5">
             <Link href="/" className="text-xl font-bold text-night">
-              Prenot<span className="text-wa">ly</span>
+              Prenot<span className="text-waDark">ly</span>
             </Link>
           </div>
 
-          <div className="p-5 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-wa flex items-center justify-center text-white font-bold shrink-0">
-                {tenant.business_name.charAt(0)}
-              </div>
-              <div className="min-w-0">
-                <p className="font-bold text-night text-sm truncate">{tenant.business_name}</p>
-                <p className="text-xs text-gray-500 capitalize">{tenant.product_type || tenant.business_type}</p>
+          {/* Profilo */}
+          <div className="p-5 border-b border-night/5">
+            <div className="flex items-center gap-3 mb-3">
+              {tenant.logo_url ? (
+                <img
+                  src={tenant.logo_url}
+                  alt={tenant.business_name}
+                  className="w-12 h-12 rounded-2xl object-cover ring-2 ring-cream shrink-0"
+                />
+              ) : (
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shrink-0"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  {tenant.business_name.charAt(0)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-night text-sm truncate">
+                  {tenant.business_name}
+                </p>
+                <p className="text-xs text-night/50 capitalize">
+                  {tenant.product_type || tenant.business_type}
+                </p>
               </div>
             </div>
-            <Link href={`/${tenant.slug}`} target="_blank" className="mt-3 text-xs text-gray-600 hover:text-wa inline-flex items-center gap-1.5">
-              <ExternalLink size={12} />
-              prenotly-italia.it/{tenant.slug}
+            <Link
+              href={`/${tenant.slug}`}
+              target="_blank"
+              className="flex items-center justify-between text-xs font-semibold text-night/60 hover:text-waDark bg-cream rounded-xl px-3 py-2 transition group"
+            >
+              <span className="truncate">prenotly-italia.it/{tenant.slug}</span>
+              <ExternalLink size={12} className="shrink-0 group-hover:translate-x-0.5 transition" />
             </Link>
           </div>
 
+          {/* Nav */}
           <nav className="flex-1 p-3 overflow-y-auto">
             {navItems.map((item) => {
               const active = pathname === item.href;
@@ -169,57 +203,111 @@ export default function DashboardLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition mb-1 ${
-                    active ? "bg-wa/10 text-waDark" : "text-gray-600 hover:bg-soft"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition mb-0.5 ${
+                    active
+                      ? "bg-night text-white"
+                      : (item as any).highlight
+                      ? "text-night/70 hover:bg-cream"
+                      : "text-night/60 hover:bg-cream hover:text-night"
                   }`}
                 >
-                  <item.icon size={18} />
-                  {item.label}
+                  <item.icon size={18} className={active ? "text-wa" : ""} />
+                  <span className="flex-1">{item.label}</span>
+
                 </Link>
               );
             })}
           </nav>
 
-          <div className="p-3 border-t border-gray-100">
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-red-600 hover:bg-red-50 transition">
+          {/* Footer */}
+          <div className="p-3 border-t border-night/5 space-y-0.5">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-red-500 hover:bg-red-50 transition"
+            >
               <LogOut size={18} />
               Esci
             </button>
           </div>
         </aside>
 
+        {/* MAIN */}
         <div className="flex-1 min-w-0">
-          <header className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-            <button onClick={() => setMobileMenuOpen(true)} className="p-2 -ml-2 text-night" aria-label="Menu">
-              <Menu size={24} />
-            </button>
-            <Link href="/" className="text-lg font-bold text-night">
-              Prenot<span className="text-wa">ly</span>
-            </Link>
-            <div className="w-9 h-9 rounded-xl bg-wa flex items-center justify-center text-white font-bold text-sm">
-              {tenant.business_name.charAt(0)}
+          {/* Header mobile */}
+          <header className="lg:hidden sticky top-0 z-30 bg-white border-b border-night/5">
+            <div className="px-4 py-3 flex items-center justify-between">
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-2 -ml-2 text-night"
+                aria-label="Menu"
+              >
+                <Menu size={24} />
+              </button>
+              <Link href="/" className="text-lg font-bold text-night">
+                Prenot<span className="text-waDark">ly</span>
+              </Link>
+              {tenant.logo_url ? (
+                <img
+                  src={tenant.logo_url}
+                  alt={tenant.business_name}
+                  className="w-9 h-9 rounded-xl object-cover ring-2 ring-cream"
+                />
+              ) : (
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  {tenant.business_name.charAt(0)}
+                </div>
+              )}
             </div>
           </header>
 
+          {/* Menu mobile */}
           {mobileMenuOpen && (
-            <div className="fixed inset-0 z-50 bg-white lg:hidden">
-              <div className="p-4 flex items-center justify-between border-b border-gray-100">
+            <div className="fixed inset-0 z-50 bg-white lg:hidden overflow-y-auto">
+              <div className="p-4 flex items-center justify-between border-b border-night/5 sticky top-0 bg-white">
                 <span className="font-bold text-night">Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-2 -mr-2" aria-label="Chiudi">
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 -mr-2"
+                  aria-label="Chiudi"
+                >
                   <X size={24} />
                 </button>
               </div>
 
-              <div className="p-5 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-wa flex items-center justify-center text-white font-bold">
-                    {tenant.business_name.charAt(0)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-night">{tenant.business_name}</p>
-                    <p className="text-xs text-gray-500 capitalize">{tenant.product_type || tenant.business_type}</p>
+              <div className="p-5 border-b border-night/5">
+                <div className="flex items-center gap-3 mb-3">
+                  {tenant.logo_url ? (
+                    <img
+                      src={tenant.logo_url}
+                      alt={tenant.business_name}
+                      className="w-12 h-12 rounded-2xl object-cover ring-2 ring-cream"
+                    />
+                  ) : (
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg"
+                      style={{ backgroundColor: brandColor }}
+                    >
+                      {tenant.business_name.charAt(0)}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-night truncate">{tenant.business_name}</p>
+                    <p className="text-xs text-night/50 capitalize">
+                      {tenant.product_type || tenant.business_type}
+                    </p>
                   </div>
                 </div>
+                <Link
+                  href={`/${tenant.slug}`}
+                  target="_blank"
+                  className="flex items-center justify-between text-xs font-semibold text-night/60 bg-cream rounded-xl px-3 py-2.5"
+                >
+                  <span className="truncate">prenotly-italia.it/{tenant.slug}</span>
+                  <ExternalLink size={12} />
+                </Link>
               </div>
 
               <nav className="p-3">
@@ -230,16 +318,22 @@ export default function DashboardLayout({
                       key={item.href}
                       href={item.href}
                       className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-base transition mb-1 ${
-                        active ? "bg-wa/10 text-waDark" : "text-gray-700 active:bg-soft"
+                        active
+                          ? "bg-night text-white"
+                          : "text-night/70 active:bg-cream"
                       }`}
                     >
-                      <item.icon size={20} />
-                      {item.label}
+                      <item.icon size={20} className={active ? "text-wa" : ""} />
+                      <span className="flex-1">{item.label}</span>
+                      <ChevronRight size={16} className={active ? "text-white/50" : "text-night/20"} />
                     </Link>
                   );
                 })}
 
-                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-base text-red-600 active:bg-red-50 mt-2">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-base text-red-500 active:bg-red-50 mt-2"
+                >
                   <LogOut size={20} />
                   Esci
                 </button>

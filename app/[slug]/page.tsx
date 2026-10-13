@@ -15,6 +15,64 @@ const RESERVED_SLUGS = [
   "test-supabase", "api", "manifest", "favicon", "privacy",
 ];
 
+
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+
+  if (RESERVED_SLUGS.includes(slug.toLowerCase())) {
+    return {};
+  }
+
+  const supabase = await createClient();
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("business_name, description, logo_url, brand_color")
+    .eq("slug", slug)
+    .single();
+
+  if (!tenant) {
+    return { title: "Prenotly" };
+  }
+
+  const brandColor = tenant.brand_color || "#25D366";
+  const logoUrl = tenant.logo_url || "/icon-512.png";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://prenotly-italia.it";
+
+  return {
+    title: tenant.business_name,
+    description:
+      tenant.description || `Prenota o ordina da ${tenant.business_name}`,
+    manifest: `/api/manifest?slug=${slug}`,
+    applicationName: tenant.business_name,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: tenant.business_name,
+    },
+    icons: {
+      icon: logoUrl,
+      apple: `/api/apple-icon?slug=${slug}`,
+    },
+    openGraph: {
+      title: tenant.business_name,
+      description: tenant.description || `Prenota o ordina da ${tenant.business_name}`,
+      url: `${appUrl}/${slug}`,
+      siteName: tenant.business_name,
+      images: tenant.logo_url ? [{ url: tenant.logo_url }] : [],
+      locale: "it_IT",
+      type: "website",
+    },
+    other: {
+      "mobile-web-app-capable": "yes",
+      "apple-mobile-web-app-capable": "yes",
+      "apple-mobile-web-app-status-bar-style": "default",
+      "apple-mobile-web-app-title": tenant.business_name,
+    },
+  };
+}
+
 type Props = {
   params: Promise<{ slug: string }>;
 };

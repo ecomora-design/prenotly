@@ -5,10 +5,16 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import UploadImage from "@/components/UploadImage";
 import GoogleCalendarConnect from "@/components/GoogleCalendarConnect";
-import { Loader2, Save, CheckCircle2, Clock, MapPin, Phone } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Loader2, Save, CheckCircle2, Clock, MapPin, Phone,
+  Store, Image as ImageIcon, Palette, Globe, FileText,
+  MessageCircle, AlertCircle, X, Sparkles, ExternalLink
+} from "lucide-react";
 
 type Tenant = {
   id: string;
+  slug: string;
   business_name: string;
   product_type: string | null;
   business_type: string;
@@ -50,10 +56,15 @@ export default function ImpostazioniPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
+
+  // Slug check
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
 
   const [form, setForm] = useState({
     business_name: "",
+    slug: "",
     description: "",
     address: "",
     phone: "",
@@ -81,6 +92,7 @@ export default function ImpostazioniPage() {
       setTenant(t);
       setForm({
         business_name: t.business_name || "",
+        slug: t.slug || "",
         description: t.description || "",
         address: t.address || "",
         phone: t.phone || "",
@@ -89,8 +101,13 @@ export default function ImpostazioniPage() {
         logo_url: t.logo_url || "",
         cover_image_url: t.cover_image_url || "",
         opening_hours: t.opening_hours || {
-          mon: "09:00-19:00", tue: "09:00-19:00", wed: "09:00-19:00",
-          thu: "09:00-19:00", fri: "09:00-19:00", sat: "09:00-19:00", sun: "chiuso",
+          mon: "09:00-19:00",
+          tue: "09:00-19:00",
+          wed: "09:00-19:00",
+          thu: "09:00-19:00",
+          fri: "09:00-19:00",
+          sat: "09:00-19:00",
+          sun: "chiuso",
         },
       });
       setLoading(false);
@@ -98,20 +115,63 @@ export default function ImpostazioniPage() {
     load();
   }, []);
 
+  // Check slug disponibilità (debounced)
+  useEffect(() => {
+    if (!tenant || form.slug === tenant.slug) {
+      setSlugStatus("idle");
+      return;
+    }
+
+    if (!form.slug || form.slug.length < 3) {
+      setSlugStatus("invalid");
+      return;
+    }
+
+    if (!/^[a-z0-9-]+$/.test(form.slug)) {
+      setSlugStatus("invalid");
+      return;
+    }
+
+    setSlugStatus("checking");
+    const timer = setTimeout(async () => {
+      const { data } = await supabase
+        .from("tenants")
+        .select("id")
+        .eq("slug", form.slug)
+        .maybeSingle();
+
+      setSlugStatus(data ? "taken" : "available");
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [form.slug, tenant]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenant) return;
+    setError(null);
+
+    if (slugStatus === "taken") {
+      setError("L'URL scelto è già in uso. Scegline un altro.");
+      return;
+    }
+    if (slugStatus === "invalid") {
+      setError("L'URL deve avere almeno 3 caratteri (lettere minuscole, numeri, trattini).");
+      return;
+    }
+
     setSaving(true);
     setSaved(false);
 
     const { error } = await supabase
       .from("tenants")
       .update({
-        business_name: form.business_name,
-        description: form.description || null,
-        address: form.address || null,
-        phone: form.phone || null,
-        whatsapp_number: form.whatsapp_number,
+        business_name: form.business_name.trim(),
+        slug: form.slug.trim(),
+        description: form.description.trim() || null,
+        address: form.address.trim() || null,
+        phone: form.phone.trim() || null,
+        whatsapp_number: form.whatsapp_number.trim(),
         brand_color: form.brand_color,
         logo_url: form.logo_url || null,
         cover_image_url: form.cover_image_url || null,
@@ -120,46 +180,207 @@ export default function ImpostazioniPage() {
       .eq("id", tenant.id);
 
     setSaving(false);
-    if (!error) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+
+    if (error) {
+      setError(error.message);
+      return;
     }
+
+    // Ricarica tenant per aggiornare lo slug di riferimento
+    setTenant({ ...tenant, slug: form.slug.trim() });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+    router.refresh();
   };
 
   if (loading || !tenant) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin text-wa" size={32} />
+        <Loader2 className="animate-spin text-waDark" size={32} />
       </div>
     );
   }
 
-  return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-night mb-1">Impostazioni</h1>
-        <p className="text-gray-500 text-sm">
-          Personalizza la tua web app con logo, copertina e colori
-        </p>
-      </div>
+  const brandColor = form.brand_color || "#25D366";
 
-      {saved && (
-        <div className="bg-green-50 border border-green-100 text-green-700 rounded-xl px-4 py-3 text-sm mb-5 flex items-center gap-2">
-          <CheckCircle2 size={16} /> Modifiche salvate
+  return (
+    <div className="max-w-3xl mx-auto pb-32">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6 md:mb-8"
+      >
+        <h1 className="text-2xl md:text-3xl font-bold text-night tracking-tight mb-1">
+          Impostazioni
+        </h1>
+        <p className="text-night/50 text-sm">
+          Modifica le informazioni della tua attività
+        </p>
+      </motion.div>
+
+      {/* Anteprima */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="bg-white rounded-3xl p-5 mb-6 border border-night/5 flex items-center gap-4"
+      >
+        {form.logo_url ? (
+          <img
+            src={form.logo_url}
+            alt={form.business_name}
+            className="w-14 h-14 rounded-2xl object-cover ring-2 ring-cream shrink-0"
+          />
+        ) : (
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shrink-0"
+            style={{ backgroundColor: brandColor }}
+          >
+            {form.business_name.charAt(0) || "?"}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-night truncate">
+            {form.business_name || "Nome attività"}
+          </p>
+          <a
+            href={`/${form.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-night/50 hover:text-waDark truncate flex items-center gap-1 transition"
+          >
+            prenotly-italia.it/{form.slug}
+            <ExternalLink size={10} />
+          </a>
         </div>
+      </motion.div>
+
+      {/* Banner salvataggio */}
+      {saved && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-green-50 border border-green-100 text-green-700 rounded-2xl px-4 py-3 text-sm mb-5 flex items-center gap-2"
+        >
+          <CheckCircle2 size={16} /> Modifiche salvate con successo
+        </motion.div>
       )}
 
-      <form onSubmit={handleSave} className="space-y-6">
-        {/* GOOGLE CALENDAR */}
-        <div id="google-calendar-section">
-          <GoogleCalendarConnect />
-        </div>
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 border border-red-100 text-red-600 rounded-2xl px-4 py-3 text-sm mb-5 flex items-start gap-2"
+        >
+          <AlertCircle size={16} className="shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </motion.div>
+      )}
 
+      <form onSubmit={handleSave} className="space-y-5">
+        {/* SEZIONE: IDENTITÀ */}
+        <Section
+          icon={Store}
+          title="La tua attività"
+          subtitle="Nome, descrizione e URL pubblico"
+        >
+          <label className="block">
+            <span className="text-sm font-semibold text-night mb-2 block">
+              Nome attività *
+            </span>
+            <input
+              type="text"
+              value={form.business_name}
+              onChange={(e) => setForm({ ...form, business_name: e.target.value })}
+              placeholder="Es. Pizzeria Da Marco"
+              required
+              className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3.5 text-[15px] focus:bg-white focus:border-night/20 focus:outline-none transition"
+            />
+          </label>
 
-        {/* IMMAGINI */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-night mb-5">Immagini</h2>
+          <label className="block mt-4">
+            <span className="text-sm font-semibold text-night mb-2 block">
+              Descrizione
+            </span>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Pizzeria tradizionale napoletana nel cuore della città..."
+              rows={3}
+              maxLength={300}
+              className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3.5 text-[15px] focus:bg-white focus:border-night/20 focus:outline-none transition resize-none"
+            />
+            <p className="text-xs text-night/40 mt-1 text-right">
+              {form.description.length}/300
+            </p>
+          </label>
 
+          <div className="mt-4">
+            <span className="text-sm font-semibold text-night mb-2 block">
+              URL pubblico *
+            </span>
+            <div className="flex items-center bg-cream rounded-2xl overflow-hidden">
+              <span className="px-3.5 py-3.5 text-xs md:text-sm text-night/50 whitespace-nowrap bg-night/5 font-medium">
+                prenotly-italia.it/
+              </span>
+              <input
+                type="text"
+                value={form.slug}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    slug: e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9-]/g, ""),
+                  })
+                }
+                placeholder="da-marco"
+                required
+                className="flex-1 bg-transparent border-0 px-3 py-3.5 text-[15px] font-semibold focus:outline-none min-w-0"
+              />
+              <div className="pr-3.5 shrink-0">
+                {slugStatus === "checking" && (
+                  <Loader2 className="animate-spin text-night/40" size={16} />
+                )}
+                {slugStatus === "available" && (
+                  <CheckCircle2 className="text-green-500" size={18} />
+                )}
+                {slugStatus === "taken" && (
+                  <X className="text-red-500" size={18} />
+                )}
+                {slugStatus === "invalid" && (
+                  <AlertCircle className="text-yellow-500" size={18} />
+                )}
+              </div>
+            </div>
+            {slugStatus === "available" && (
+              <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
+                <CheckCircle2 size={12} /> Disponibile!
+              </p>
+            )}
+            {slugStatus === "taken" && (
+              <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+                <X size={12} /> Già in uso, scegline un altro
+              </p>
+            )}
+            {slugStatus === "invalid" && (
+              <p className="text-xs text-yellow-600 mt-1.5 flex items-center gap-1">
+                <AlertCircle size={12} /> Minimo 3 caratteri (minuscole, numeri, trattini)
+              </p>
+            )}
+            <p className="text-xs text-night/40 mt-1.5">
+              ⚠️ Se cambi URL, i vecchi link non funzioneranno più
+            </p>
+          </div>
+        </Section>
+
+        {/* SEZIONE: IMMAGINI */}
+        <Section
+          icon={ImageIcon}
+          title="Immagini"
+          subtitle="Logo e copertina della tua web app"
+        >
           <div className="grid md:grid-cols-2 gap-6">
             <UploadImage
               tenantId={tenant.id}
@@ -169,164 +390,251 @@ export default function ImpostazioniPage() {
               label="Logo attività"
               hint="Quadrato, JPG/PNG · Max 5MB"
               aspect="square"
-              brandColor={form.brand_color}
+              brandColor={brandColor}
             />
-
             <UploadImage
               tenantId={tenant.id}
               folder="cover"
               currentUrl={form.cover_image_url || null}
               onUpload={(url) => setForm({ ...form, cover_image_url: url })}
-              label="Immagine di copertina"
+              label="Copertina"
               hint="Orizzontale, JPG/PNG · Max 5MB"
               aspect="wide"
-              brandColor={form.brand_color}
+              brandColor={brandColor}
             />
           </div>
-        </div>
+        </Section>
 
-        {/* INFO ATTIVITÀ */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-night mb-5">Informazioni attività</h2>
-          <div className="space-y-4">
+        {/* SEZIONE: CONTATTI */}
+        <Section
+          icon={Phone}
+          title="Contatti"
+          subtitle="Come i clienti ti trovano e ti contattano"
+        >
+          <div className="grid md:grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-sm font-semibold text-night mb-2 block">Nome attività</span>
+              <span className="text-sm font-semibold text-night mb-2 flex items-center gap-2">
+                <MapPin size={14} /> Indirizzo
+              </span>
               <input
                 type="text"
-                value={form.business_name}
-                onChange={(e) => setForm({ ...form, business_name: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="Via Roma 10, Milano"
+                className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3.5 text-[15px] focus:bg-white focus:border-night/20 focus:outline-none transition"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-semibold text-night mb-2 block">Descrizione</span>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={3}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none resize-none"
-              />
-            </label>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <label className="block">
-                <span className="text-sm font-semibold text-night mb-2 flex items-center gap-2">
-                  <MapPin size={14} /> Indirizzo
-                </span>
-                <input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none"
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm font-semibold text-night mb-2 flex items-center gap-2">
-                  <Phone size={14} /> Telefono
-                </span>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none"
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="text-sm font-semibold text-night mb-2 block">
-                Numero WhatsApp
+              <span className="text-sm font-semibold text-night mb-2 flex items-center gap-2">
+                <Phone size={14} /> Telefono
               </span>
               <input
                 type="tel"
-                value={form.whatsapp_number}
-                onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="+39 02 1234567"
+                className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3.5 text-[15px] focus:bg-white focus:border-night/20 focus:outline-none transition"
               />
             </label>
           </div>
-        </div>
 
-        {/* COLORE */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-night mb-5">Colore principale</h2>
+          <label className="block mt-4">
+            <span className="text-sm font-semibold text-night mb-2 flex items-center gap-2">
+              <MessageCircle size={14} /> Numero WhatsApp *
+            </span>
+            <input
+              type="tel"
+              value={form.whatsapp_number}
+              onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })}
+              placeholder="+39 333 1234567"
+              required
+              className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3.5 text-[15px] focus:bg-white focus:border-night/20 focus:outline-none transition"
+            />
+            <p className="text-xs text-night/40 mt-1.5">
+              Gli ordini e le prenotazioni arriveranno qui. Includi il prefisso +39.
+            </p>
+          </label>
+        </Section>
+
+        {/* SEZIONE: BRAND */}
+        <Section
+          icon={Palette}
+          title="Colore principale"
+          subtitle="Il colore della tua web app"
+        >
           <div className="flex items-center gap-3 mb-4">
             <input
               type="color"
               value={form.brand_color}
               onChange={(e) => setForm({ ...form, brand_color: e.target.value })}
-              className="w-14 h-14 rounded-xl border border-gray-200 cursor-pointer"
+              className="w-14 h-14 rounded-2xl border border-night/10 cursor-pointer bg-transparent"
             />
             <input
               type="text"
               value={form.brand_color}
               onChange={(e) => setForm({ ...form, brand_color: e.target.value })}
-              className="flex-1 border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none font-mono text-sm"
+              className="flex-1 bg-cream border border-transparent rounded-2xl px-4 py-3.5 text-sm font-mono focus:bg-white focus:border-night/20 focus:outline-none transition"
             />
           </div>
+
+          <p className="text-xs font-semibold text-night/50 uppercase tracking-wider mb-2">
+            Colori consigliati
+          </p>
           <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
             {PRESET_COLORS.map((c) => (
               <button
                 key={c.value}
                 type="button"
                 onClick={() => setForm({ ...form, brand_color: c.value })}
-                className={`aspect-square rounded-xl border-2 transition ${
-                  form.brand_color === c.value ? "border-night scale-110" : "border-transparent"
+                className={`aspect-square rounded-2xl border-2 transition ${
+                  form.brand_color === c.value
+                    ? "border-night scale-110 shadow-lg"
+                    : "border-transparent"
                 }`}
                 style={{ backgroundColor: c.value }}
                 title={c.name}
               />
             ))}
           </div>
-        </div>
+        </Section>
 
-        {/* ORARI */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-night mb-5 flex items-center gap-2">
-            <Clock size={20} /> Orari di apertura
-          </h2>
-          <div className="space-y-2">
-            {DAYS.map((d) => (
-              <div key={d.key} className="flex items-center gap-3">
-                <span className="w-24 text-sm font-semibold text-night shrink-0">{d.label}</span>
-                <input
-                  type="text"
-                  value={form.opening_hours[d.key] || ""}
-                  onChange={(e) => setForm({
-                    ...form,
-                    opening_hours: { ...form.opening_hours, [d.key]: e.target.value },
-                  })}
-                  placeholder="09:00-19:00 oppure chiuso"
-                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2 focus:border-wa focus:outline-none text-sm"
-                />
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-3">
-            Formato: <code className="bg-soft px-1.5 py-0.5 rounded">09:00-19:00</code> oppure{" "}
-            <code className="bg-soft px-1.5 py-0.5 rounded">chiuso</code>
-          </p>
-        </div>
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full bg-wa hover:bg-waDark disabled:bg-gray-300 text-white py-4 rounded-full font-bold transition inline-flex items-center justify-center gap-2 active:scale-[0.98] sticky bottom-4 shadow-lg shadow-wa/30"
+        {/* SEZIONE: ORARI */}
+        <Section
+          icon={Clock}
+          title="Orari di apertura"
+          subtitle="Quando sei aperto"
         >
-          {saving ? (
-            <>
-              <Loader2 className="animate-spin" size={18} />
-              Salvataggio...
-            </>
-          ) : (
-            <>
-              <Save size={18} />
-              Salva modifiche
-            </>
-          )}
-        </button>
+          <div className="space-y-2">
+            {DAYS.map((d) => {
+              const isClosed = form.opening_hours[d.key] === "chiuso";
+              return (
+                <div
+                  key={d.key}
+                  className="flex items-center gap-3 bg-cream rounded-2xl px-4 py-2.5"
+                >
+                  <span className="w-20 text-sm font-semibold text-night shrink-0">
+                    {d.label}
+                  </span>
+                  <input
+                    type="text"
+                    value={form.opening_hours[d.key] || ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        opening_hours: {
+                          ...form.opening_hours,
+                          [d.key]: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="09:00-19:00 oppure chiuso"
+                    disabled={isClosed}
+                    className={`flex-1 bg-white border border-transparent rounded-xl px-3 py-2 text-sm focus:border-night/20 focus:outline-none transition ${
+                      isClosed ? "text-night/30 line-through" : ""
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm({
+                        ...form,
+                        opening_hours: {
+                          ...form.opening_hours,
+                          [d.key]: isClosed ? "09:00-19:00" : "chiuso",
+                        },
+                      })
+                    }
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0 transition ${
+                      isClosed
+                        ? "bg-red-50 text-red-500 hover:bg-red-100"
+                        : "bg-white text-night/60 hover:bg-night/5"
+                    }`}
+                  >
+                    {isClosed ? "Chiuso" : "Aperto"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-night/40 mt-3">
+            Formato: <code className="bg-cream px-1.5 py-0.5 rounded">09:00-19:00</code> per più fasce:{" "}
+            <code className="bg-cream px-1.5 py-0.5 rounded">12:00-15:00,19:00-23:00</code>
+          </p>
+        </Section>
+
+        {/* SEZIONE: GOOGLE CALENDAR (solo beauty) */}
+        {!(
+          tenant.product_type === "food" ||
+          tenant.business_type === "restaurant"
+        ) && (
+          <Section
+            icon={Globe}
+            title="Google Calendar"
+            subtitle="Sincronizza gli appuntamenti con il tuo calendario"
+          >
+            <GoogleCalendarConnect />
+          </Section>
+        )}
       </form>
+
+      {/* BARRA SALVA STICKY */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-night/5 p-4 lg:pl-72 z-30">
+        <div className="max-w-3xl mx-auto">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full bg-night hover:bg-night/90 disabled:bg-gray-300 text-white py-4 rounded-2xl font-bold transition inline-flex items-center justify-center gap-2 active:scale-[0.98] shadow-lg"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                Salvataggio...
+              </>
+            ) : (
+              <>
+                <Save size={18} />
+                Salva modifiche
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function Section({
+  icon: Icon,
+  title,
+  subtitle,
+  children,
+}: {
+  icon: any;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-3xl p-6 md:p-7 border border-night/5"
+    >
+      <div className="flex items-start gap-3 mb-5">
+        <div className="w-11 h-11 rounded-2xl bg-cream flex items-center justify-center shrink-0">
+          <Icon size={20} className="text-waDark" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-base md:text-lg font-bold text-night leading-tight">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-xs md:text-sm text-night/50 mt-0.5">{subtitle}</p>
+          )}
+        </div>
+      </div>
+      {children}
+    </motion.div>
   );
 }
