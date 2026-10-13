@@ -8,7 +8,7 @@ import OnboardingGuide from "@/components/OnboardingGuide";
 import {
   LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarDays,
   CreditCard, QrCode, Settings, LogOut, Menu, X, Loader2,
-  ExternalLink, Users, ChevronRight, Sparkles, Bell
+  ExternalLink, Users, ChevronRight, Sparkles, Bell, Download
 } from "lucide-react";
 
 type Tenant = {
@@ -37,6 +37,8 @@ export default function DashboardLayout({
   const [user, setUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -63,6 +65,25 @@ export default function DashboardLayout({
     }
     load();
   }, []);
+
+  useEffect(() => {
+    if (window.matchMedia("(display-mode: standalone)").matches) return;
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+      setShowInstallBtn(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    setDeferredInstallPrompt(null);
+    setShowInstallBtn(false);
+  };
 
   useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
 

@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import SplashScreen from "@/components/SplashScreen";
+import { ToastContainer, useToast } from "@/components/Toast";
 import {
   ChevronRight, Clock, CheckCircle2,
   Scissors, ArrowLeft, Sparkles, MapPin, Phone,
@@ -65,6 +67,7 @@ export default function BookingClient({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
+  const toast = useToast();
 
   const servicesByCategory = useMemo(() => {
     const grouped: Record<string, Service[]> = {};
@@ -165,17 +168,22 @@ export default function BookingClient({
     lines.push(`💇 *Nuova prenotazione - ${tenantName}*`);
     lines.push("");
     lines.push(`🔖 Codice: *${lastBookingSnapshot.code}*`);
-    lines.push(`✂️ Servizio: ${lastBookingSnapshot.serviceName}`);
+    lines.push("");
+    lines.push("━━━ *SERVIZIO* ━━━");
+    lines.push(`✂️ ${lastBookingSnapshot.serviceName}`);
     if (lastBookingSnapshot.duration) lines.push(`⏱️ Durata: ${lastBookingSnapshot.duration} min`);
-    if (lastBookingSnapshot.date) {
-      const d = lastBookingSnapshot.date;
-      lines.push(`📅 Data: ${DAY_LABELS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`);
-    }
-    if (lastBookingSnapshot.time) lines.push(`⏰ Orario: ${lastBookingSnapshot.time}`);
     lines.push(`💶 Prezzo: €${lastBookingSnapshot.price.toFixed(2)}`);
     lines.push("");
-    lines.push(`👤 Nome: ${lastBookingSnapshot.customerName}`);
-    lines.push(`📞 Telefono: ${lastBookingSnapshot.customerPhone}`);
+    lines.push("━━━ *APPUNTAMENTO* ━━━");
+    if (lastBookingSnapshot.date) {
+      const d = lastBookingSnapshot.date;
+      lines.push(`📅 ${DAY_LABELS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`);
+    }
+    if (lastBookingSnapshot.time) lines.push(`⏰ Ore ${lastBookingSnapshot.time}`);
+    lines.push("");
+    lines.push("━━━ *CLIENTE* ━━━");
+    lines.push(`👤 ${lastBookingSnapshot.customerName}`);
+    lines.push(`📞 ${lastBookingSnapshot.customerPhone}`);
     if (lastBookingSnapshot.notes) lines.push(`📝 Note: ${lastBookingSnapshot.notes}`);
 
     const phone = whatsappNumber.replace(/\s|\+|-/g, "");
@@ -259,6 +267,13 @@ export default function BookingClient({
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] pb-24">
+      <SplashScreen
+        tenantName={tenantName}
+        logoUrl={logoUrl}
+        brandColor={brandColor}
+        isFood={false}
+      />
+
       {/* HERO */}
       <div className="relative h-52 md:h-64 overflow-hidden">
         {coverImageUrl ? (
@@ -966,6 +981,7 @@ export default function BookingClient({
           </div>
         )}
       </AnimatePresence>
+      <ToastContainer toasts={toast.toasts} onDismiss={toast.dismiss} />
     </div>
   );
 }

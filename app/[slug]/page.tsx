@@ -129,6 +129,18 @@ export default async function TenantPage({ params }: Props) {
     .eq("is_available", true)
     .order("sort_order", { ascending: true });
 
+  // Tavoli (solo se feature attiva)
+  let tables: any[] = [];
+  if (tenant.has_table_booking) {
+    const { data: tablesData } = await supabase
+      .from("tables")
+      .select("*")
+      .eq("tenant_id", tenant.id)
+      .eq("is_active", true)
+      .order("table_number", { ascending: true });
+    tables = tablesData || [];
+  }
+
   const isDemo = slug.startsWith("demo-");
 
   if (tenant.business_type === "restaurant") {
@@ -147,9 +159,10 @@ export default async function TenantPage({ params }: Props) {
           logoUrl={tenant.logo_url}
           coverImageUrl={tenant.cover_image_url}
           slug={slug}
-          tableBookingEnabled={tenant.table_booking_enabled ?? true}
+          tableBookingEnabled={tenant.has_table_booking ?? false}
+          tables={tables}
+          maxPartySize={tenant.max_party_size ?? 10}
           tableSlots={tenant.table_slots}
-          maxPartySize={tenant.max_party_size ?? 8}
         />
         <InstallBanner />
       </>

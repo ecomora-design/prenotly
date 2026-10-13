@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import TableMap from "@/components/TableMap";
+import SplashScreen from "@/components/SplashScreen";
+import { ToastContainer, useToast } from "@/components/Toast";
 import {
   Plus, Minus, ShoppingBag, X, Clock,
   Truck, Store, MapPin, Phone, Info, Search,
-  ChevronRight, Utensils, Users, Calendar, CheckCircle2, MessageCircle
+  ChevronRight, Utensils, Users, Calendar, CheckCircle2,
+  MessageCircle, Lock, Sparkles, ArrowRight
 } from "lucide-react";
 
 type Service = {
@@ -15,6 +19,17 @@ type Service = {
   category: string | null;
   price: number;
   image_url?: string | null;
+};
+
+type Table = {
+  id: string;
+  table_number: number;
+  capacity: number;
+  position_x: number;
+  position_y: number;
+  shape: string;
+  is_active: boolean;
+  isBusy?: boolean;
 };
 
 type CartItem = { service: Service; qty: number };
@@ -34,6 +49,7 @@ type Props = {
   tableBookingEnabled?: boolean;
   tableSlots?: string[] | null;
   maxPartySize?: number;
+  tables?: Table[];
 };
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -55,7 +71,8 @@ export default function MenuClient({
   slug,
   tableBookingEnabled = false,
   tableSlots = ["19:30", "20:00", "20:30", "21:00", "21:30"],
-  maxPartySize = 8,
+  maxPartySize = 10,
+  tables = [],
 }: Props) {
   const [tab, setTab] = useState<"menu" | "info">("menu");
   const [selectedCategory, setSelectedCategory] = useState<string>("tutto");
@@ -64,6 +81,8 @@ export default function MenuClient({
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [tableBookingOpen, setTableBookingOpen] = useState(false);
+  const [showTableUpgrade, setShowTableUpgrade] = useState(false);
+  const toast = useToast();
   const [orderSuccess, setOrderSuccess] = useState<{ code: string; total: number } | null>(null);
   const [lastOrderSnapshot, setLastOrderSnapshot] = useState<any>(null);
 
@@ -75,13 +94,16 @@ export default function MenuClient({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Table booking
   const [tableCustomerName, setTableCustomerName] = useState("");
   const [tableCustomerPhone, setTableCustomerPhone] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [partySize, setPartySize] = useState<number>(2);
   const [tableNotes, setTableNotes] = useState("");
-  const [tableSuccess, setTableSuccess] = useState<{ code: string } | null>(null);
+  const [tableSuccess, setTableSuccess] = useState<{ code: string; waUrl: string } | null>(null);
+  const [busyTables, setBusyTables] = useState<string[]>([]);
 
   const slots = tableSlots || ["19:30", "20:00", "20:30", "21:00", "21:30"];
 
@@ -137,23 +159,52 @@ export default function MenuClient({
   }, [openingHours]);
 
   const timeSlots = useMemo(() => {
-    const slots2: string[] = [];
+    const list: string[] = [];
     const now = new Date();
     const start = new Date(now.getTime() + 30 * 60000);
     start.setMinutes(start.getMinutes() < 30 ? 30 : 0);
     if (start.getMinutes() === 0) start.setHours(start.getHours() + 1);
     for (let i = 0; i < 8; i++) {
       const t = new Date(start.getTime() + i * 30 * 60000);
-      slots2.push(t.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }));
+      list.push(t.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }));
     }
-    return slots2;
+    return list;
   }, []);
+
+  // Carica tavoli occupati quando cambia data/ora
+  useEffect(() => {
+    if (!selectedDate || !selectedSlot) {
+      setBusyTables([]);
+      return;
+    }
+
+    async function loadBusy() {
+      try {
+        const [h, m] = selectedSlot!.split(":").map(Number);
+        const dt = new Date(selectedDate!);
+        dt.setHours(h, m, 0, 0);
+        const dateStr = dt.toISOString();
+
+        const res = await fetch(
+          `/api/tables/busy?slug=${slug}&datetime=${encodeURIComponent(dateStr)}`
+        );
+        const data = await res.json();
+        setBusyTables(data.busyTableIds || []);
+      } catch (err) {
+        console.error(err);
+        setBusyTables([]);
+      }
+    }
+    loadBusy();
+  }, [selectedDate, selectedSlot, slug]);
 
   const addToCart = (service: Service) => {
     setCart((prev) => {
       const existing = prev[service.id];
       return { ...prev, [service.id]: { service, qty: existing ? existing.qty + 1 : 1 } };
     });
+    // Haptic feedback
+    if ("vibrate" in navigator) navigator.vibrate(10);
   };
 
   const removeFromCart = (serviceId: string) => {
@@ -208,12 +259,10 @@ export default function MenuClient({
         return;
       }
 
-      setOrderSuccess({
-        code: data.order?.order_code || "ORDINE",
-        total: cartTotal,
-      });
+      const code = data.order?.order_code || "ORDINE";
+
       setLastOrderSnapshot({
-        code: data.order?.order_code || "ORDINE",
+        code,
         total: cartTotal,
         customerName,
         orderType,
@@ -226,6 +275,8 @@ export default function MenuClient({
           price: Number(i.service.price),
         })),
       });
+
+      setOrderSuccess({ code, total: cartTotal });
       setCheckoutOpen(false);
       setCart({});
       setSubmitting(false);
@@ -242,18 +293,19 @@ export default function MenuClient({
     lines.push(`🍕 *Nuovo ordine - ${tenantName}*`);
     lines.push("");
     lines.push(`🔖 Codice: *${lastOrderSnapshot.code}*`);
-    lines.push(`📦 Tipo: ${lastOrderSnapshot.orderType === "delivery" ? "Domicilio" : "Asporto"}`);
+    lines.push(`📦 Tipo: ${lastOrderSnapshot.orderType === "delivery" ? "🚗 Domicilio" : "🥡 Asporto"}`);
     if (lastOrderSnapshot.pickupTime) lines.push(`⏰ Orario: ${lastOrderSnapshot.pickupTime}`);
     if (lastOrderSnapshot.address) lines.push(`📍 Indirizzo: ${lastOrderSnapshot.address}`);
     lines.push("");
-    lines.push("*Ordine:*");
+    lines.push("━━━ *ORDINE* ━━━");
     lastOrderSnapshot.items.forEach((item: any) => {
       lines.push(`• ${item.qty}x ${item.name} — €${(item.qty * item.price).toFixed(2)}`);
     });
     lines.push("");
     lines.push(`💰 *Totale: €${lastOrderSnapshot.total.toFixed(2)}*`);
     lines.push("");
-    lines.push(`👤 Nome: ${lastOrderSnapshot.customerName}`);
+    lines.push("━━━ *CLIENTE* ━━━");
+    lines.push(`👤 ${lastOrderSnapshot.customerName}`);
     if (lastOrderSnapshot.notes) lines.push(`📝 Note: ${lastOrderSnapshot.notes}`);
 
     const phone = whatsappNumber.replace(/\s|\+|-/g, "");
@@ -261,7 +313,7 @@ export default function MenuClient({
   };
 
   const sendTableBooking = async () => {
-    if (!selectedDate || !selectedSlot) return;
+    if (!selectedDate || !selectedSlot || !selectedTable) return;
 
     setSubmitting(true);
     setSubmitError(null);
@@ -279,6 +331,7 @@ export default function MenuClient({
           customerName: tableCustomerName,
           customerPhone: tableCustomerPhone,
           bookingType: "table",
+          tableId: selectedTable.id,
           scheduledAt: dt.toISOString(),
           partySize,
           notes: tableNotes,
@@ -293,12 +346,31 @@ export default function MenuClient({
         return;
       }
 
-      setTableSuccess({
-        code: data.booking?.booking_code || "PRENOTAZIONE",
-      });
+      const code = data.booking?.booking_code || "PRENOTAZIONE";
+
+      const lines: string[] = [];
+      lines.push(`🍽️ *Nuova prenotazione tavolo*`);
+      lines.push(`_${tenantName}_`);
+      lines.push("");
+      lines.push(`🔖 Codice: *${code}*`);
+      lines.push(`🪑 Tavolo: *${selectedTable.table_number}*`);
+      lines.push(`📅 ${DAY_LABELS[selectedDate.getDay()]} ${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()]}`);
+      lines.push(`⏰ Ore ${selectedSlot}`);
+      lines.push(`👥 Persone: ${partySize}`);
+      lines.push("");
+      lines.push("━━━ *CLIENTE* ━━━");
+      lines.push(`👤 ${tableCustomerName}`);
+      lines.push(`📞 ${tableCustomerPhone}`);
+      if (tableNotes) lines.push(`📝 Note: ${tableNotes}`);
+
+      const phone = whatsappNumber.replace(/\s|\+|-/g, "");
+      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
+
+      setTableSuccess({ code, waUrl });
       setTableBookingOpen(false);
       setSelectedDate(null);
       setSelectedSlot(null);
+      setSelectedTable(null);
       setTableCustomerName("");
       setTableCustomerPhone("");
       setPartySize(2);
@@ -311,8 +383,23 @@ export default function MenuClient({
     }
   };
 
+  // Computed tables with busy status
+  const tablesWithStatus = useMemo(() => {
+    return tables.map((t) => ({
+      ...t,
+      isBusy: busyTables.includes(t.id),
+    }));
+  }, [tables, busyTables]);
+
   return (
-    <div className="min-h-screen bg-[#F5F5F7] pb-24">
+    <div className="min-h-screen bg-[#F5F5F7] pb-32">
+      <SplashScreen
+        tenantName={tenantName}
+        logoUrl={logoUrl}
+        brandColor={brandColor}
+        isFood={true}
+      />
+
       {/* HERO */}
       <div className="relative h-52 md:h-64 overflow-hidden">
         {coverImageUrl ? (
@@ -330,64 +417,59 @@ export default function MenuClient({
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-        {/* Status badge */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
           <div className="bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-white text-[11px] font-semibold">Aperto ora</span>
           </div>
+
           {tableBookingEnabled && (
             <button
               onClick={() => setTableBookingOpen(true)}
-              className="bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-1.5 active:scale-95 transition shadow-lg"
+              className="bg-white/95 backdrop-blur-md rounded-full px-3.5 py-2 flex items-center gap-1.5 active:scale-95 transition shadow-lg"
             >
               <Calendar size={12} className="text-night" />
-              <span className="text-night text-[11px] font-bold">Prenota</span>
+              <span className="text-night text-[11px] font-bold">Prenota tavolo</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* CARD ATTIVITÀ - LOGO CENTRATO */}
+      {/* CARD ATTIVITÀ */}
       <div className="max-w-3xl mx-auto px-4 -mt-16 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative"
+          className="bg-white rounded-3xl shadow-xl overflow-hidden"
         >
-          {/* Logo fluttuante sopra la card */}
-          <div className="absolute left-1/2 -translate-x-1/2 -top-10 z-20">
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={tenantName}
-                className="w-20 h-20 rounded-2xl object-cover ring-4 ring-white shadow-2xl"
-              />
-            ) : (
-              <div
-                className="w-20 h-20 rounded-2xl flex items-center justify-center text-white font-bold text-3xl ring-4 ring-white shadow-2xl"
-                style={{ backgroundColor: brandColor }}
-              >
-                {tenantName.charAt(0)}
-              </div>
+          <div className="flex flex-col items-center pt-6 pb-4">
+            <div className="mb-3">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={tenantName}
+                  className="w-20 h-20 rounded-2xl object-cover ring-4 ring-white shadow-2xl"
+                />
+              ) : (
+                <div
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center text-white font-bold text-3xl ring-4 ring-white shadow-2xl"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  {tenantName.charAt(0)}
+                </div>
+              )}
+            </div>
+            <h1 className="text-lg font-bold text-night text-center px-4 leading-tight">
+              {tenantName}
+            </h1>
+            {tenantAddress && (
+              <p className="text-xs text-gray-500 mt-1 text-center px-4 flex items-center justify-center gap-1">
+                <MapPin size={11} /> {tenantAddress}
+              </p>
             )}
           </div>
 
-          {/* Card */}
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden pt-12">
-            <div className="flex flex-col items-center pb-4 px-5">
-              <h1 className="text-lg font-bold text-night text-center leading-tight">
-                {tenantName}
-              </h1>
-              {tenantAddress && (
-                <p className="text-xs text-gray-500 mt-1 text-center flex items-center justify-center gap-1">
-                  <MapPin size={11} /> {tenantAddress}
-                </p>
-              )}
-            </div>
-
-          {/* Quick actions */}
           <div className="grid grid-cols-2 border-t border-gray-100">
             {tenantPhone && (
               <a
@@ -408,7 +490,6 @@ export default function MenuClient({
               WhatsApp
             </a>
           </div>
-          </div>
         </motion.div>
       </div>
 
@@ -417,9 +498,7 @@ export default function MenuClient({
         <div className="bg-white rounded-2xl p-1.5 shadow-sm flex gap-1">
           <button
             onClick={() => setTab("menu")}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${
-              tab === "menu" ? "text-white shadow-sm" : "text-gray-500"
-            }`}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${tab === "menu" ? "text-white shadow-sm" : "text-gray-500"}`}
             style={tab === "menu" ? { backgroundColor: brandColor } : undefined}
           >
             <Utensils size={15} />
@@ -427,9 +506,7 @@ export default function MenuClient({
           </button>
           <button
             onClick={() => setTab("info")}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${
-              tab === "info" ? "text-white shadow-sm" : "text-gray-500"
-            }`}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${tab === "info" ? "text-white shadow-sm" : "text-gray-500"}`}
             style={tab === "info" ? { backgroundColor: brandColor } : undefined}
           >
             <Info size={15} />
@@ -438,6 +515,7 @@ export default function MenuClient({
         </div>
       </div>
 
+      {/* CONTENUTO */}
       <div className="max-w-3xl mx-auto">
         {tab === "menu" && (
           <>
@@ -460,16 +538,8 @@ export default function MenuClient({
                 <div className="scroll-x flex gap-2 px-4 pb-1">
                   <button
                     onClick={() => setSelectedCategory("tutto")}
-                    className={`px-4 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition shrink-0 ${
-                      selectedCategory === "tutto"
-                        ? "text-white shadow-md"
-                        : "bg-white text-gray-700 shadow-sm"
-                    }`}
-                    style={
-                      selectedCategory === "tutto"
-                        ? { backgroundColor: brandColor, boxShadow: `0 4px 12px ${brandColor}40` }
-                        : undefined
-                    }
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition shrink-0 ${selectedCategory === "tutto" ? "text-white shadow-md" : "bg-white text-gray-700 shadow-sm"}`}
+                    style={selectedCategory === "tutto" ? { backgroundColor: brandColor, boxShadow: `0 4px 12px ${brandColor}40` } : undefined}
                   >
                     Tutto
                   </button>
@@ -477,16 +547,8 @@ export default function MenuClient({
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-4 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition shrink-0 ${
-                        selectedCategory === cat
-                          ? "text-white shadow-md"
-                          : "bg-white text-gray-700 shadow-sm"
-                      }`}
-                      style={
-                        selectedCategory === cat
-                          ? { backgroundColor: brandColor, boxShadow: `0 4px 12px ${brandColor}40` }
-                          : undefined
-                      }
+                      className={`px-4 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition shrink-0 ${selectedCategory === cat ? "text-white shadow-md" : "bg-white text-gray-700 shadow-sm"}`}
+                      style={selectedCategory === cat ? { backgroundColor: brandColor, boxShadow: `0 4px 12px ${brandColor}40` } : undefined}
                     >
                       {cat}
                     </button>
@@ -529,27 +591,17 @@ export default function MenuClient({
                             className="bg-white rounded-2xl p-3 flex gap-3 shadow-sm hover:shadow-md transition-shadow"
                           >
                             {item.image_url && (
-                              <img
-                                src={item.image_url}
-                                alt={item.name}
-                                className="w-20 h-20 rounded-xl object-cover shrink-0"
-                              />
+                              <img src={item.image_url} alt={item.name} className="w-20 h-20 rounded-xl object-cover shrink-0" />
                             )}
                             <div className="flex-1 min-w-0 flex flex-col justify-between">
                               <div>
-                                <h4 className="font-bold text-night text-[15px] leading-snug">
-                                  {item.name}
-                                </h4>
+                                <h4 className="font-bold text-night text-[15px] leading-snug">{item.name}</h4>
                                 {item.description && (
-                                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
-                                    {item.description}
-                                  </p>
+                                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{item.description}</p>
                                 )}
                               </div>
                               <div className="flex items-center justify-between mt-2">
-                                <p className="font-bold text-night text-base">
-                                  €{Number(item.price).toFixed(2)}
-                                </p>
+                                <p className="font-bold text-night text-base">€{Number(item.price).toFixed(2)}</p>
                                 {qty === 0 ? (
                                   <motion.button
                                     whileTap={{ scale: 0.9 }}
@@ -570,9 +622,7 @@ export default function MenuClient({
                                     >
                                       <Minus size={14} />
                                     </button>
-                                    <span className="font-bold text-night w-6 text-center text-sm">
-                                      {qty}
-                                    </span>
+                                    <span className="font-bold text-night w-6 text-center text-sm">{qty}</span>
                                     <motion.button
                                       whileTap={{ scale: 0.9 }}
                                       onClick={() => addToCart(item)}
@@ -620,16 +670,10 @@ export default function MenuClient({
                     return (
                       <div
                         key={day}
-                        className={`flex justify-between items-center text-sm py-1.5 px-2 rounded-lg ${
-                          isToday ? "bg-soft font-bold" : ""
-                        }`}
+                        className={`flex justify-between items-center text-sm py-1.5 px-2 rounded-lg ${isToday ? "bg-soft font-bold" : ""}`}
                       >
-                        <span className={`text-xs uppercase font-semibold ${isToday ? "text-night" : "text-gray-500"}`}>
-                          {day}
-                        </span>
-                        <span className={`text-xs font-semibold ${hours === "chiuso" ? "text-red-400" : "text-gray-700"}`}>
-                          {hours}
-                        </span>
+                        <span className={`text-xs uppercase font-semibold ${isToday ? "text-night" : "text-gray-500"}`}>{day}</span>
+                        <span className={`text-xs font-semibold ${hours === "chiuso" ? "text-red-400" : "text-gray-700"}`}>{hours}</span>
                       </div>
                     );
                   })}
@@ -647,10 +691,7 @@ export default function MenuClient({
                     rel="noopener noreferrer"
                     className="flex items-start gap-3 mb-3 active:bg-soft rounded-lg p-2 -m-2 transition"
                   >
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${brandColor}15` }}
-                    >
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${brandColor}15` }}>
                       <MapPin size={16} style={{ color: brandColor }} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -660,14 +701,8 @@ export default function MenuClient({
                   </a>
                 )}
                 {tenantPhone && (
-                  <a
-                    href={`tel:${tenantPhone}`}
-                    className="flex items-start gap-3 active:bg-soft rounded-lg p-2 -m-2 transition"
-                  >
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${brandColor}15` }}
-                    >
+                  <a href={`tel:${tenantPhone}`} className="flex items-start gap-3 active:bg-soft rounded-lg p-2 -m-2 transition">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${brandColor}15` }}>
                       <Phone size={16} style={{ color: brandColor }} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -682,7 +717,7 @@ export default function MenuClient({
         )}
       </div>
 
-      {/* FLOATING CART BAR */}
+      {/* CART FLOATING */}
       <AnimatePresence>
         {cartCount > 0 && !cartOpen && !checkoutOpen && !orderSuccess && (
           <motion.button
@@ -695,9 +730,7 @@ export default function MenuClient({
             style={{ backgroundColor: brandColor, boxShadow: `0 12px 32px ${brandColor}50` }}
           >
             <span className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center text-sm font-bold">
-                {cartCount}
-              </div>
+              <div className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center text-sm font-bold">{cartCount}</div>
               <span className="text-sm">Vedi il tuo ordine</span>
             </span>
             <span className="text-lg">€{cartTotal.toFixed(2)}</span>
@@ -710,9 +743,7 @@ export default function MenuClient({
         {cartOpen && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setCartOpen(false)}>
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="absolute bottom-0 left-0 right-0 bg-[#F5F5F7] rounded-t-3xl max-h-[90vh] overflow-y-auto max-w-3xl mx-auto"
               onClick={(e) => e.stopPropagation()}
@@ -721,10 +752,7 @@ export default function MenuClient({
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4" />
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-bold text-night">Il tuo ordine</h3>
-                  <button
-                    onClick={() => setCartOpen(false)}
-                    className="text-gray-500 p-2 hover:bg-white rounded-full transition"
-                  >
+                  <button onClick={() => setCartOpen(false)} className="text-gray-500 p-2 hover:bg-white rounded-full transition">
                     <X size={20} />
                   </button>
                 </div>
@@ -733,27 +761,13 @@ export default function MenuClient({
               <div className="p-5">
                 <div className="space-y-3 mb-6">
                   {cartItems.map((item) => (
-                    <motion.div
-                      layout
-                      key={item.service.id}
-                      className="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm"
-                    >
-                      <div
-                        className="flex items-center gap-1 rounded-full p-0.5 shrink-0"
-                        style={{ backgroundColor: `${brandColor}15` }}
-                      >
-                        <button
-                          onClick={() => removeFromCart(item.service.id)}
-                          className="w-7 h-7 rounded-full bg-white flex items-center justify-center active:scale-90 transition shadow-sm"
-                        >
+                    <div key={item.service.id} className="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm">
+                      <div className="flex items-center gap-1 rounded-full p-0.5 shrink-0" style={{ backgroundColor: `${brandColor}15` }}>
+                        <button onClick={() => removeFromCart(item.service.id)} className="w-7 h-7 rounded-full bg-white flex items-center justify-center active:scale-90 transition shadow-sm">
                           <Minus size={14} />
                         </button>
                         <span className="font-bold text-sm w-5 text-center">{item.qty}</span>
-                        <button
-                          onClick={() => addToCart(item.service)}
-                          className="w-7 h-7 rounded-full flex items-center justify-center text-white active:scale-90 transition"
-                          style={{ backgroundColor: brandColor }}
-                        >
+                        <button onClick={() => addToCart(item.service)} className="w-7 h-7 rounded-full flex items-center justify-center text-white active:scale-90 transition" style={{ backgroundColor: brandColor }}>
                           <Plus size={14} />
                         </button>
                       </div>
@@ -761,10 +775,8 @@ export default function MenuClient({
                         <p className="text-sm font-semibold text-night truncate">{item.service.name}</p>
                         <p className="text-xs text-gray-500">€{Number(item.service.price).toFixed(2)}</p>
                       </div>
-                      <span className="font-bold text-sm text-night shrink-0">
-                        €{(item.qty * Number(item.service.price)).toFixed(2)}
-                      </span>
-                    </motion.div>
+                      <span className="font-bold text-sm text-night shrink-0">€{(item.qty * Number(item.service.price)).toFixed(2)}</span>
+                    </div>
                   ))}
                 </div>
 
@@ -776,15 +788,11 @@ export default function MenuClient({
                 </div>
 
                 <button
-                  onClick={() => {
-                    setCartOpen(false);
-                    setCheckoutOpen(true);
-                  }}
+                  onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}
                   className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-[0.98] flex items-center justify-center gap-2"
                   style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                 >
-                  Procedi all&apos;ordine
-                  <ChevronRight size={20} />
+                  Procedi all&apos;ordine <ChevronRight size={20} />
                 </button>
               </div>
             </motion.div>
@@ -792,14 +800,12 @@ export default function MenuClient({
         )}
       </AnimatePresence>
 
-      {/* CHECKOUT ORDER */}
+      {/* CHECKOUT */}
       <AnimatePresence>
         {checkoutOpen && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
             <motion.div
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
+              initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="bg-[#F5F5F7] rounded-t-3xl md:rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto"
             >
@@ -807,10 +813,7 @@ export default function MenuClient({
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4 md:hidden" />
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-bold text-night">Completa l&apos;ordine</h3>
-                  <button
-                    onClick={() => setCheckoutOpen(false)}
-                    className="text-gray-500 p-2 hover:bg-white rounded-full transition"
-                  >
+                  <button onClick={() => setCheckoutOpen(false)} className="text-gray-500 p-2 hover:bg-white rounded-full transition">
                     <X size={20} />
                   </button>
                 </div>
@@ -819,43 +822,19 @@ export default function MenuClient({
               <div className="p-5 space-y-5">
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <label className="block">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                      Il tuo nome
-                    </span>
-                    <input
-                      type="text"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="Mario Rossi"
-                      className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0"
-                    />
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Il tuo nome</span>
+                    <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Mario Rossi" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
                   </label>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">
-                    Come lo vuoi?
-                  </span>
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Come lo vuoi?</span>
                   <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => setOrderType("takeaway")}
-                      className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${
-                        orderType === "takeaway" ? "text-white" : "bg-soft text-gray-600"
-                      }`}
-                      style={orderType === "takeaway" ? { backgroundColor: brandColor } : undefined}
-                    >
-                      <Store size={16} />
-                      Asporto
+                    <button onClick={() => setOrderType("takeaway")} className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${orderType === "takeaway" ? "text-white" : "bg-soft text-gray-600"}`} style={orderType === "takeaway" ? { backgroundColor: brandColor } : undefined}>
+                      <Store size={16} /> Asporto
                     </button>
-                    <button
-                      onClick={() => setOrderType("delivery")}
-                      className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${
-                        orderType === "delivery" ? "text-white" : "bg-soft text-gray-600"
-                      }`}
-                      style={orderType === "delivery" ? { backgroundColor: brandColor } : undefined}
-                    >
-                      <Truck size={16} />
-                      Domicilio
+                    <button onClick={() => setOrderType("delivery")} className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${orderType === "delivery" ? "text-white" : "bg-soft text-gray-600"}`} style={orderType === "delivery" ? { backgroundColor: brandColor } : undefined}>
+                      <Truck size={16} /> Domicilio
                     </button>
                   </div>
                 </div>
@@ -863,35 +842,19 @@ export default function MenuClient({
                 {orderType === "delivery" && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <label className="block">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                        Indirizzo di consegna
-                      </span>
-                      <input
-                        type="text"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Via Roma 10, Bologna"
-                        className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0"
-                      />
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Indirizzo di consegna</span>
+                      <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Via Roma 10, Bologna" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
                     </label>
                   </div>
                 )}
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <Clock size={12} />
-                    Orario
+                    <Clock size={12} /> Orario
                   </span>
                   <div className="grid grid-cols-4 gap-2">
                     {timeSlots.map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => setPickupTime(t)}
-                        className={`py-2.5 rounded-xl text-sm font-bold transition ${
-                          pickupTime === t ? "text-white" : "bg-soft text-night"
-                        }`}
-                        style={pickupTime === t ? { backgroundColor: brandColor } : undefined}
-                      >
+                      <button key={t} onClick={() => setPickupTime(t)} className={`py-2.5 rounded-xl text-sm font-bold transition ${pickupTime === t ? "text-white" : "bg-soft text-night"}`} style={pickupTime === t ? { backgroundColor: brandColor } : undefined}>
                         {t}
                       </button>
                     ))}
@@ -900,23 +863,12 @@ export default function MenuClient({
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <label className="block">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                      Note (opzionale)
-                    </span>
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Senza cipolla, ben cotta..."
-                      rows={2}
-                      className="w-full bg-transparent border-0 text-sm text-night placeholder-gray-300 focus:outline-none p-0 resize-none"
-                    />
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Note (opzionale)</span>
+                    <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Senza cipolla, ben cotta..." rows={2} className="w-full bg-transparent border-0 text-sm text-night placeholder-gray-300 focus:outline-none p-0 resize-none" />
                   </label>
                 </div>
 
-                <div
-                  className="rounded-2xl p-5 shadow-sm text-white"
-                  style={{ backgroundColor: brandColor }}
-                >
+                <div className="rounded-2xl p-5 shadow-sm text-white" style={{ backgroundColor: brandColor }}>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold opacity-90">Totale da pagare</span>
                     <span className="font-bold text-2xl">€{cartTotal.toFixed(2)}</span>
@@ -932,38 +884,16 @@ export default function MenuClient({
 
                 <button
                   onClick={sendOrder}
-                  disabled={
-                    !customerName ||
-                    !pickupTime ||
-                    (orderType === "delivery" && !address) ||
-                    submitting
-                  }
+                  disabled={!customerName || !pickupTime || (orderType === "delivery" && !address) || submitting}
                   className="w-full disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
-                  style={
-                    !customerName ||
-                    !pickupTime ||
-                    (orderType === "delivery" && !address) ||
-                    submitting
-                      ? undefined
-                      : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }
-                  }
+                  style={!customerName || !pickupTime || (orderType === "delivery" && !address) || submitting ? undefined : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                 >
                   {submitting ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Invio in corso...
-                    </>
+                    <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />Invio in corso...</>
                   ) : (
-                    <>
-                      <CheckCircle2 size={20} />
-                      Conferma ordine
-                    </>
+                    <><CheckCircle2 size={20} />Conferma ordine</>
                   )}
                 </button>
-
-                <p className="text-xs text-gray-400 text-center">
-                  Riceverai conferma via WhatsApp
-                </p>
               </div>
             </motion.div>
           </div>
@@ -974,74 +904,34 @@ export default function MenuClient({
       <AnimatePresence>
         {orderSuccess && (
           <div className="fixed inset-0 z-50 bg-white flex items-center justify-center p-6">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="max-w-md w-full text-center"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", damping: 12, delay: 0.1 }}
-                className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6"
-                style={{ backgroundColor: `${brandColor}15` }}
-              >
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full text-center">
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 12, delay: 0.1 }} className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: `${brandColor}15` }}>
                 <CheckCircle2 size={52} style={{ color: brandColor }} />
               </motion.div>
-              <h2 className="text-2xl font-bold text-night mb-2">
-                Ordine confermato!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Grazie {customerName || ""}! Il tuo ordine è stato inviato a {tenantName}.
-              </p>
+              <h2 className="text-2xl font-bold text-night mb-2">Ordine confermato!</h2>
+              <p className="text-gray-600 mb-6">Grazie {customerName}! Il tuo ordine è stato inviato a {tenantName}.</p>
 
               <div className="bg-soft rounded-2xl p-4 mb-6">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">
-                  Codice ordine
-                </p>
-                <p className="font-mono text-lg font-bold text-night">
-                  {orderSuccess.code}
-                </p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Codice ordine</p>
+                <p className="font-mono text-lg font-bold text-night">{orderSuccess.code}</p>
                 <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">
                   <span className="text-sm text-gray-500">Totale</span>
-                  <span className="font-bold text-night text-lg">
-                    €{orderSuccess.total.toFixed(2)}
-                  </span>
+                  <span className="font-bold text-night text-lg">€{orderSuccess.total.toFixed(2)}</span>
                 </div>
               </div>
 
-              <div
-                className="rounded-2xl p-4 mb-6 text-sm"
-                style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}
-              >
-                <p className="text-night font-semibold mb-1">
-                  📲 Ultimo passaggio
-                </p>
-                <p className="text-gray-600 text-xs">
-                  Clicca il pulsante qui sotto per inviare l&apos;ordine su WhatsApp.
-                </p>
+              <div className="rounded-2xl p-4 mb-6 text-sm" style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}>
+                <p className="text-night font-semibold mb-1">📲 Ultimo passaggio</p>
+                <p className="text-gray-600 text-xs">Clicca il pulsante per inviare l&apos;ordine al ristorante su WhatsApp.</p>
               </div>
 
-              <a
-                href={buildOrderWhatsAppUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3"
-                style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
-              >
+              <a href={buildOrderWhatsAppUrl()} target="_blank" rel="noopener noreferrer" className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3" style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}>
                 <MessageCircle size={20} />
                 Invia ordine su WhatsApp
               </a>
 
               <button
-                onClick={() => {
-                  setOrderSuccess(null);
-                  setLastOrderSnapshot(null);
-                  setCustomerName("");
-                  setAddress("");
-                  setNotes("");
-                  setPickupTime("");
-                }}
+                onClick={() => { setOrderSuccess(null); setLastOrderSnapshot(null); setCustomerName(""); setAddress(""); setNotes(""); setPickupTime(""); }}
                 className="w-full text-night py-3.5 rounded-2xl font-bold transition active:scale-95 bg-soft"
               >
                 Torna al menu
@@ -1056,9 +946,7 @@ export default function MenuClient({
         {tableBookingOpen && !tableSuccess && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
             <motion.div
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
+              initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="bg-[#F5F5F7] rounded-t-3xl md:rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto"
             >
@@ -1069,16 +957,34 @@ export default function MenuClient({
                     <h3 className="text-xl font-bold text-night">Prenota un tavolo</h3>
                     <p className="text-xs text-gray-500 mt-0.5">{tenantName}</p>
                   </div>
-                  <button
-                    onClick={() => setTableBookingOpen(false)}
-                    className="text-gray-500 p-2 hover:bg-white rounded-full transition"
-                  >
+                  <button onClick={() => setTableBookingOpen(false)} className="text-gray-500 p-2 hover:bg-white rounded-full transition">
                     <X size={20} />
                   </button>
                 </div>
               </div>
 
               <div className="p-5 space-y-5">
+                {/* Persone */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Users size={12} />
+                    Quante persone?
+                  </span>
+                  <div className="grid grid-cols-5 gap-2">
+                    {Array.from({ length: maxPartySize }, (_, i) => i + 1).map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => { setPartySize(n); setSelectedTable(null); }}
+                        className={`py-2.5 rounded-xl text-sm font-bold transition ${partySize === n ? "text-white" : "bg-soft text-night"}`}
+                        style={partySize === n ? { backgroundColor: brandColor } : undefined}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Data */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Calendar size={12} />
@@ -1091,42 +997,22 @@ export default function MenuClient({
                         <motion.button
                           key={d.toISOString()}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => {
-                            setSelectedDate(d);
-                            setSelectedSlot(null);
-                          }}
-                          className={`min-w-[60px] py-3 rounded-2xl flex flex-col items-center transition shrink-0 ${
-                            active ? "text-white shadow-md" : "bg-soft text-night"
-                          }`}
-                          style={
-                            active
-                              ? { backgroundColor: brandColor, boxShadow: `0 4px 12px ${brandColor}40` }
-                              : undefined
-                          }
+                          onClick={() => { setSelectedDate(d); setSelectedSlot(null); setSelectedTable(null); }}
+                          className={`min-w-[60px] py-3 rounded-2xl flex flex-col items-center transition shrink-0 ${active ? "text-white shadow-md" : "bg-soft text-night"}`}
+                          style={active ? { backgroundColor: brandColor, boxShadow: `0 4px 12px ${brandColor}40` } : undefined}
                         >
-                          <span
-                            className={`text-[10px] font-bold uppercase ${
-                              active ? "text-white/80" : "text-gray-500"
-                            }`}
-                          >
-                            {DAY_SHORT[d.getDay()]}
-                          </span>
+                          <span className={`text-[10px] font-bold uppercase ${active ? "text-white/80" : "text-gray-500"}`}>{DAY_SHORT[d.getDay()]}</span>
                           <span className="text-lg font-bold mt-0.5">{d.getDate()}</span>
-                          <span className={`text-[9px] ${active ? "text-white/70" : "text-gray-400"}`}>
-                            {MONTHS[d.getMonth()].slice(0, 3)}
-                          </span>
+                          <span className={`text-[9px] ${active ? "text-white/70" : "text-gray-400"}`}>{MONTHS[d.getMonth()].slice(0, 3)}</span>
                         </motion.button>
                       );
                     })}
                   </div>
                 </div>
 
+                {/* Orario */}
                 {selectedDate && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-2xl p-4 shadow-sm"
-                  >
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 shadow-sm">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                       <Clock size={12} />
                       Scegli l&apos;orario
@@ -1135,10 +1021,8 @@ export default function MenuClient({
                       {slots.map((slot) => (
                         <button
                           key={slot}
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`py-3 rounded-xl text-sm font-bold transition ${
-                            selectedSlot === slot ? "text-white" : "bg-soft text-night"
-                          }`}
+                          onClick={() => { setSelectedSlot(slot); setSelectedTable(null); }}
+                          className={`py-3 rounded-xl text-sm font-bold transition ${selectedSlot === slot ? "text-white" : "bg-soft text-night"}`}
                           style={selectedSlot === slot ? { backgroundColor: brandColor } : undefined}
                         >
                           {slot}
@@ -1148,69 +1032,51 @@ export default function MenuClient({
                   </motion.div>
                 )}
 
-                <div className="bg-white rounded-2xl p-4 shadow-sm">
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <Users size={12} />
-                    Quante persone?
-                  </span>
-                  <div className="grid grid-cols-4 gap-2">
-                    {Array.from({ length: maxPartySize }, (_, i) => i + 1).map((n) => (
-                      <button
-                        key={n}
-                        onClick={() => setPartySize(n)}
-                        className={`py-3 rounded-xl text-sm font-bold transition ${
-                          partySize === n ? "text-white" : "bg-soft text-night"
-                        }`}
-                        style={partySize === n ? { backgroundColor: brandColor } : undefined}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
-                  <label className="block">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                      Il tuo nome
-                    </span>
-                    <input
-                      type="text"
-                      value={tableCustomerName}
-                      onChange={(e) => setTableCustomerName(e.target.value)}
-                      placeholder="Mario Rossi"
-                      className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0"
+                {/* MAPPA TAVOLI */}
+                {selectedDate && selectedSlot && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                        <Utensils size={12} />
+                        Scegli il tuo tavolo
+                      </span>
+                      {selectedTable && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: brandColor }}>
+                          TAVOLO {selectedTable.table_number}
+                        </span>
+                      )}
+                    </div>
+                    <TableMap
+                      tables={tablesWithStatus}
+                      selectedId={selectedTable?.id || null}
+                      onSelect={setSelectedTable}
+                      brandColor={brandColor}
+                      partySize={partySize}
                     />
-                  </label>
-                  <div className="border-t border-gray-100 pt-3">
+                  </motion.div>
+                )}
+
+                {/* Nome e telefono */}
+                {selectedTable && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
                     <label className="block">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                        Telefono
-                      </span>
-                      <input
-                        type="tel"
-                        value={tableCustomerPhone}
-                        onChange={(e) => setTableCustomerPhone(e.target.value)}
-                        placeholder="+39 333 1234567"
-                        className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0"
-                      />
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Il tuo nome</span>
+                      <input type="text" value={tableCustomerName} onChange={(e) => setTableCustomerName(e.target.value)} placeholder="Mario Rossi" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
                     </label>
-                  </div>
-                  <div className="border-t border-gray-100 pt-3">
-                    <label className="block">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                        Note (opzionale)
-                      </span>
-                      <textarea
-                        value={tableNotes}
-                        onChange={(e) => setTableNotes(e.target.value)}
-                        placeholder="Es. seggiolone per bambino..."
-                        rows={2}
-                        className="w-full bg-transparent border-0 text-sm text-night placeholder-gray-300 focus:outline-none p-0 resize-none"
-                      />
-                    </label>
-                  </div>
-                </div>
+                    <div className="border-t border-gray-100 pt-3">
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Telefono</span>
+                        <input type="tel" value={tableCustomerPhone} onChange={(e) => setTableCustomerPhone(e.target.value)} placeholder="+39 333 1234567" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
+                      </label>
+                    </div>
+                    <div className="border-t border-gray-100 pt-3">
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Note (opzionale)</span>
+                        <textarea value={tableNotes} onChange={(e) => setTableNotes(e.target.value)} placeholder="Es. seggiolone per bambino..." rows={2} className="w-full bg-transparent border-0 text-sm text-night placeholder-gray-300 focus:outline-none p-0 resize-none" />
+                      </label>
+                    </div>
+                  </motion.div>
+                )}
 
                 {submitError && (
                   <div className="bg-red-50 border border-red-100 text-red-600 rounded-2xl px-4 py-3 text-sm flex items-start gap-2">
@@ -1221,40 +1087,16 @@ export default function MenuClient({
 
                 <button
                   onClick={sendTableBooking}
-                  disabled={
-                    !selectedDate ||
-                    !selectedSlot ||
-                    !tableCustomerName ||
-                    !tableCustomerPhone ||
-                    submitting
-                  }
+                  disabled={!selectedTable || !tableCustomerName || !tableCustomerPhone || submitting}
                   className="w-full disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
-                  style={
-                    !selectedDate ||
-                    !selectedSlot ||
-                    !tableCustomerName ||
-                    !tableCustomerPhone ||
-                    submitting
-                      ? undefined
-                      : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }
-                  }
+                  style={!selectedTable || !tableCustomerName || !tableCustomerPhone || submitting ? undefined : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                 >
                   {submitting ? (
-                    <>
-                      <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin" />
-                      Invio in corso...
-                    </>
+                    <><div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin" />Invio in corso...</>
                   ) : (
-                    <>
-                      <CheckCircle2 size={20} />
-                      Conferma prenotazione
-                    </>
+                    <><CheckCircle2 size={20} />Conferma prenotazione</>
                   )}
                 </button>
-
-                <p className="text-xs text-gray-400 text-center">
-                  Riceverai conferma via WhatsApp
-                </p>
               </div>
             </motion.div>
           </div>
@@ -1265,53 +1107,105 @@ export default function MenuClient({
       <AnimatePresence>
         {tableSuccess && (
           <div className="fixed inset-0 z-50 bg-white flex items-center justify-center p-6">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="max-w-md w-full text-center"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", damping: 12, delay: 0.1 }}
-                className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6"
-                style={{ backgroundColor: `${brandColor}15` }}
-              >
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full text-center">
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 12, delay: 0.1 }} className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: `${brandColor}15` }}>
                 <CheckCircle2 size={52} style={{ color: brandColor }} />
               </motion.div>
-              <h2 className="text-2xl font-bold text-night mb-2">
-                Tavolo prenotato!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Ti aspettiamo da {tenantName} 🍽️
-              </p>
+              <h2 className="text-2xl font-bold text-night mb-2">Tavolo prenotato!</h2>
+              <p className="text-gray-600 mb-6">Ti aspettiamo da {tenantName} 🍽️</p>
 
               <div className="bg-soft rounded-2xl p-4 mb-6">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">
-                  Codice prenotazione
-                </p>
-                <p className="font-mono text-lg font-bold text-night">
-                  {tableSuccess.code}
-                </p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Codice prenotazione</p>
+                <p className="font-mono text-lg font-bold text-night">{tableSuccess.code}</p>
               </div>
 
-              <div
-                className="rounded-2xl p-4 mb-6 text-sm"
-                style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}
-              >
-                <p className="text-night font-semibold mb-1">📱 Controlla WhatsApp</p>
-                <p className="text-gray-600 text-xs">
-                  Riceverai la conferma sul numero che hai indicato.
-                </p>
+              <div className="rounded-2xl p-4 mb-6 text-sm" style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}>
+                <p className="text-night font-semibold mb-1">📲 Ultimo passaggio</p>
+                <p className="text-gray-600 text-xs">Clicca il pulsante per inviare la prenotazione al ristorante su WhatsApp.</p>
               </div>
 
-              <button
-                onClick={() => setTableSuccess(null)}
-                className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95"
-                style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
-              >
+              <a href={tableSuccess.waUrl} target="_blank" rel="noopener noreferrer" className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3" style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}>
+                <MessageCircle size={20} />
+                Invia prenotazione su WhatsApp
+              </a>
+
+              <button onClick={() => setTableSuccess(null)} className="w-full text-night py-3.5 rounded-2xl font-bold transition active:scale-95 bg-soft">
                 Chiudi
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast */}
+      <ToastContainer toasts={toast.toasts} onDismiss={toast.dismiss} />
+
+      {/* UPGRADE TAVOLI MODAL */}
+      <AnimatePresence>
+        {showTableUpgrade && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end md:items-center justify-center">
+            <motion.div
+              initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white rounded-t-3xl md:rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto"
+            >
+              <div className="pt-3 pb-4 px-6 border-b border-gray-100">
+                <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 md:hidden" />
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-bold text-night">Prenotazione tavoli</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Funzionalità premium</p>
+                  </div>
+                  <button onClick={() => setShowTableUpgrade(false)} className="text-gray-500 p-2 hover:bg-gray-100 rounded-full transition">
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-5">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto rounded-3xl bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center mb-4 shadow-lg shadow-yellow-500/30">
+                    <Calendar size={28} className="text-white" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-night mb-2">Fai prenotare i tavoli ai tuoi clienti</h4>
+                  <p className="text-sm text-gray-500 max-w-sm mx-auto">I clienti scelgono tavolo dalla mappa, tu ricevi tutto in dashboard.</p>
+                </div>
+
+                <div className="bg-cream rounded-2xl p-5 space-y-3">
+                  {[
+                    "Mappa tavoli interattiva",
+                    "Prenotazione online 24/7",
+                    "Gestione turni e capienza",
+                    "Numero persone personalizzabile",
+                    "Promemoria anti no-show",
+                    "Statistiche occupazione",
+                  ].map((f) => (
+                    <div key={f} className="flex items-start gap-3 text-sm">
+                      <CheckCircle2 size={16} className="text-waDark mt-0.5 shrink-0" />
+                      <span className="text-night/80">{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-center bg-night rounded-2xl p-6 text-white">
+                  <p className="text-xs uppercase tracking-widest text-white/50 mb-2">Upgrade annuale</p>
+                  <div className="flex items-baseline justify-center gap-1 mb-3">
+                    <span className="text-4xl font-bold">35</span>
+                    <span className="text-white/60">€/mese</span>
+                  </div>
+                  <p className="text-xs text-white/60">Pagamento annuale: <strong className="text-wa">420,00 €</strong></p>
+                </div>
+
+                <a
+                  href={`https://wa.me/message/LLEKTVFCRCPVB1?text=${encodeURIComponent(`Ciao! Vorrei attivare la prenotazione tavoli per ${tenantName}. Piano Food + Tavoli a 420 €/anno.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-wa hover:bg-wa/90 text-white py-4 rounded-2xl font-bold transition active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <MessageCircle size={20} />
+                  Attiva su WhatsApp
+                </a>
+              </div>
             </motion.div>
           </div>
         )}

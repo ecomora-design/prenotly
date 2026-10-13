@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import {
-  Loader2, ShoppingBag, Calendar, Users, QrCode, Plus,
+  Loader2, ShoppingBag, Calendar, Users, QrCode, Plus, Lock,
   ArrowRight, TrendingUp, Clock, ExternalLink, Sparkles,
   CheckCircle2, Utensils, Settings, Eye, BarChart3, Zap
 } from "lucide-react";
@@ -302,6 +302,43 @@ export default function DashboardPage() {
           </Link>
         </motion.div>
       </div>
+
+      {/* BANNER SBLOCCO TAVOLI */}
+      {isFood && tenant.has_table_booking === false && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="rounded-3xl p-6 mb-6 overflow-hidden relative"
+          style={{ background: "linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)" }}
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20" />
+          <div className="relative flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+              <Lock size={26} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0 text-white">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider opacity-90">
+                  Funzionalità bloccata
+                </span>
+              </div>
+              <p className="text-xl font-bold mb-1">Prenotazione tavoli</p>
+              <p className="text-sm opacity-90">
+                Fai prenotare i tavoli ai tuoi clienti dalla mappa interattiva.
+                Attiva con <strong>+5 €/mese</strong>.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/abbonamento"
+              className="bg-white text-yellow-700 px-6 py-3.5 rounded-2xl font-bold text-sm hover:bg-white/90 transition inline-flex items-center justify-center gap-2 shrink-0 active:scale-[0.98]"
+            >
+              Sblocca ora
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        </motion.div>
+      )}
 
       {/* LINK PUBBLICO — CARD GRANDE */}
       <motion.div
