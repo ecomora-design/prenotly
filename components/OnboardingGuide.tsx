@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X, CheckCircle2, MessageCircle, Settings, CreditCard,
-  Calendar, Menu, ArrowRight, Sparkles, ExternalLink
+  X, MessageCircle, Settings, Calendar, Menu,
+  ArrowRight, Sparkles, ExternalLink
 } from "lucide-react";
 import Link from "next/link";
 
@@ -14,93 +14,106 @@ type Props = {
   onComplete: () => void;
 };
 
-const STEPS_FOOD = [
-  {
-    icon: Menu,
-    title: "Aggiungi il tuo menu",
-    text: "Vai su Menu e aggiungi i tuoi piatti con nome, prezzo e descrizione. Puoi anche caricare una foto per renderli più appetitosi.",
-    cta: "Vai al Menu",
-    link: "/dashboard/servizi",
-  },
-  {
-    icon: Settings,
-    title: "Personalizza la web app",
-    text: "Vai su Impostazioni: aggiungi logo, immagine di copertina, orari di apertura e scegli il colore della tua attività.",
-    cta: "Vai a Impostazioni",
-    link: "/dashboard/impostazioni",
-  },
-  {
-    icon: MessageCircle,
-    title: "Configura WhatsApp",
-    text: "Nel campo 'Numero WhatsApp' inserisci il numero con prefisso +39 dove vuoi ricevere gli ordini (es. +393331234567).",
-    cta: "Configura ora",
-    link: "/dashboard/impostazioni",
-  },
-  {
-    icon: ExternalLink,
-    title: "Condividi il tuo link",
-    text: "Il tuo spazio è pronto su prenotly-italia.it/" + businessSlug + ". Mettilo in bio di Instagram, su Google Maps, sul menu fisico.",
-    cta: "Vedi la tua pagina",
-    link: "/" + businessSlug,
-    external: true,
-  },
-  {
-    icon: Sparkles,
-    title: "Fai il primo test",
-    text: "Ordina dal tuo stesso link come se fossi un cliente. Così vedi esattamente cosa vedono i tuoi clienti e come arriva l'ordine su WhatsApp.",
-    cta: "Ho capito",
-    link: null,
-  },
-];
+function getStepsFood(businessSlug: string) {
+  return [
+    {
+      icon: Menu,
+      title: "Aggiungi il tuo menu",
+      text: "Vai su Menu e aggiungi i tuoi piatti con nome, prezzo e descrizione. Puoi anche caricare una foto per renderli più appetitosi.",
+      cta: "Vai al Menu",
+      link: "/dashboard/servizi",
+      external: false,
+    },
+    {
+      icon: Settings,
+      title: "Personalizza la web app",
+      text: "Vai su Impostazioni: aggiungi logo, immagine di copertina, orari di apertura e scegli il colore della tua attività.",
+      cta: "Vai a Impostazioni",
+      link: "/dashboard/impostazioni",
+      external: false,
+    },
+    {
+      icon: MessageCircle,
+      title: "Configura WhatsApp",
+      text: "Nel campo 'Numero WhatsApp' inserisci il numero con prefisso +39 dove vuoi ricevere gli ordini (es. +393331234567).",
+      cta: "Configura ora",
+      link: "/dashboard/impostazioni",
+      external: false,
+    },
+    {
+      icon: ExternalLink,
+      title: "Condividi il tuo link",
+      text: `Il tuo spazio è pronto su prenotly-italia.it/${businessSlug}. Mettilo in bio di Instagram, su Google Maps, sul menu fisico.`,
+      cta: "Vedi la tua pagina",
+      link: `/${businessSlug}`,
+      external: true,
+    },
+    {
+      icon: Sparkles,
+      title: "Fai il primo test",
+      text: "Ordina dal tuo stesso link come se fossi un cliente. Così vedi esattamente cosa vedono i tuoi clienti e come arriva l'ordine su WhatsApp.",
+      cta: "Ho capito",
+      link: null,
+      external: false,
+    },
+  ];
+}
 
-const STEPS_PRO = [
-  {
-    icon: Calendar,
-    title: "Aggiungi i tuoi servizi",
-    text: "Vai su Servizi e aggiungi i trattamenti che offri con prezzo e durata. Ogni servizio può avere durata diversa (es. taglio 30 min, colore 90 min).",
-    cta: "Vai ai Servizi",
-    link: "/dashboard/servizi",
-  },
-  {
-    icon: Settings,
-    title: "Personalizza la web app",
-    text: "Vai su Impostazioni: aggiungi logo, immagine di copertina, orari di apertura e scegli il colore della tua attività.",
-    cta: "Vai a Impostazioni",
-    link: "/dashboard/impostazioni",
-  },
-  {
-    icon: MessageCircle,
-    title: "Collega Google Calendar",
-    text: "Nel campo Google Calendar, clicca 'Collega' e autorizza l'accesso. Da ora gli appuntamenti finiscono automaticamente nella tua agenda.",
-    cta: "Collega ora",
-    link: "/dashboard/impostazioni",
-  },
-  {
-    icon: MessageCircle,
-    title: "Configura WhatsApp",
-    text: "Nel campo 'Numero WhatsApp' inserisci il numero con prefisso +39 dove vuoi ricevere le prenotazioni (es. +393331234567).",
-    cta: "Configura ora",
-    link: "/dashboard/impostazioni",
-  },
-  {
-    icon: ExternalLink,
-    title: "Condividi il tuo link",
-    text: "Il tuo spazio è pronto su prenotly-italia.it/" + businessSlug + ". Mettilo in bio di Instagram, su Google Maps, sui tuoi biglietti da visita.",
-    cta: "Vedi la tua pagina",
-    link: "/" + businessSlug,
-    external: true,
-  },
-  {
-    icon: Sparkles,
-    title: "Fai il primo test",
-    text: "Prenota dal tuo stesso link come se fossi un cliente. Così vedi esattamente cosa vedono i tuoi clienti e come arriva l'appuntamento.",
-    cta: "Ho capito",
-    link: null,
-  },
-];
+function getStepsPro(businessSlug: string) {
+  return [
+    {
+      icon: Calendar,
+      title: "Aggiungi i tuoi servizi",
+      text: "Vai su Servizi e aggiungi i trattamenti che offri con prezzo e durata. Ogni servizio può avere durata diversa (es. taglio 30 min, colore 90 min).",
+      cta: "Vai ai Servizi",
+      link: "/dashboard/servizi",
+      external: false,
+    },
+    {
+      icon: Settings,
+      title: "Personalizza la web app",
+      text: "Vai su Impostazioni: aggiungi logo, immagine di copertina, orari di apertura e scegli il colore della tua attività.",
+      cta: "Vai a Impostazioni",
+      link: "/dashboard/impostazioni",
+      external: false,
+    },
+    {
+      icon: Calendar,
+      title: "Collega Google Calendar",
+      text: "Nel campo Google Calendar, clicca 'Collega' e autorizza l'accesso. Da ora gli appuntamenti finiscono automaticamente nella tua agenda.",
+      cta: "Collega ora",
+      link: "/dashboard/impostazioni",
+      external: false,
+    },
+    {
+      icon: MessageCircle,
+      title: "Configura WhatsApp",
+      text: "Nel campo 'Numero WhatsApp' inserisci il numero con prefisso +39 dove vuoi ricevere le prenotazioni (es. +393331234567).",
+      cta: "Configura ora",
+      link: "/dashboard/impostazioni",
+      external: false,
+    },
+    {
+      icon: ExternalLink,
+      title: "Condividi il tuo link",
+      text: `Il tuo spazio è pronto su prenotly-italia.it/${businessSlug}. Mettilo in bio di Instagram, su Google Maps, sui tuoi biglietti da visita.`,
+      cta: "Vedi la tua pagina",
+      link: `/${businessSlug}`,
+      external: true,
+    },
+    {
+      icon: Sparkles,
+      title: "Fai il primo test",
+      text: "Prenota dal tuo stesso link come se fossi un cliente. Così vedi esattamente cosa vedono i tuoi clienti e come arriva l'appuntamento.",
+      cta: "Ho capito",
+      link: null,
+      external: false,
+    },
+  ];
+}
 
 export default function OnboardingGuide({ isFood, businessSlug, onComplete }: Props) {
-  const steps = isFood ? STEPS_FOOD : STEPS_PRO;
+  const steps = isFood ? getStepsFood(businessSlug) : getStepsPro(businessSlug);
   const [current, setCurrent] = useState(0);
 
   const step = steps[current];
@@ -153,7 +166,7 @@ export default function OnboardingGuide({ isFood, businessSlug, onComplete }: Pr
               </button>
             </div>
 
-            {/* Progress bar */}
+            {/* Progress */}
             <div className="mt-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-night/60">
@@ -182,22 +195,18 @@ export default function OnboardingGuide({ isFood, businessSlug, onComplete }: Pr
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Icon */}
               <div className="w-14 h-14 rounded-2xl bg-cream flex items-center justify-center mb-5">
                 <step.icon size={26} className="text-waDark" />
               </div>
 
-              {/* Title */}
               <h2 className="text-2xl md:text-3xl font-bold text-night tracking-tight mb-3 leading-tight">
                 {step.title}
               </h2>
 
-              {/* Text */}
               <p className="text-[15px] text-night/70 leading-relaxed mb-8">
                 {step.text}
               </p>
 
-              {/* Dots indicator */}
               <div className="flex items-center gap-1.5 mb-6">
                 {steps.map((_, i) => (
                   <div
@@ -213,10 +222,9 @@ export default function OnboardingGuide({ isFood, businessSlug, onComplete }: Pr
                 ))}
               </div>
 
-              {/* Actions */}
               <div className="flex flex-col gap-2.5">
-                {step.link && (
-                  step.external ? (
+                {step.link &&
+                  (step.external ? (
                     <a
                       href={step.link}
                       target="_blank"
@@ -234,8 +242,7 @@ export default function OnboardingGuide({ isFood, businessSlug, onComplete }: Pr
                       {step.cta}
                       <ArrowRight size={18} />
                     </Link>
-                  )
-                )}
+                  ))}
 
                 <button
                   onClick={handleNext}
