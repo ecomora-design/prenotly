@@ -4,8 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
-  Loader2, Download, QrCode, Copy, Check, Printer,
-  MessageCircle, Instagram, Share2
+  Loader2, Download, QrCode, Copy, Check,
+  MessageCircle, Share2
 } from "lucide-react";
 
 export default function QRPage() {
