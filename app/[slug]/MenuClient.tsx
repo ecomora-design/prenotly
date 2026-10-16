@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import TableMap from "@/components/TableMap";
 import SplashScreen from "@/components/SplashScreen";
 import { ToastContainer, useToast } from "@/components/Toast";
+import SkeletonMenu from "@/components/SkeletonMenu";
+import PullToRefresh from "@/components/PullToRefresh";
+import AppEnhancer from "@/components/AppEnhancer";
 import {
   Plus, Minus, ShoppingBag, X, Clock,
   Truck, Store, MapPin, Phone, Info, Search,
@@ -57,6 +60,14 @@ const DAY_LABELS = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì",
 const DAY_SHORT = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
 const MONTHS = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
 
+// Validazione numero WhatsApp
+function isValidWhatsApp(phone: string | null | undefined): boolean {
+  if (!phone) return false;
+  const clean = phone.replace(/\D/g, "");
+  return clean.length >= 10;
+}
+
+
 export default function MenuClient({
   tenantName,
   tenantAddress,
@@ -83,6 +94,7 @@ export default function MenuClient({
   const [tableBookingOpen, setTableBookingOpen] = useState(false);
   const [showTableUpgrade, setShowTableUpgrade] = useState(false);
   const toast = useToast();
+  const [initialLoading, setInitialLoading] = useState(true);
   const [orderSuccess, setOrderSuccess] = useState<{ code: string; total: number } | null>(null);
   const [lastOrderSnapshot, setLastOrderSnapshot] = useState<any>(null);
 
@@ -198,6 +210,18 @@ export default function MenuClient({
     loadBusy();
   }, [selectedDate, selectedSlot, slug]);
 
+  // Simula caricamento iniziale (per mostrare skeleton)
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 400);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleRefresh = async () => {
+    // Simula refresh
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    if ("vibrate" in navigator) navigator.vibrate(10);
+  };
+
   const addToCart = (service: Service) => {
     setCart((prev) => {
       const existing = prev[service.id];
@@ -308,6 +332,7 @@ export default function MenuClient({
     lines.push(`👤 ${lastOrderSnapshot.customerName}`);
     if (lastOrderSnapshot.notes) lines.push(`📝 Note: ${lastOrderSnapshot.notes}`);
 
+    if (!isValidWhatsApp(whatsappNumber)) return "#";
     const phone = whatsappNumber.replace(/\s|\+|-/g, "");
     return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
   };
@@ -363,6 +388,11 @@ export default function MenuClient({
       lines.push(`📞 ${tableCustomerPhone}`);
       if (tableNotes) lines.push(`📝 Note: ${tableNotes}`);
 
+      if (!isValidWhatsApp(whatsappNumber)) {
+        setSubmitError("Il ristorante non ha ancora configurato WhatsApp. Riprova più tardi.");
+        setSubmitting(false);
+        return;
+      }
       const phone = whatsappNumber.replace(/\s|\+|-/g, "");
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
 
@@ -393,6 +423,8 @@ export default function MenuClient({
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] pb-32">
+      <AppEnhancer brandColor={brandColor} tenantName={tenantName} />
+
       <SplashScreen
         tenantName={tenantName}
         logoUrl={logoUrl}
@@ -517,7 +549,9 @@ export default function MenuClient({
 
       {/* CONTENUTO */}
       <div className="max-w-3xl mx-auto">
-        {tab === "menu" && (
+        {tab === "menu" && initialLoading && <SkeletonMenu brandColor={brandColor} />}
+
+        {tab === "menu" && !initialLoading && (
           <>
             <div className="px-4 mt-4">
               <div className="relative">

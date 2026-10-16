@@ -16,6 +16,7 @@ export default function QRPage() {
   const [tenant, setTenant] = useState<any>(null);
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [downloaded, setDownloaded] = useState(false);
   const [style, setStyle] = useState<"minimal" | "branded" | "dark">("branded");
 
   useEffect(() => {
@@ -115,10 +116,29 @@ export default function QRPage() {
 
   const handleDownload = () => {
     if (!qrDataUrl || !tenant) return;
-    const a = document.createElement("a");
-    a.href = qrDataUrl;
-    a.download = `QR-${tenant.slug}.png`;
-    a.click();
+
+    // Crea un blob per il download
+    fetch(qrDataUrl)
+      .then((res) => res.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `QR-${tenant.slug}-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Feedback aptico su mobile
+        if ("vibrate" in navigator) navigator.vibrate(20);
+
+        setDownloaded(true);
+        setTimeout(() => setDownloaded(false), 3000);
+      })
+      .catch((err) => {
+        console.error("Download error:", err);
+      });
   };
 
   const handleCopyLink = async () => {
@@ -218,8 +238,8 @@ export default function QRPage() {
               disabled={!qrDataUrl}
               className="w-full bg-wa hover:bg-waDark disabled:bg-gray-300 text-white py-3.5 rounded-xl font-bold text-sm transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
             >
-              <Download size={18} />
-              Scarica QR (PNG)
+              {downloaded ? <Check size={18} /> : <Download size={18} />}
+              {downloaded ? "Scaricato!" : "Scarica QR (PNG)"}
             </button>
 
             <button

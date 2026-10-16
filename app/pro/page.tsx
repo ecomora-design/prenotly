@@ -49,13 +49,13 @@ export default function ProPage() {
   ];
 
   const whoItsFor = [
-    "Parrucchieri e barbieri",
-    "Centri estetici",
-    "Nail & make-up artist",
     "Studi medici e dentistici",
-    "Fisioterapisti e osteopati",
+    "Consulenti e avvocati",
     "Psicologi e terapeuti",
-    "Consulenti e liberi professionisti",
+    "Fisioterapisti e osteopati",
+    "Beauty e parrucchieri",
+    "Nutrizionisti e coach",
+    "Personal trainer",
     "Palestre e personal trainer",
   ];
 
@@ -89,9 +89,7 @@ export default function ProPage() {
               </h1>
 
               <p className="mt-5 text-base md:text-lg text-night/70 leading-relaxed">
-                Per beauty, studi e professionisti. I clienti prenotano
-                online, tu ricevi tutto in agenda e su WhatsApp. Sincronizzato
-                con Google Calendar.
+                Per qualsiasi attività che lavora su appuntamento: studi, professionisti, beauty, palestre, consulenti. I clienti prenotano online, tu ricevi tutto in agenda e su WhatsApp.
               </p>
 
               <div className="mt-7 flex flex-col sm:flex-row gap-3">
@@ -129,10 +127,10 @@ export default function ProPage() {
                 <div className="flex items-center justify-between pb-4 border-b border-night/5">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-waDark flex items-center justify-center text-white font-bold">
-                      SB
+                      SP
                     </div>
                     <div>
-                      <p className="font-bold text-night text-sm">Salone Bellissima</p>
+                      <p className="font-bold text-night text-sm">Studio Professionale</p>
                       <p className="text-[11px] text-night/50">Oggi, 3 appuntamenti</p>
                     </div>
                   </div>
@@ -144,7 +142,7 @@ export default function ProPage() {
                       <span className="text-[10px]">45m</span>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-night">Giulia - Taglio</p>
+                      <p className="text-sm font-semibold text-night">Mario - Consulenza</p>
                       <p className="text-xs text-night/50">Confermato</p>
                     </div>
                   </div>
@@ -154,7 +152,7 @@ export default function ProPage() {
                       <span className="text-[10px]">90m</span>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-night">Marco - Colore</p>
+                      <p className="text-sm font-semibold text-night">Giulia - Seduta</p>
                       <p className="text-xs text-night/50">Confermato</p>
                     </div>
                   </div>
@@ -164,7 +162,7 @@ export default function ProPage() {
                       <span className="text-[10px]">45m</span>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-night">Sara - Piega</p>
+                      <p className="text-sm font-semibold text-night">Luca - Incontro</p>
                       <p className="text-xs text-night/50">Confermato</p>
                     </div>
                   </div>

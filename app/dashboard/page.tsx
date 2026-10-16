@@ -5,10 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
+import PageHeader from "@/components/dashboard/PageHeader";
+import StatCard from "@/components/dashboard/StatCard";
+import { SkeletonCard } from "@/components/dashboard/Skeleton";
 import {
-  Loader2, ShoppingBag, Calendar, Users, QrCode, Plus, Lock,
-  ArrowRight, TrendingUp, Clock, ExternalLink, Sparkles,
-  CheckCircle2, Utensils, Settings, Eye, BarChart3, Zap
+  Loader2, ShoppingBag, Calendar, Users, QrCode, Plus, AlertCircle,
+  ArrowRight, TrendingUp, Clock, ExternalLink,
+  CheckCircle2, Utensils, Settings, Eye, Zap, Sparkles,
+  ArrowUpRight, BarChart3, CreditCard,
 } from "lucide-react";
 
 type Tenant = {
@@ -23,7 +27,6 @@ type Tenant = {
   brand_color: string | null;
   has_table_booking: boolean | null;
   has_online_payments: boolean | null;
-  plan_type: string | null;
 };
 
 export default function DashboardPage() {
@@ -39,6 +42,8 @@ export default function DashboardPage() {
     customers: 0,
     todayOrders: 0,
     todayBookings: 0,
+    weekOrders: 0,
+    weekBookings: 0,
   });
 
   useEffect(() => {
@@ -57,7 +62,6 @@ export default function DashboardPage() {
       const t = link.tenants as unknown as Tenant;
       setTenant(t);
 
-      // Statistiche
       const [b, o, s, c] = await Promise.all([
         supabase.from("bookings").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
         supabase.from("orders").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
@@ -65,25 +69,29 @@ export default function DashboardPage() {
         supabase.from("customers").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
       ]);
 
-      // Oggi
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const todayEnd = new Date();
       todayEnd.setHours(23, 59, 59, 999);
 
-      const [todayO, todayB] = await Promise.all([
-        supabase
-          .from("orders")
-          .select("*", { count: "exact", head: true })
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 7);
+
+      const [todayO, todayB, weekO, weekB] = await Promise.all([
+        supabase.from("orders").select("*", { count: "exact", head: true })
           .eq("tenant_id", t.id)
           .gte("created_at", todayStart.toISOString())
           .lte("created_at", todayEnd.toISOString()),
-        supabase
-          .from("bookings")
-          .select("*", { count: "exact", head: true })
+        supabase.from("bookings").select("*", { count: "exact", head: true })
           .eq("tenant_id", t.id)
           .gte("scheduled_at", todayStart.toISOString())
           .lte("scheduled_at", todayEnd.toISOString()),
+        supabase.from("orders").select("*", { count: "exact", head: true })
+          .eq("tenant_id", t.id)
+          .gte("created_at", weekStart.toISOString()),
+        supabase.from("bookings").select("*", { count: "exact", head: true })
+          .eq("tenant_id", t.id)
+          .gte("scheduled_at", weekStart.toISOString()),
       ]);
 
       setCounts({
@@ -93,6 +101,8 @@ export default function DashboardPage() {
         customers: c.count || 0,
         todayOrders: todayO.count || 0,
         todayBookings: todayB.count || 0,
+        weekOrders: weekO.count || 0,
+        weekBookings: weekB.count || 0,
       });
 
       setLoading(false);
@@ -102,8 +112,11 @@ export default function DashboardPage() {
 
   if (loading || !tenant) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin text-waDark" size={32} />
+      <div>
+        <div className="h-8 w-48 bg-night/[0.05] rounded animate-pulse mb-8" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
+        </div>
       </div>
     );
   }
@@ -116,281 +129,228 @@ export default function DashboardPage() {
 
   const firstName = tenant.business_name.split(" ")[0];
   const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera";
+  const greeting = hour < 12 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera";
 
-  const mainStats = isFood
-    ? [
-        {
-          icon: ShoppingBag,
-          label: "Ordini totali",
-          value: counts.orders,
-          today: counts.todayOrders,
-          href: "/dashboard/ordini",
-          color: brandColor,
-        },
-        {
-          icon: Utensils,
-          label: "Piatti nel menu",
-          value: counts.services,
-          href: "/dashboard/servizi",
-          color: brandColor,
-        },
-      ]
-    : [
-        {
-          icon: Calendar,
-          label: "Prenotazioni totali",
-          value: counts.bookings,
-          today: counts.todayBookings,
-          href: "/dashboard/prenotazioni",
-          color: brandColor,
-        },
-        {
-          icon: Utensils,
-          label: "Servizi attivi",
-          value: counts.services,
-          href: "/dashboard/servizi",
-          color: brandColor,
-        },
-      ];
+  const totalMain = isFood ? counts.orders : counts.bookings;
+  const todayMain = isFood ? counts.todayOrders : counts.todayBookings;
+  const weekMain = isFood ? counts.weekOrders : counts.weekBookings;
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* WELCOME */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6 md:mb-8"
-      >
-        <h1 className="text-2xl md:text-3xl font-bold text-night tracking-tight">
-          {greeting}, {firstName} 👋
-        </h1>
-        <p className="text-night/50 text-sm md:text-base mt-1">
-          {showWelcomeMsg(counts, isFood)}
-        </p>
-      </motion.div>
+    <div>
+      {/* Header */}
+      <PageHeader
+        title={`${greeting}, ${firstName}`}
+        subtitle={
+          totalMain === 0
+            ? "Inizia a ricevere il tuo primo ordine"
+            : `Hai ricevuto ${totalMain} ${isFood ? (totalMain === 1 ? "ordine" : "ordini") : totalMain === 1 ? "prenotazione" : "prenotazioni"} in totale`
+        }
+        actions={
+          <Link
+            href={`/${tenant.slug}`}
+            target="_blank"
+            className="hidden md:inline-flex items-center gap-2 border border-night/[0.08] hover:border-night/20 bg-white text-night px-4 py-2.5 rounded-full font-semibold text-sm transition"
+          >
+            <Eye size={15} />
+            Vedi pagina
+          </Link>
+        }
+      />
 
-      {/* CARD TRIAL */}
-      {tenant.subscription_status === "trial" && trialHoursLeft > 0 && (
+      {/* Trial warning */}
+      {tenant.subscription_status === "trial" && trialHoursLeft > 0 && trialHoursLeft < 48 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="rounded-3xl p-6 md:p-7 mb-6 text-white shadow-xl overflow-hidden relative"
-          style={{ backgroundColor: brandColor }}
+          className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20" />
-          <div className="relative flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock size={16} />
-                <span className="text-xs font-bold uppercase tracking-wider opacity-90">
-                  Demo attiva
-                </span>
-              </div>
-              <p className="text-2xl md:text-3xl font-bold tracking-tight">
-                {trialHoursLeft} ore rimanenti
-              </p>
-              <p className="text-sm opacity-90 mt-1">
-                Attiva l&apos;abbonamento per non perdere l&apos;accesso
-              </p>
-            </div>
-            <Link
-              href="/dashboard/abbonamento"
-              className="bg-white text-night px-6 py-3.5 rounded-2xl font-bold text-sm hover:bg-white/90 transition inline-flex items-center justify-center gap-2 shrink-0 active:scale-[0.98]"
-            >
-              Attiva ora
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-        </motion.div>
-      )}
-
-      {/* BANNER ATTIVO */}
-      {tenant.subscription_status === "active" && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="bg-white rounded-2xl p-4 mb-6 flex items-center gap-3 border border-green-100"
-        >
-          <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-            <CheckCircle2 size={20} className="text-green-600" />
+          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+            <Clock size={18} className="text-amber-700" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-night text-sm">Abbonamento attivo</p>
-            <p className="text-xs text-night/50">
-              Tutto regolare. Grazie per averci scelto!
+            <p className="font-semibold text-night text-sm">
+              Demo in scadenza
+            </p>
+            <p className="text-xs text-night/60 mt-0.5">
+              Ti restano {trialHoursLeft} ore. Attiva l&apos;abbonamento per non perdere l&apos;accesso.
             </p>
           </div>
           <Link
             href="/dashboard/abbonamento"
-            className="text-xs font-semibold text-night/60 hover:text-night shrink-0 transition"
+            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-full font-semibold text-xs transition shrink-0 active:scale-[0.98]"
           >
-            Gestisci →
+            Attiva
           </Link>
         </motion.div>
       )}
 
-      {/* STATS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {mainStats.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.05 }}
-          >
-            <Link
-              href={stat.href}
-              className="block bg-white rounded-3xl p-6 border border-night/5 hover:border-night/15 hover:shadow-lg transition group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                  style={{ backgroundColor: `${stat.color}15` }}
-                >
-                  <stat.icon size={22} style={{ color: stat.color }} />
-                </div>
-                <ArrowRight
-                  size={18}
-                  className="text-night/20 group-hover:text-night group-hover:translate-x-1 transition-all"
-                />
-              </div>
-              <p className="text-3xl md:text-4xl font-bold text-night tracking-tight">
-                {stat.value}
-              </p>
-              <p className="text-xs font-semibold text-night/50 uppercase tracking-wider mt-1">
-                {stat.label}
-              </p>
-              {stat.today !== undefined && stat.today > 0 && (
-                <div
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
-                  style={{ backgroundColor: `${stat.color}15`, color: stat.color }}
-                >
-                  <TrendingUp size={12} />
-                  {stat.today} oggi
-                </div>
-              )}
-            </Link>
-          </motion.div>
-        ))}
-
-        {/* Clienti */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Link
-            href="/dashboard/clienti"
-            className="block bg-white rounded-3xl p-6 border border-night/5 hover:border-night/15 hover:shadow-lg transition group"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
-                <Users size={22} className="text-blue-600" />
-              </div>
-              <ArrowRight
-                size={18}
-                className="text-night/20 group-hover:text-night group-hover:translate-x-1 transition-all"
-              />
-            </div>
-            <p className="text-3xl md:text-4xl font-bold text-night tracking-tight">
-              {counts.customers}
-            </p>
-            <p className="text-xs font-semibold text-night/50 uppercase tracking-wider mt-1">
-              Clienti nel database
-            </p>
-          </Link>
-        </motion.div>
-      </div>
-
-      {/* BANNER SBLOCCO TAVOLI */}
+      {/* Upgrade banner tavoli */}
       {isFood && tenant.has_table_booking === false && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="rounded-3xl p-6 mb-6 overflow-hidden relative"
-          style={{ background: "linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)" }}
+          transition={{ delay: 0.1 }}
+          className="bg-gradient-to-br from-yellow-50 to-amber-50 border border-amber-200 rounded-2xl p-5 mb-6"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20" />
-          <div className="relative flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
-              <Lock size={26} className="text-white" />
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-amber-400 flex items-center justify-center shrink-0">
+              <Calendar size={20} className="text-white" />
             </div>
-            <div className="flex-1 min-w-0 text-white">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-bold uppercase tracking-wider opacity-90">
-                  Funzionalità bloccata
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <h3 className="font-bold text-night text-sm">
+                  Sblocca la prenotazione tavoli
+                </h3>
+                <span className="text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full uppercase">
+                  +5 €/mese
                 </span>
               </div>
-              <p className="text-xl font-bold mb-1">Prenotazione tavoli</p>
-              <p className="text-sm opacity-90">
-                Fai prenotare i tavoli ai tuoi clienti dalla mappa interattiva.
-                Attiva con <strong>+5 €/mese</strong>.
+              <p className="text-xs text-night/60 leading-relaxed mb-3">
+                I tuoi clienti prenotano il tavolo dalla mappa interattiva.
+                Tu gestisci tutto in dashboard.
               </p>
+              <Link
+                href="/dashboard/abbonamento"
+                className="inline-flex items-center gap-2 bg-night hover:bg-night/90 text-white px-4 py-2 rounded-full font-semibold text-xs transition active:scale-[0.98]"
+              >
+                Scopri di più
+                <ArrowRight size={13} />
+              </Link>
             </div>
-            <Link
-              href="/dashboard/abbonamento"
-              className="bg-white text-yellow-700 px-6 py-3.5 rounded-2xl font-bold text-sm hover:bg-white/90 transition inline-flex items-center justify-center gap-2 shrink-0 active:scale-[0.98]"
-            >
-              Sblocca ora
-              <ArrowRight size={16} />
-            </Link>
           </div>
         </motion.div>
       )}
 
-      {/* LINK PUBBLICO — CARD GRANDE */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-        className="bg-night rounded-3xl p-6 md:p-8 mb-6 text-white overflow-hidden relative"
-      >
-        <div className="absolute top-0 right-0 w-72 h-72 bg-wa/20 rounded-full blur-3xl -mr-20 -mt-20" />
+      {/* KPI GRID */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard
+          label={isFood ? "Ordini totali" : "Prenotazioni totali"}
+          value={totalMain}
+          icon={isFood ? ShoppingBag : Calendar}
+          iconBg={`${brandColor}15`}
+          iconColor={brandColor}
+          href={isFood ? "/dashboard/ordini" : "/dashboard/prenotazioni"}
+          change={
+            todayMain > 0
+              ? { value: `${todayMain} oggi`, trend: "up" }
+              : undefined
+          }
+          delay={0}
+        />
 
-        <div className="relative flex flex-col md:flex-row md:items-center gap-5">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <Eye size={14} className="text-wa" />
-              <span className="text-xs font-bold text-wa uppercase tracking-wider">
+        <StatCard
+          label={isFood ? "Piatti nel menu" : "Servizi attivi"}
+          value={counts.services}
+          icon={Utensils}
+          iconBg="#F1F5F9"
+          iconColor="#0F172A"
+          href="/dashboard/servizi"
+          delay={0.05}
+        />
+
+        <StatCard
+          label="Clienti"
+          value={counts.customers}
+          icon={Users}
+          iconBg="#EFF6FF"
+          iconColor="#3B82F6"
+          href="/dashboard/clienti"
+          delay={0.1}
+        />
+
+        <StatCard
+          label="Ultimi 7 giorni"
+          value={weekMain}
+          icon={TrendingUp}
+          iconBg="#F0FDF4"
+          iconColor="#16A34A"
+          delay={0.15}
+        />
+      </div>
+
+      {/* LINK PUBBLICO + AZIONI */}
+      <div className="grid lg:grid-cols-3 gap-4 mb-6">
+        {/* Public link card */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-night/[0.06] overflow-hidden">
+          <div className="p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: brandColor }}
+              />
+              <span className="text-[11px] font-bold text-night/40 uppercase tracking-wider">
                 La tua pagina pubblica
               </span>
             </div>
-            <p className="text-lg md:text-2xl font-bold truncate mb-1">
+
+            <p className="text-lg md:text-2xl font-bold text-night tracking-tight truncate mb-1">
               prenotly-italia.it/{tenant.slug}
             </p>
-            <p className="text-sm text-white/60">
-              Condividila con i clienti: la useranno per ordinare o prenotare
+            <p className="text-xs text-night/50 mb-5">
+              Condividi questo link con i tuoi clienti
             </p>
-          </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-            <Link
-              href={`/${tenant.slug}`}
-              target="_blank"
-              className="bg-white text-night px-6 py-3.5 rounded-2xl font-bold text-sm hover:bg-white/90 transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
-            >
-              <ExternalLink size={16} />
-              Vedi pagina
-            </Link>
-            <Link
-              href="/dashboard/qr"
-              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition inline-flex items-center justify-center gap-2 active:scale-[0.98] border border-white/10"
-            >
-              <QrCode size={16} />
-              QR Code
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/${tenant.slug}`}
+                target="_blank"
+                className="inline-flex items-center gap-2 bg-night hover:bg-night/90 text-white px-4 py-2.5 rounded-full font-semibold text-xs transition active:scale-[0.98]"
+              >
+                <ExternalLink size={14} />
+                Apri pagina
+              </Link>
+              <Link
+                href="/dashboard/qr"
+                className="inline-flex items-center gap-2 border border-night/[0.08] hover:border-night/20 text-night px-4 py-2.5 rounded-full font-semibold text-xs transition active:scale-[0.98]"
+              >
+                <QrCode size={14} />
+                QR Code
+              </Link>
+            </div>
           </div>
         </div>
-      </motion.div>
+
+        {/* Subscription */}
+        <div className="bg-white rounded-2xl border border-night/[0.06] p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <CreditCard size={14} className="text-night/40" />
+            <span className="text-[11px] font-bold text-night/40 uppercase tracking-wider">
+              Il tuo abbonamento
+            </span>
+          </div>
+
+          <p className="text-base font-bold text-night mb-1">
+            {tenant.subscription_status === "trial"
+              ? "Demo attiva"
+              : tenant.subscription_status === "active"
+              ? `Piano ${tenant.has_online_payments ? "Premium" : tenant.has_table_booking ? "Food + Tavoli" : isFood ? "Food" : "Pro"}`
+              : "Scaduto"}
+          </p>
+
+          {tenant.subscription_status === "active" && (
+            <p className="text-xs text-night/50 mb-4">
+              Rinnovo automatico annuale
+            </p>
+          )}
+          {tenant.subscription_status === "trial" && (
+            <p className="text-xs text-amber-600 font-semibold mb-4">
+              {trialHoursLeft} ore rimanenti
+            </p>
+          )}
+
+          <Link
+            href="/dashboard/abbonamento"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-night hover:text-night/60 transition"
+          >
+            Gestisci
+            <ArrowRight size={12} />
+          </Link>
+        </div>
+      </div>
 
       {/* AZIONI RAPIDE */}
-      <div className="mb-4">
-        <h2 className="text-lg font-bold text-night mb-4">Azioni rapide</h2>
+      <div className="mb-2">
+        <h2 className="text-sm font-bold text-night mb-3">Azioni rapide</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             {
@@ -399,8 +359,13 @@ export default function DashboardPage() {
               href: "/dashboard/servizi",
             },
             {
+              icon: isFood ? ShoppingBag : Calendar,
+              label: isFood ? "Vedi ordini" : "Vedi agenda",
+              href: isFood ? "/dashboard/ordini" : "/dashboard/prenotazioni",
+            },
+            {
               icon: QrCode,
-              label: "Scarica QR Code",
+              label: "Scarica QR",
               href: "/dashboard/qr",
             },
             {
@@ -408,92 +373,31 @@ export default function DashboardPage() {
               label: "Personalizza",
               href: "/dashboard/impostazioni",
             },
-            {
-              icon: isFood ? ShoppingBag : Calendar,
-              label: isFood ? "Vedi ordini" : "Vedi agenda",
-              href: isFood ? "/dashboard/ordini" : "/dashboard/prenotazioni",
-            },
           ].map((action, i) => (
             <motion.div
               key={action.label}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.03 }}
+              transition={{ delay: 0.2 + i * 0.04 }}
             >
               <Link
                 href={action.href}
-                className="bg-white rounded-2xl p-5 border border-night/5 hover:border-night/15 hover:shadow-md transition flex flex-col items-start gap-3 group"
+                className="block bg-white rounded-2xl border border-night/[0.06] hover:border-night/[0.12] hover:shadow-sm transition p-4 group"
               >
-                <div
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: `${brandColor}15` }}
-                >
-                  <action.icon size={20} style={{ color: brandColor }} />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-night/[0.03] flex items-center justify-center shrink-0 group-hover:bg-night/[0.06] transition">
+                    <action.icon size={16} className="text-night/60" />
+                  </div>
+                  <p className="text-[13px] font-semibold text-night leading-tight flex-1">
+                    {action.label}
+                  </p>
+                  <ArrowUpRight size={14} className="text-night/20 group-hover:text-night/60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
                 </div>
-                <p className="text-sm font-semibold text-night leading-tight">
-                  {action.label}
-                </p>
               </Link>
             </motion.div>
           ))}
         </div>
       </div>
-
-      {/* SUGGERIMENTI */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45 }}
-        className="bg-white rounded-3xl p-6 border border-night/5 mt-6"
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-2xl bg-yellow-50 flex items-center justify-center">
-            <Zap size={18} className="text-yellow-600" />
-          </div>
-          <div>
-            <h2 className="font-bold text-night text-sm">Come far decollare la tua attività</h2>
-            <p className="text-xs text-night/50">3 cose che funzionano subito</p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {[
-            {
-              n: "1",
-              text: "Metti il link in bio su Instagram o nella descrizione Google Maps",
-            },
-            {
-              n: "2",
-              text: "Scarica il QR Code e mettilo sui tavoli o sul bancone",
-            },
-            {
-              n: "3",
-              text: "Fai un ordine di test dal tuo stesso link per vedere come funziona",
-            },
-          ].map((tip) => (
-            <div key={tip.n} className="flex items-start gap-3">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
-              >
-                {tip.n}
-              </div>
-              <p className="text-sm text-night/70 leading-relaxed pt-1">{tip.text}</p>
-            </div>
-          ))}
-        </div>
-      </motion.div>
     </div>
   );
-}
-
-function showWelcomeMsg(counts: any, isFood: boolean) {
-  const total = isFood ? counts.orders : counts.bookings;
-  if (total === 0) {
-    return "Inizia a ricevere prenotazioni e ordini: è tutto pronto.";
-  }
-  if (total < 5) {
-    return `Hai già ricevuto ${total} ${isFood ? (total === 1 ? "ordine" : "ordini") : (total === 1 ? "prenotazione" : "prenotazioni")}! 🎉`;
-  }
-  return `Stai andando forte: ${total} ${isFood ? "ordini" : "prenotazioni"} totali.`;
 }

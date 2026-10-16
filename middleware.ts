@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // ⚠️ /admin NON è protetto dal middleware (lo gestiamo con password interna)
-  const protectedPaths = ['/dashboard', '/onboarding']
+  const protectedPaths = ['/dashboard', '/onboarding', '/admin']
   const isProtected = protectedPaths.some((p) => path.startsWith(p))
 
   const authPaths = ['/login', '/signup']

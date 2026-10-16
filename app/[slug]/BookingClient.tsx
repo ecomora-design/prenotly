@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import SplashScreen from "@/components/SplashScreen";
 import { ToastContainer, useToast } from "@/components/Toast";
 import {
-  ChevronRight, Clock, CheckCircle2,
+  ChevronRight, Clock, CheckCircle2, CalendarClock,
   Scissors, ArrowLeft, Sparkles, MapPin, Phone,
   CalendarDays, User, PhoneCall, Loader2, Info, MessageCircle
 } from "lucide-react";
@@ -38,6 +38,14 @@ const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 const DAY_LABELS = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
 const DAY_SHORT = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
 const MONTHS = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+
+// Validazione numero WhatsApp
+function isValidWhatsApp(phone: string | null | undefined): boolean {
+  if (!phone) return false;
+  const clean = phone.replace(/\D/g, "");
+  return clean.length >= 10;
+}
+
 
 export default function BookingClient({
   tenantName,
@@ -186,6 +194,7 @@ export default function BookingClient({
     lines.push(`📞 ${lastBookingSnapshot.customerPhone}`);
     if (lastBookingSnapshot.notes) lines.push(`📝 Note: ${lastBookingSnapshot.notes}`);
 
+    if (!isValidWhatsApp(whatsappNumber)) return "#";
     const phone = whatsappNumber.replace(/\s|\+|-/g, "");
     return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
   };
@@ -521,7 +530,7 @@ export default function BookingClient({
                   className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0"
                   style={{ backgroundColor: brandColor }}
                 >
-                  <Scissors size={20} />
+                  <CalendarClock size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-night text-sm truncate">
@@ -727,7 +736,7 @@ export default function BookingClient({
                     <textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Es. capelli molto lunghi..."
+                      placeholder="Note (opzionale)..."
                       rows={2}
                       className="w-full bg-transparent border-0 text-sm text-night placeholder-gray-300 focus:outline-none p-0 resize-none"
                     />

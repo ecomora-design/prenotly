@@ -24,11 +24,11 @@ export default function ThreeSoftware() {
     {
       id: "pro",
       label: "Pro",
-      subtitle: "Beauty, studi, professionisti",
+      subtitle: "Studi, professionisti, servizi",
       description:
-        "Agenda intelligente con prenotazioni automatiche. Sincronizzata con Google Calendar.",
+        "Agenda intelligente per qualsiasi attività su appuntamento. Sincronizzata con Google Calendar.",
       features: [
-        "Calendario intelligente",
+        "Agenda intelligente",
         "Prenotazioni con slot in tempo reale",
         "Sync con Google Calendar",
         "Promemoria anti no-show",

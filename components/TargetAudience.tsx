@@ -7,11 +7,11 @@ export default function TargetAudience() {
     { icon: Coffee, title: "Bar & Bistrot", text: "Ordini rapidi e prenotazioni per colazioni e pranzi." },
   ];
   const services = [
-    { icon: Scissors, title: "Parrucchieri & Barbieri", text: "Agenda sempre piena, zero telefonate. Slot in tempo reale." },
-    { icon: Sparkles, title: "Estetiste & Nail", text: "Prenotazioni con durata, promemoria automatici anti no-show." },
+    { icon: Scissors, title: "Studi medici", text: "Appuntamenti gestiti in automatico, senza segretaria." },
+    { icon: Sparkles, title: "Consulenti & Avvocati", text: "Prenotazioni in tempo reale, meno no-show." },
     { icon: Stethoscope, title: "Studi medici", text: "Appuntamenti gestiti in automatico, senza segretaria." },
-    { icon: Dumbbell, title: "Palestre & Personal", text: "Lezioni, sessioni e prove gratuite prenotabili online." },
-    { icon: UserRound, title: "Consulenti & Liberi prof.", text: "Agenda sempre ordinata, sync con Google Calendar." },
+    { icon: Dumbbell, title: "Palestre & Coach", text: "Lezioni, sessioni e prove gratuite prenotabili." },
+    { icon: UserRound, title: "Beauty & Parrucchieri", text: "Prenotazioni in tempo reale, meno no-show." },
   ];
 
   return (

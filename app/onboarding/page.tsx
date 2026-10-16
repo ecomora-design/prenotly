@@ -1,9 +1,6 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Store, ArrowRight, Loader2, Utensils, Scissors } from "lucide-react";
+import { Store, ArrowRight, Loader2, Utensils, Scissors, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -17,6 +14,10 @@ export default function OnboardingPage() {
   const [slug, setSlug] = useState("");
   const [businessType, setBusinessType] = useState<"restaurant" | "services">("restaurant");
   const [whatsapp, setWhatsapp] = useState("");
+const whatsappValid = useMemo(() => {
+  const clean = whatsapp.replace(/\s/g, "");
+  return /^\+\d{10,15}$/.test(clean);
+}, [whatsapp]);
   const [description, setDescription] = useState("");
 
   // Controlla se l'utente ha già un'azienda
@@ -89,7 +90,7 @@ export default function OnboardingPage() {
         business_name: businessName,
         business_type: businessType,
         description: description || null,
-        whatsapp_number: whatsapp,
+       whatsapp_number: whatsapp.replace(/\s/g, ""),
         is_active: true,
       })
       .select()
@@ -224,23 +225,54 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          {/* WhatsApp */}
-          <label className="block">
-            <span className="text-sm font-semibold text-night mb-2 block">
-              Numero WhatsApp *
-            </span>
-            <input
-              type="tel"
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              placeholder="+39 333 1234567"
-              required
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none"
-            />
-            <p className="text-xs text-gray-500 mt-1.5">
-              Dove riceverai prenotazioni e ordini
-            </p>
-          </label>
+          {/* WhatsApp */}       
+<label className="block">
+  <span className="text-sm font-semibold text-night mb-2 block">
+    Numero WhatsApp *
+  </span>
+  <div className="relative">
+    <input
+      type="tel"
+      value={whatsapp}
+      onChange={(e) => {
+        let val = e.target.value.replace(/[^\d+ ]/g, "");
+        if (val && !val.startsWith("+")) val = "+39 " + val;
+        setWhatsapp(val);
+      }}
+      placeholder="+39 333 1234567"
+      required
+      className={`w-full border-2 rounded-xl px-4 py-3 pr-12 focus:outline-none transition ${
+        whatsappValid
+          ? "border-green-300 focus:border-green-500"
+          : whatsapp && whatsapp.length > 5
+          ? "border-red-300 focus:border-red-500"
+          : "border-gray-200 focus:border-wa"
+      }`}
+    />
+    {whatsappValid && (
+      <CheckCircle2
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"
+        size={20}
+      />
+    )}
+  </div>
+  {whatsapp && !whatsappValid && (
+    <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+      <AlertCircle size={12} />
+      Formato non valido. Usa: +39 333 1234567
+    </p>
+  )}
+  {whatsappValid && (
+    <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
+      <CheckCircle2 size={12} />
+      Numero valido
+    </p>
+  )}
+  <p className="text-xs text-gray-500 mt-1.5">
+    È il numero dove riceverai <strong>tutti</strong> gli ordini e le prenotazioni.
+    Assicurati che sia attivo su WhatsApp.
+  </p>
+</label>
 
           {/* Descrizione */}
           <label className="block">

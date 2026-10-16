@@ -8,7 +8,7 @@ import OnboardingGuide from "@/components/OnboardingGuide";
 import {
   LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarDays,
   CreditCard, QrCode, Settings, LogOut, Menu, X, Loader2,
-  ExternalLink, Users, ChevronRight, Sparkles, Bell, Download
+  ExternalLink, Users, ChevronRight, Sparkles, Bell,
 } from "lucide-react";
 
 type Tenant = {
@@ -37,8 +37,6 @@ export default function DashboardLayout({
   const [user, setUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
-  const [showInstallBtn, setShowInstallBtn] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -67,25 +65,8 @@ export default function DashboardLayout({
   }, []);
 
   useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredInstallPrompt(e);
-      setShowInstallBtn(true);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  const handleInstallApp = async () => {
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    setDeferredInstallPrompt(null);
-    setShowInstallBtn(false);
-  };
-
-  useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleCompleteOnboarding = async () => {
     if (!tenant) return;
@@ -104,10 +85,10 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-cream">
+      <main className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
         <div className="text-center">
-          <Loader2 className="animate-spin text-waDark mx-auto mb-3" size={32} />
-          <p className="text-sm text-night/40 font-medium">Caricamento...</p>
+          <Loader2 className="animate-spin text-night mx-auto mb-3" size={28} />
+          <p className="text-xs text-night/40 font-medium">Caricamento dashboard...</p>
         </div>
       </main>
     );
@@ -118,19 +99,46 @@ export default function DashboardLayout({
   const isFood = tenant.product_type === "food" || tenant.business_type === "restaurant";
   const brandColor = tenant.brand_color || (isFood ? "#25D366" : "#8B5CF6");
 
-  const navItems = [
-    { href: "/dashboard", label: "Panoramica", icon: LayoutDashboard },
-    { href: "/dashboard/servizi", label: isFood ? "Menu" : "Servizi", icon: Utensils },
-    ...(isFood
-      ? [{ href: "/dashboard/ordini", label: "Ordini", icon: ShoppingBag }]
-      : [
-          { href: "/dashboard/prenotazioni", label: "Prenotazioni", icon: Calendar },
-          { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
-        ]),
-    { href: "/dashboard/clienti", label: "Clienti", icon: Users },
-    { href: "/dashboard/qr", label: "QR Code", icon: QrCode },
-    { href: "/dashboard/impostazioni", label: "Impostazioni", icon: Settings },
-    { href: "/dashboard/abbonamento", label: "Abbonamento", icon: CreditCard },
+  // Sidebar items grouped
+  const navSections = [
+    {
+      label: "Panoramica",
+      items: [
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: isFood ? "Vendite" : "Agenda",
+      items: isFood
+        ? [
+            { href: "/dashboard/ordini", label: "Ordini", icon: ShoppingBag },
+            { href: "/dashboard/servizi", label: "Menu", icon: Utensils },
+          ]
+        : [
+            { href: "/dashboard/prenotazioni", label: "Prenotazioni", icon: Calendar },
+            { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
+            { href: "/dashboard/servizi", label: "Servizi", icon: Utensils },
+          ],
+    },
+    {
+      label: "Clienti",
+      items: [
+        { href: "/dashboard/clienti", label: "Rubrica clienti", icon: Users },
+      ],
+    },
+    {
+      label: "Marketing",
+      items: [
+        { href: "/dashboard/qr", label: "QR Code", icon: QrCode },
+      ],
+    },
+    {
+      label: "Impostazioni",
+      items: [
+        { href: "/dashboard/impostazioni", label: "Attività", icon: Settings },
+        { href: "/dashboard/abbonamento", label: "Abbonamento", icon: CreditCard },
+      ],
+    },
   ];
 
   const trialHoursLeft = tenant.trial_ends_at
@@ -140,7 +148,7 @@ export default function DashboardLayout({
   const showTrialBanner = tenant.subscription_status === "trial" && trialHoursLeft > 0;
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-[#FAFAFA]">
       {showOnboarding && (
         <OnboardingGuide
           isFood={isFood}
@@ -149,22 +157,19 @@ export default function DashboardLayout({
         />
       )}
 
-      {/* Banner trial */}
+      {/* Trial banner */}
       {showTrialBanner && (
-        <div
-          className="text-white px-4 py-3 text-center text-xs md:text-sm sticky top-0 z-40"
-          style={{ backgroundColor: brandColor }}
-        >
-          <div className="container-x flex items-center justify-center gap-2">
-            <Sparkles size={14} className="shrink-0" />
+        <div className="bg-night text-white px-4 py-2.5 text-center text-xs sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-wa animate-pulse shrink-0" />
             <span>
-              Demo attiva — <strong>{trialHoursLeft} ore rimanenti</strong>
+              Demo attiva · <strong>{trialHoursLeft} ore rimanenti</strong>
             </span>
             <Link
               href="/dashboard/abbonamento"
-              className="bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 font-bold transition shrink-0 ml-2"
+              className="bg-white/10 hover:bg-white/20 rounded-full px-3 py-1 font-semibold transition shrink-0"
             >
-              Attiva ora
+              Attiva
             </Link>
           </div>
         </div>
@@ -172,81 +177,100 @@ export default function DashboardLayout({
 
       <div className="flex">
         {/* SIDEBAR DESKTOP */}
-        <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-night/5 min-h-screen sticky top-0 h-screen">
+        <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-night/[0.06] min-h-screen sticky top-0 h-screen">
           {/* Logo */}
-          <div className="p-6 border-b border-night/5">
-            <Link href="/" className="text-xl font-bold text-night">
+          <div className="px-5 h-16 flex items-center border-b border-night/[0.06]">
+            <Link href="/" className="text-lg font-bold text-night tracking-tight">
               Prenot<span className="text-waDark">ly</span>
             </Link>
           </div>
 
-          {/* Profilo */}
-          <div className="p-5 border-b border-night/5">
-            <div className="flex items-center gap-3 mb-3">
+          {/* Tenant selector */}
+          <div className="p-3">
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-night/[0.03] transition cursor-pointer">
               {tenant.logo_url ? (
                 <img
                   src={tenant.logo_url}
                   alt={tenant.business_name}
-                  className="w-12 h-12 rounded-2xl object-cover ring-2 ring-cream shrink-0"
+                  className="w-9 h-9 rounded-lg object-cover shrink-0"
                 />
               ) : (
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shrink-0"
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
                   style={{ backgroundColor: brandColor }}
                 >
                   {tenant.business_name.charAt(0)}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-night text-sm truncate">
+                <p className="text-sm font-semibold text-night truncate">
                   {tenant.business_name}
                 </p>
-                <p className="text-xs text-night/50 capitalize">
+                <p className="text-[10px] text-night/40 capitalize truncate">
                   {tenant.product_type || tenant.business_type}
                 </p>
               </div>
             </div>
+          </div>
+
+          <div className="h-px bg-night/[0.06] mx-3" />
+
+          {/* Nav sections */}
+          <nav className="flex-1 overflow-y-auto p-3">
+            {navSections.map((section, sIdx) => (
+              <div key={section.label} className={sIdx > 0 ? "mt-5" : ""}>
+                <p className="text-[10px] font-bold text-night/30 uppercase tracking-widest px-3 mb-1.5">
+                  {section.label}
+                </p>
+                {section.items.map((item) => {
+                  const active =
+                    pathname === item.href ||
+                    (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition mb-0.5 ${
+                        active
+                          ? "bg-night/[0.04] text-night"
+                          : "text-night/60 hover:bg-night/[0.03] hover:text-night"
+                      }`}
+                    >
+                      <item.icon
+                        size={16}
+                        className={active ? "text-night" : "text-night/40"}
+                      />
+                      <span className="flex-1">{item.label}</span>
+                      {active && (
+                        <div
+                          className="w-1 h-1 rounded-full"
+                          style={{ backgroundColor: brandColor }}
+                        />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+
+          {/* Public link */}
+          <div className="p-3 border-t border-night/[0.06]">
             <Link
               href={`/${tenant.slug}`}
               target="_blank"
-              className="flex items-center justify-between text-xs font-semibold text-night/60 hover:text-waDark bg-cream rounded-xl px-3 py-2 transition group"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-night/60 hover:bg-night/[0.03] hover:text-night transition mb-1 group"
             >
-              <span className="truncate">prenotly-italia.it/{tenant.slug}</span>
-              <ExternalLink size={12} className="shrink-0 group-hover:translate-x-0.5 transition" />
+              <ExternalLink size={13} className="text-night/40" />
+              <span className="truncate flex-1">/{tenant.slug}</span>
+              <ChevronRight size={12} className="text-night/20 group-hover:translate-x-0.5 transition" />
             </Link>
-          </div>
 
-          {/* Nav */}
-          <nav className="flex-1 p-3 overflow-y-auto">
-            {navItems.map((item) => {
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition mb-0.5 ${
-                    active
-                      ? "bg-night text-white"
-                      : (item as any).highlight
-                      ? "text-night/70 hover:bg-cream"
-                      : "text-night/60 hover:bg-cream hover:text-night"
-                  }`}
-                >
-                  <item.icon size={18} className={active ? "text-wa" : ""} />
-                  <span className="flex-1">{item.label}</span>
-
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Footer */}
-          <div className="p-3 border-t border-night/5 space-y-0.5">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-red-500 hover:bg-red-50 transition"
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-night/50 hover:bg-red-50 hover:text-red-500 transition"
             >
-              <LogOut size={18} />
+              <LogOut size={13} />
               Esci
             </button>
           </div>
@@ -254,28 +278,28 @@ export default function DashboardLayout({
 
         {/* MAIN */}
         <div className="flex-1 min-w-0">
-          {/* Header mobile */}
-          <header className="lg:hidden sticky top-0 z-30 bg-white border-b border-night/5">
-            <div className="px-4 py-3 flex items-center justify-between">
+          {/* Mobile header */}
+          <header className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-lg border-b border-night/[0.06]">
+            <div className="px-4 h-14 flex items-center justify-between">
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 className="p-2 -ml-2 text-night"
                 aria-label="Menu"
               >
-                <Menu size={24} />
+                <Menu size={22} />
               </button>
-              <Link href="/" className="text-lg font-bold text-night">
+              <Link href="/" className="text-base font-bold text-night tracking-tight">
                 Prenot<span className="text-waDark">ly</span>
               </Link>
               {tenant.logo_url ? (
                 <img
                   src={tenant.logo_url}
                   alt={tenant.business_name}
-                  className="w-9 h-9 rounded-xl object-cover ring-2 ring-cream"
+                  className="w-8 h-8 rounded-lg object-cover"
                 />
               ) : (
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs"
                   style={{ backgroundColor: brandColor }}
                 >
                   {tenant.business_name.charAt(0)}
@@ -284,85 +308,98 @@ export default function DashboardLayout({
             </div>
           </header>
 
-          {/* Menu mobile */}
+          {/* Mobile menu */}
           {mobileMenuOpen && (
             <div className="fixed inset-0 z-50 bg-white lg:hidden overflow-y-auto">
-              <div className="p-4 flex items-center justify-between border-b border-night/5 sticky top-0 bg-white">
-                <span className="font-bold text-night">Menu</span>
+              <div className="px-4 h-14 flex items-center justify-between border-b border-night/[0.06] sticky top-0 bg-white">
+                <span className="font-bold text-night text-base">Menu</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-2 -mr-2"
-                  aria-label="Chiudi"
                 >
-                  <X size={24} />
+                  <X size={22} />
                 </button>
               </div>
 
-              <div className="p-5 border-b border-night/5">
-                <div className="flex items-center gap-3 mb-3">
+              <div className="p-4 border-b border-night/[0.06]">
+                <div className="flex items-center gap-3">
                   {tenant.logo_url ? (
                     <img
                       src={tenant.logo_url}
                       alt={tenant.business_name}
-                      className="w-12 h-12 rounded-2xl object-cover ring-2 ring-cream"
+                      className="w-10 h-10 rounded-lg object-cover"
                     />
                   ) : (
                     <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
                       style={{ backgroundColor: brandColor }}
                     >
                       {tenant.business_name.charAt(0)}
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-night truncate">{tenant.business_name}</p>
-                    <p className="text-xs text-night/50 capitalize">
+                    <p className="text-sm font-bold text-night truncate">
+                      {tenant.business_name}
+                    </p>
+                    <p className="text-[10px] text-night/40 capitalize">
                       {tenant.product_type || tenant.business_type}
                     </p>
                   </div>
                 </div>
+              </div>
+
+              <nav className="p-4">
+                {navSections.map((section) => (
+                  <div key={section.label} className="mb-5">
+                    <p className="text-[10px] font-bold text-night/30 uppercase tracking-widest px-2 mb-1.5">
+                      {section.label}
+                    </p>
+                    {section.items.map((item) => {
+                      const active =
+                        pathname === item.href ||
+                        (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition mb-0.5 ${
+                            active
+                              ? "bg-night/[0.04] text-night"
+                              : "text-night/60 active:bg-night/[0.03]"
+                          }`}
+                        >
+                          <item.icon
+                            size={18}
+                            className={active ? "text-night" : "text-night/40"}
+                          />
+                          <span className="flex-1">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ))}
+
                 <Link
                   href={`/${tenant.slug}`}
                   target="_blank"
-                  className="flex items-center justify-between text-xs font-semibold text-night/60 bg-cream rounded-xl px-3 py-2.5"
+                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-night/60 active:bg-night/[0.03]"
                 >
-                  <span className="truncate">prenotly-italia.it/{tenant.slug}</span>
-                  <ExternalLink size={12} />
+                  <ExternalLink size={18} className="text-night/40" />
+                  Vedi la tua pagina
                 </Link>
-              </div>
-
-              <nav className="p-3">
-                {navItems.map((item) => {
-                  const active = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-base transition mb-1 ${
-                        active
-                          ? "bg-night text-white"
-                          : "text-night/70 active:bg-cream"
-                      }`}
-                    >
-                      <item.icon size={20} className={active ? "text-wa" : ""} />
-                      <span className="flex-1">{item.label}</span>
-                      <ChevronRight size={16} className={active ? "text-white/50" : "text-night/20"} />
-                    </Link>
-                  );
-                })}
 
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-base text-red-500 active:bg-red-50 mt-2"
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-red-500 active:bg-red-50 mt-1"
                 >
-                  <LogOut size={20} />
+                  <LogOut size={18} />
                   Esci
                 </button>
               </nav>
             </div>
           )}
 
-          <div className="p-4 md:p-8 pb-24 lg:pb-8">{children}</div>
+          <div className="p-4 md:p-8 pb-24 lg:pb-8 max-w-6xl mx-auto">{children}</div>
         </div>
       </div>
     </div>

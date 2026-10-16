@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import UploadImage from "@/components/UploadImage";
-import {
-  Plus, Pencil, Trash2, X, Loader2, Save, Clock
-} from "lucide-react";
+import MenuUploader from "@/components/MenuUploader";
+import { Plus, Pencil, Trash2, X, Loader2, Save, Clock, Sparkles, Upload } from "lucide-react";
 
 type Service = {
   id: string;
@@ -32,6 +31,7 @@ export default function ServiziPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
+  const [showUploader, setShowUploader] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -156,6 +156,25 @@ export default function ServiziPage() {
     return acc;
   }, {});
 
+  if (showUploader) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <button
+          onClick={() => { setShowUploader(false); load(); }}
+          className="inline-flex items-center gap-2 text-sm text-night/50 hover:text-night mb-5 transition"
+        >
+          <X size={14} /> Chiudi
+        </button>
+        <MenuUploader
+          tenantId={tenantId!}
+          businessType={isFood ? "food" : "services"}
+          onComplete={() => { setShowUploader(false); load(); }}
+          onCancel={() => setShowUploader(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
@@ -167,10 +186,22 @@ export default function ServiziPage() {
             {isFood ? "Aggiungi piatti e bevande con foto" : "Aggiungi i servizi che offri"}
           </p>
         </div>
-        <button onClick={openNew} className="bg-wa hover:bg-waDark text-white px-5 py-3 rounded-full font-bold text-sm inline-flex items-center gap-2 transition active:scale-95 shrink-0">
-          <Plus size={18} />
-          {isFood ? "Aggiungi piatto" : "Aggiungi servizio"}
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setShowUploader(true)}
+            className="bg-gradient-to-r from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 text-white px-5 py-3 rounded-full font-bold text-sm inline-flex items-center gap-2 transition active:scale-95 shrink-0 shadow-lg shadow-violet-500/30"
+          >
+            <Sparkles size={18} />
+            Carica {isFood ? "menu" : "listino"} con AI
+          </button>
+          <button
+            onClick={openNew}
+            className="bg-night hover:bg-night/90 text-white px-5 py-3 rounded-full font-bold text-sm inline-flex items-center gap-2 transition active:scale-95 shrink-0"
+          >
+            <Plus size={18} />
+            {isFood ? "Aggiungi piatto" : "Aggiungi servizio"}
+          </button>
+        </div>
       </div>
 
       {services.length === 0 ? (

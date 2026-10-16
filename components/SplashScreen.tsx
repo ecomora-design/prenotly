@@ -18,6 +18,9 @@ export default function SplashScreen({ tenantName, logoUrl, brandColor, isFood }
     return () => clearTimeout(timer);
   }, []);
 
+  // Emoji generico in base al tipo
+  const emoji = isFood ? "🍕" : "📅";
+
   return (
     <AnimatePresence>
       {show && (
@@ -76,7 +79,7 @@ export default function SplashScreen({ tenantName, logoUrl, brandColor, isFood }
               transition={{ delay: 0.5, type: "spring" }}
               className="text-4xl mt-4"
             >
-              {isFood ? "🍕" : "💇"}
+              {emoji}
             </motion.div>
 
             <motion.div
