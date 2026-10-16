@@ -1,3 +1,7 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Store, ArrowRight, Loader2, Utensils, Scissors, CheckCircle2, AlertCircle } from "lucide-react";

@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       quality: "standard",
     });
 
-    const url = dalleRes.data[0]?.url;
+    const url = dalleRes.data?.[0]?.url;
     if (!url) {
       return NextResponse.json({ error: "Generazione fallita" }, { status: 500 });
     }
