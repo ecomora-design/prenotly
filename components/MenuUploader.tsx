@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Upload, Loader2, CheckCircle2, X, Sparkles,
   FileText, Trash2, Plus, AlertCircle, RefreshCw,
-  ImagePlus, Wand2,
+  ImagePlus,
 } from "lucide-react";
 
 type ExtractedItem = {
@@ -33,8 +33,7 @@ export default function MenuUploader({ tenantId, businessType, onComplete, onCan
   const [items, setItems] = useState<ExtractedItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
-  const [generatingImage, setGeneratingImage] = useState<number | null>(null);
-  const [generatingAll, setGeneratingAll] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   const isFood = businessType === "food";
 
@@ -86,42 +85,48 @@ export default function MenuUploader({ tenantId, businessType, onComplete, onCan
     setItems((prev) => [...prev, { name: "", description: "", category: "", price: 0, duration_minutes: isFood ? undefined : 30 }]);
   };
 
-  const generateImageForItem = async (index: number) => {
-    const item = items[index];
-    if (!item?.name) return;
-    setGeneratingImage(index);
-    try {
-      const res = await fetch("/api/food-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: item.name, description: item.description, category: item.category, businessType }),
-      });
-      const data = await res.json();
-      if (data.url) setImageUrls((prev) => ({ ...prev, [index]: data.url }));
-      else if (data.error) setError(data.error);
-    } catch (err) { console.error(err); }
-    finally { setGeneratingImage(null); }
-  };
+  // Upload foto manuale per il singolo item
+  const handleImageUpload = async (index: number, f: File) => {
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { setError("Foto troppo grande. Max 5MB."); return; }
+    if (!f.type.startsWith("image/")) { setError("Deve essere un'immagine."); return; }
 
-  const generateAllImages = async () => {
-    const withName = items.map((item, i) => ({ item, i })).filter((x) => x.item.name && x.item.name.trim() && !imageUrls[x.i]);
-    if (withName.length === 0) return;
-    setGeneratingAll(true);
+    setUploadingIndex(index);
     setError(null);
-    for (const { i } of withName) {
-      await generateImageForItem(i);
-      await new Promise((r) => setTimeout(r, 300));
+
+    try {
+      const ext = f.name.split(".").pop() || "jpg";
+      const fileName = `${tenantId}/services/${Date.now()}-${index}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("tenant-assets")
+        .upload(fileName, f, { cacheControl: "3600", upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("tenant-assets")
+        .getPublicUrl(fileName);
+
+      setImageUrls((prev) => ({ ...prev, [index]: urlData.publicUrl }));
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError(err instanceof Error ? err.message : "Errore upload");
+    } finally {
+      setUploadingIndex(null);
     }
-    setGeneratingAll(false);
   };
 
   const handleSaveAll = async () => {
     const validItems = items.filter((i) => i.name && i.name.trim());
     if (validItems.length === 0) { setError("Aggiungi almeno un elemento con nome."); return; }
+
     setStep("saving");
     setError(null);
+
     const { count } = await supabase.from("services").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId);
     const startOrder = (count || 0) + 1;
+
     const toInsert = validItems.map((i, idx) => {
       const originalIndex = items.indexOf(i);
       return {
@@ -136,12 +141,15 @@ export default function MenuUploader({ tenantId, businessType, onComplete, onCan
         sort_order: startOrder + idx,
       };
     });
+
     const { error: insertError } = await supabase.from("services").insert(toInsert);
     if (insertError) { setError(insertError.message); setStep("review"); return; }
+
     if ("vibrate" in navigator) navigator.vibrate([10, 30, 10]);
     onComplete();
   };
 
+  // ═══════════ UPLOAD FILE MENU ═══════════
   if (step === "upload") {
     return (
       <div className="space-y-5">
@@ -212,6 +220,7 @@ export default function MenuUploader({ tenantId, businessType, onComplete, onCan
     );
   }
 
+  // ═══════════ REVIEW ═══════════
   if (step === "review") {
     return (
       <div className="space-y-5">
@@ -223,7 +232,7 @@ export default function MenuUploader({ tenantId, businessType, onComplete, onCan
               </div>
               <div>
                 <h2 className="text-base font-bold text-night">Ecco cosa ho trovato ✨</h2>
-                <p className="text-xs text-night/50">{items.length} {isFood ? "piatti" : "servizi"} · Controlla e modifica</p>
+                <p className="text-xs text-night/50">{items.length} {isFood ? "piatti" : "servizi"} · Controlla, modifica, aggiungi foto</p>
               </div>
             </div>
             <button onClick={() => { setItems([]); setFile(null); setPreview(null); setStep("upload"); setImageUrls({}); }} className="text-xs font-semibold text-night/50 hover:text-night inline-flex items-center gap-1.5 transition">
@@ -237,19 +246,6 @@ export default function MenuUploader({ tenantId, businessType, onComplete, onCan
             </div>
           )}
 
-          <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-2xl p-4 mb-4 flex items-center gap-3 flex-wrap">
-            <div className="w-10 h-10 rounded-xl bg-violet-500 flex items-center justify-center shrink-0">
-              <Wand2 size={18} className="text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-night text-sm">Genera tutte le foto con AI</p>
-              <p className="text-[11px] text-night/50">Cerca foto reali o le genera per te (10-30 sec)</p>
-            </div>
-            <button onClick={generateAllImages} disabled={generatingAll || items.length === 0} className="bg-violet-500 hover:bg-violet-600 disabled:bg-violet-300 text-white px-4 py-2 rounded-full font-bold text-xs transition shrink-0 active:scale-95 inline-flex items-center gap-1.5">
-              {generatingAll ? (<><Loader2 className="animate-spin" size={13} />Genero...</>) : (<><Sparkles size={13} />Genera tutte</>)}
-            </button>
-          </div>
-
           <div className="space-y-3 mb-5 max-h-[60vh] overflow-y-auto">
             {items.map((item, i) => (
               <div key={i} className="bg-night/[0.02] rounded-2xl p-4 border border-night/[0.04]">
@@ -259,6 +255,7 @@ export default function MenuUploader({ tenantId, businessType, onComplete, onCan
                   <button onClick={() => removeItem(i)} className="w-9 h-9 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 transition shrink-0 flex items-center justify-center"><Trash2 size={14} /></button>
                 </div>
 
+                {/* FOTO: upload manuale */}
                 <div className="pl-10 mb-3 flex items-center gap-3">
                   {imageUrls[i] ? (
                     <div className="relative group shrink-0">
@@ -266,11 +263,23 @@ export default function MenuUploader({ tenantId, businessType, onComplete, onCan
                       <button onClick={() => setImageUrls((prev) => { const copy = { ...prev }; delete copy[i]; return copy; })} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition"><X size={10} /></button>
                     </div>
                   ) : (
-                    <button onClick={() => generateImageForItem(i)} disabled={!item.name || generatingImage === i} className="w-16 h-16 rounded-xl border-2 border-dashed border-violet-200 hover:border-violet-400 hover:bg-violet-50 disabled:opacity-50 flex flex-col items-center justify-center gap-0.5 transition shrink-0">
-                      {generatingImage === i ? (<Loader2 className="animate-spin text-violet-500" size={16} />) : (<><ImagePlus size={14} className="text-violet-500" /><span className="text-[8px] font-bold text-violet-500 uppercase">AI foto</span></>)}
-                    </button>
+                    <label className="cursor-pointer shrink-0">
+                      <div className="w-16 h-16 rounded-xl border-2 border-dashed border-night/15 hover:border-wa hover:bg-wa/[0.04] flex flex-col items-center justify-center gap-0.5 transition">
+                        {uploadingIndex === i ? (
+                          <Loader2 className="animate-spin text-waDark" size={16} />
+                        ) : (
+                          <>
+                            <ImagePlus size={14} className="text-night/40" />
+                            <span className="text-[8px] font-bold text-night/40 uppercase">Foto</span>
+                          </>
+                        )}
+                      </div>
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload(i, e.target.files[0])} />
+                    </label>
                   )}
-                  <p className="text-[11px] text-night/40 leading-tight">{imageUrls[i] ? "✓ Foto pronta" : "Clicca per generare una foto professionale"}</p>
+                  <p className="text-[11px] text-night/40 leading-tight">
+                    {imageUrls[i] ? "✓ Foto caricata" : "Clicca per caricare una foto (facoltativo)"}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pl-10">
