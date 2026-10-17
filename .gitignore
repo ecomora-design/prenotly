@@ -47,3 +47,10 @@ next-env.d.ts
 
 # Script helper
 convert-icons.mjs
+
+.next
+.DS_Store
+*.bak
+prenotly-snapshot.txt
+home.html
+prezzi.html
