@@ -107,6 +107,7 @@ export default function MenuClient({
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [phonePrefix, setPhonePrefix] = useState("+39");
   const [orderType, setOrderType] = useState<"takeaway" | "delivery">(hasTakeaway ? "takeaway" : "delivery");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
@@ -937,7 +938,55 @@ export default function MenuClient({
                 <div className="bg-white rounded-2xl p-4 shadow-sm mt-3">
                   <label className="block">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Numero di telefono *</span>
-                    <input type="tel" required value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Es. 333 123 4567" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
+                    
+                    <div className="flex items-center gap-3">
+                      <select 
+                        value={phonePrefix} 
+                        onChange={(e) => setPhonePrefix(e.target.value)} 
+                        className="bg-transparent border-0 text-base font-semibold text-night focus:outline-none p-0 cursor-pointer"
+                      >
+                        <option value="+39">🇮🇹 +39</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+34">🇪🇸 +34</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+41">🇨🇭 +41</option>
+                        <option value="+43">🇦🇹 +43</option>
+                        <option value="+32">🇧🇪 +32</option>
+                        <option value="+31">🇳🇱 +31</option>
+                        <option value="+351">🇵🇹 +351</option>
+                        <option value="+30">🇬🇷 +30</option>
+                        <option value="+385">🇭🇷 +385</option>
+                        <option value="+386">🇸🇮 +386</option>
+                        <option value="+420">🇨🇿 +420</option>
+                        <option value="+48">🇵🇱 +48</option>
+                        <option value="+40">🇷🇴 +40</option>
+                        <option value="+359">🇧🇬 +359</option>
+                        <option value="+36">🇭🇺 +36</option>
+                        <option value="+353">🇮🇪 +353</option>
+                        <option value="+46">🇸🇪 +46</option>
+                        <option value="+47">🇳🇴 +47</option>
+                        <option value="+45">🇩🇰 +45</option>
+                        <option value="+358">🇫🇮 +358</option>
+                        <option value="+7">🇷🇺 +7</option>
+                        <option value="+90">🇹🇷 +90</option>
+                        <option value="+972">🇮🇱 +972</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+64">🇳🇿 +64</option>
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+86">🇨🇳 +86</option>
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+54">🇦🇷 +54</option>
+                        <option value="+52">🇲🇽 +52</option>
+                        <option value="+27">🇿🇦 +27</option>
+                        <option value="+20">🇪🇬 +20</option>
+                        <option value="+212">🇲🇦 +38</option>
+                      </select>
+                      <div className="w-px h-6 bg-gray-200"></div>
+                      <input type="tel" required value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="333 123 4567" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
+                    </div>
                   </label>
                 </div>
 
