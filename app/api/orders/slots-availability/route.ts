@@ -23,8 +23,9 @@ export async function GET(req: Request) {
 
     const defaultCapacity = tenant.max_orders_per_slot || 5;
 
-    const startOfDay = new Date(`${date}T00:00:00`).toISOString();
-    const endOfDay = new Date(`${date}T23:59:59`).toISOString();
+    const dayStart = new Date(`${date}T00:00:00.000Z`).getTime();
+    const startOfDay = new Date(dayStart - 24 * 60 * 60 * 1000).toISOString();
+    const endOfDay = new Date(dayStart + 48 * 60 * 60 * 1000).toISOString();
 
     const { data: orders } = await supabase
       .from("orders")
@@ -38,7 +39,16 @@ export async function GET(req: Request) {
     (orders || []).forEach((o) => {
       if (!o.scheduled_for) return;
       const d = new Date(o.scheduled_for);
-      const slot = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+      
+      const slot = d.toLocaleTimeString("it-IT", {
+        timeZone: "Europe/Rome",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const orderDate = d.toLocaleDateString("en-CA", { timeZone: "Europe/Rome" });
+      if (orderDate !== date) return;
+
       webCounts[slot] = (webCounts[slot] || 0) + 1;
     });
 
@@ -51,12 +61,13 @@ export async function GET(req: Request) {
     const availability: Record<string, any> = {};
 
     (overrides || []).forEach((o) => {
-      const webCount = webCounts[o.slot] || 0;
+      const slotKey = o.slot.slice(0, 5); 
+      const webCount = webCounts[slotKey] || 0;
       const manualCount = o.manual_orders_count || 0;
       const total = webCount + manualCount;
       const capacity = o.capacity_override || defaultCapacity;
 
-      availability[o.slot] = {
+      availability[slotKey] = {
         web_count: webCount,
         manual_count: manualCount,
         total,
