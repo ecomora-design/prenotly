@@ -282,7 +282,7 @@ export default function OrdiniPage() {
                       const cfg = ORDER_STATUS[order.status as keyof typeof ORDER_STATUS] || ORDER_STATUS.pending;
                       const customerPhone = order.customers?.whatsapp_number?.replace(/\D/g, "") || "";
                       const scheduledTime = order.scheduled_for
-                        ? new Date(order.scheduled_for).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome" })
+                        ? order.scheduled_for.substring(11, 16)
                         : null;
 
                       return (
@@ -372,10 +372,11 @@ export default function OrdiniPage() {
                                   href={`https://wa.me/${customerPhone}?text=${encodeURIComponent(getWhatsAppMessage(order))}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-green-700 bg-green-100 hover:bg-green-200 text-xs sm:text-sm font-bold px-3 sm:px-4 py-2.5 rounded-lg transition inline-flex items-center gap-1.5 shrink-0 animate-pulse"
+                                  title="Avvisa il cliente su WhatsApp"
+                                  className="text-white bg-[#25D366] hover:bg-[#20ba5a] text-xs sm:text-sm font-bold px-4 py-2.5 rounded-lg transition inline-flex items-center gap-2 shrink-0 shadow-sm active:scale-95"
                                 >
-                                  <MessageCircle size={18} />
-                                  WhatsApp
+                                  <MessageCircle size={20} />
+                                  Avvisa
                                 </a>
                               )}
                             </div>
