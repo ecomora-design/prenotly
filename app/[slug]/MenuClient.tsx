@@ -12,8 +12,7 @@ import {
   Plus, Minus, ShoppingBag, X, Clock,
   Truck, Store, MapPin, Phone, Info, Search,
   ChevronRight, Utensils, Users, Calendar, CheckCircle2,
-  MessageCircle, Lock, Sparkles, ArrowRight
-} from "lucide-react";
+  MessageCircle, Lock, Sparkles, ArrowRight, AlertCircle } from "lucide-react";
 
 type Service = {
   id: string;
@@ -53,6 +52,10 @@ type Props = {
   tableSlots?: string[] | null;
   maxPartySize?: number;
   tables?: Table[];
+  hasDelivery?: boolean;
+  hasTakeaway?: boolean;
+  deliveryFee?: number;
+  minOrderDelivery?: number;
 };
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -84,6 +87,10 @@ export default function MenuClient({
   tableSlots = ["19:30", "20:00", "20:30", "21:00", "21:30"],
   maxPartySize = 10,
   tables = [],
+  hasDelivery = true,
+  hasTakeaway = true,
+  deliveryFee = 0,
+  minOrderDelivery = 0,
 }: Props) {
   const [tab, setTab] = useState<"menu" | "info">("menu");
   const [selectedCategory, setSelectedCategory] = useState<string>("tutto");
@@ -99,7 +106,7 @@ export default function MenuClient({
   const [lastOrderSnapshot, setLastOrderSnapshot] = useState<any>(null);
 
   const [customerName, setCustomerName] = useState("");
-  const [orderType, setOrderType] = useState<"takeaway" | "delivery">("takeaway");
+  const [orderType, setOrderType] = useState<"takeaway" | "delivery">(hasTakeaway ? "takeaway" : "delivery");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [pickupTime, setPickupTime] = useState("");
@@ -173,15 +180,43 @@ export default function MenuClient({
   const timeSlots = useMemo(() => {
     const list: string[] = [];
     const now = new Date();
-    const start = new Date(now.getTime() + 30 * 60000);
-    start.setMinutes(start.getMinutes() < 30 ? 30 : 0);
-    if (start.getMinutes() === 0) start.setHours(start.getHours() + 1);
-    for (let i = 0; i < 8; i++) {
-      const t = new Date(start.getTime() + i * 30 * 60000);
-      list.push(t.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }));
+    const todayKey = DAY_KEYS[now.getDay()];
+    const todayHours = openingHours?.[todayKey];
+
+    // Se chiuso oggi, nessuno slot
+    if (!todayHours || todayHours === "chiuso") return [];
+
+    const parts = todayHours.split("-");
+    if (parts.length !== 2) return [];
+    const [startH, startM] = parts[0].split(":").map(Number);
+    const [endH, endM] = parts[1].split(":").map(Number);
+
+    const openTime = new Date(now);
+    openTime.setHours(startH, startM, 0, 0);
+    const closeTime = new Date(now);
+    closeTime.setHours(endH, endM, 0, 0);
+
+    // Se il ristorante ha già chiuso oggi, nessuno slot
+    if (now >= closeTime) return [];
+
+    // Parti da max(ora attuale + 30min, apertura)
+    let current = new Date(Math.max(now.getTime() + 30 * 60000, openTime.getTime()));
+
+    // Arrotonda ai prossimi 30 min
+    const mins = current.getMinutes();
+    if (mins < 30) current.setMinutes(30, 0, 0);
+    else if (mins > 30) current.setHours(current.getHours() + 1, 0, 0, 0);
+    else current.setSeconds(0, 0);
+
+    // Fermati 30 min prima della chiusura
+    const cutoff = new Date(closeTime.getTime() - 30 * 60000);
+    while (current <= cutoff) {
+      list.push(current.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }));
+      current = new Date(current.getTime() + 30 * 60000);
     }
+
     return list;
-  }, []);
+  }, [openingHours]);
 
   // Carica tavoli occupati quando cambia data/ora
   useEffect(() => {
@@ -245,7 +280,9 @@ export default function MenuClient({
 
   const cartItems = Object.values(cart);
   const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0);
-  const cartTotal = cartItems.reduce((sum, i) => sum + i.qty * Number(i.service.price), 0);
+  const cartSubtotal = cartItems.reduce((sum, i) => sum + i.qty * Number(i.service.price), 0);
+  const deliveryCost = orderType === "delivery" ? deliveryFee : 0;
+  const cartTotal = cartSubtotal + deliveryCost;
 
   const sendOrder = async () => {
     setSubmitting(true);
@@ -287,6 +324,8 @@ export default function MenuClient({
 
       setLastOrderSnapshot({
         code,
+        subtotal: cartSubtotal,
+        deliveryFee: orderType === "delivery" ? deliveryFee : 0,
         total: cartTotal,
         customerName,
         orderType,
@@ -326,7 +365,13 @@ export default function MenuClient({
       lines.push(`• ${item.qty}x ${item.name} — €${(item.qty * item.price).toFixed(2)}`);
     });
     lines.push("");
-    lines.push(`💰 *Totale: €${lastOrderSnapshot.total.toFixed(2)}*`);
+    if (lastOrderSnapshot.deliveryFee > 0) {
+      lines.push(`💰 *Subtotale: €${lastOrderSnapshot.subtotal.toFixed(2)}*`);
+      lines.push(`🚗 *Consegna: €${lastOrderSnapshot.deliveryFee.toFixed(2)}*`);
+      lines.push(`💰 *Totale: €${lastOrderSnapshot.total.toFixed(2)}*`);
+    } else {
+      lines.push(`💰 *Totale: €${lastOrderSnapshot.total.toFixed(2)}*`);
+    }
     lines.push("");
     lines.push("━━━ *CLIENTE* ━━━");
     lines.push(`👤 ${lastOrderSnapshot.customerName}`);
@@ -814,15 +859,42 @@ export default function MenuClient({
                   ))}
                 </div>
 
-                <div className="bg-white rounded-2xl p-4 mb-5 shadow-sm">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500 text-sm">Totale</span>
+                <div className="bg-white rounded-2xl p-4 mb-5 shadow-sm space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500">Subtotale</span>
+                    <span className="font-semibold text-night">€{cartSubtotal.toFixed(2)}</span>
+                  </div>
+                  {orderType === "delivery" && deliveryFee > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-500">Consegna</span>
+                      <span className="font-semibold text-night">+€{deliveryFee.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {orderType === "delivery" && minOrderDelivery > 0 && cartSubtotal < minOrderDelivery && (
+                    <div className="flex items-center gap-1.5 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                      <AlertCircle size={12} />
+                      Ordine minimo: €{minOrderDelivery.toFixed(2)}
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                    <span className="font-bold text-night">Totale</span>
                     <span className="font-bold text-night text-2xl">€{cartTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}
+                  onClick={() => {
+                    if (orderType === "delivery" && minOrderDelivery > 0 && cartSubtotal < minOrderDelivery) {
+                      toast.show(
+                        "error",
+                        "Ordine minimo non raggiunto",
+                        `Per il domicilio serve un ordine minimo di €${minOrderDelivery.toFixed(2)}`
+                      );
+                      return;
+                    }
+                    setCartOpen(false);
+                    setCheckoutOpen(true);
+                  }}
                   className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-[0.98] flex items-center justify-center gap-2"
                   style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                 >
@@ -863,13 +935,17 @@ export default function MenuClient({
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Come lo vuoi?</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => setOrderType("takeaway")} className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${orderType === "takeaway" ? "text-white" : "bg-soft text-gray-600"}`} style={orderType === "takeaway" ? { backgroundColor: brandColor } : undefined}>
-                      <Store size={16} /> Asporto
-                    </button>
-                    <button onClick={() => setOrderType("delivery")} className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${orderType === "delivery" ? "text-white" : "bg-soft text-gray-600"}`} style={orderType === "delivery" ? { backgroundColor: brandColor } : undefined}>
-                      <Truck size={16} /> Domicilio
-                    </button>
+                  <div className={`grid gap-2 ${hasTakeaway && hasDelivery ? "grid-cols-2" : "grid-cols-1"}`}>
+                    {hasTakeaway && (
+                      <button onClick={() => setOrderType("takeaway")} className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${orderType === "takeaway" ? "text-white" : "bg-soft text-gray-600"}`} style={orderType === "takeaway" ? { backgroundColor: brandColor } : undefined}>
+                        <Store size={16} /> Asporto
+                      </button>
+                    )}
+                    {hasDelivery && (
+                      <button onClick={() => setOrderType("delivery")} className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${orderType === "delivery" ? "text-white" : "bg-soft text-gray-600"}`} style={orderType === "delivery" ? { backgroundColor: brandColor } : undefined}>
+                        <Truck size={16} /> Domicilio {deliveryFee > 0 && <span className="text-xs opacity-70">+€{deliveryFee.toFixed(2)}</span>}
+                      </button>
+                    )}
                   </div>
                 </div>
 

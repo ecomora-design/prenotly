@@ -162,7 +162,11 @@ export default async function TenantPage({ params }: Props) {
           tableBookingEnabled={tenant.has_table_booking ?? false}
           tables={tables}
           maxPartySize={tenant.max_party_size ?? 10}
-          tableSlots={tenant.table_slots}
+          hasDelivery={tenant.has_delivery ?? true}
+          hasTakeaway={tenant.has_takeaway ?? true}
+          deliveryFee={Number(tenant.delivery_fee) || 0}
+          minOrderDelivery={Number(tenant.min_order_delivery) || 0}
+          tableSlots={tenant.booking_slots || tenant.table_slots}
         />
         <InstallBanner />
       </>

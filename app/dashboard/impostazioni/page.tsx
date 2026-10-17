@@ -7,9 +7,9 @@ import UploadImage from "@/components/UploadImage";
 import GoogleCalendarConnect from "@/components/GoogleCalendarConnect";
 import { motion } from "framer-motion";
 import {
-  Loader2, Save, CheckCircle2, Clock, MapPin, Phone,
+  Loader2, Save, CheckCircle2, Clock, MapPin, Phone, Truck, CalendarClock, X,
   Store, Image as ImageIcon, Palette, Globe, FileText,
-  MessageCircle, AlertCircle, X, Sparkles, ExternalLink
+  MessageCircle, AlertCircle, Sparkles, ExternalLink
 } from "lucide-react";
 
 type Tenant = {
@@ -26,6 +26,12 @@ type Tenant = {
   brand_color: string | null;
   logo_url: string | null;
   cover_image_url: string | null;
+  booking_slots: string[] | null;
+  has_delivery: boolean | null;
+  has_takeaway: boolean | null;
+  delivery_fee: number | null;
+  min_order_delivery: number | null;
+  slot_duration_minutes: number | null;
 };
 
 const DAYS = [
@@ -73,6 +79,12 @@ export default function ImpostazioniPage() {
     logo_url: "",
     cover_image_url: "",
     opening_hours: {} as Record<string, string>,
+    booking_slots: ["19:30", "20:00", "20:30", "21:00", "21:30"] as string[],
+    has_delivery: true,
+    has_takeaway: true,
+    delivery_fee: 0,
+    min_order_delivery: 0,
+    slot_duration_minutes: 120,
   });
 
   useEffect(() => {
@@ -100,6 +112,12 @@ export default function ImpostazioniPage() {
         brand_color: t.brand_color || "#25D366",
         logo_url: t.logo_url || "",
         cover_image_url: t.cover_image_url || "",
+        booking_slots: t.booking_slots || ["19:30", "20:00", "20:30", "21:00", "21:30"],
+        has_delivery: t.has_delivery ?? true,
+        has_takeaway: t.has_takeaway ?? true,
+        delivery_fee: t.delivery_fee || 0,
+        min_order_delivery: t.min_order_delivery || 0,
+        slot_duration_minutes: t.slot_duration_minutes || 120,
         opening_hours: t.opening_hours || {
           mon: "09:00-19:00",
           tue: "09:00-19:00",
@@ -175,6 +193,12 @@ export default function ImpostazioniPage() {
         brand_color: form.brand_color,
         logo_url: form.logo_url || null,
         cover_image_url: form.cover_image_url || null,
+        booking_slots: form.booking_slots,
+        has_delivery: form.has_delivery,
+        has_takeaway: form.has_takeaway,
+        delivery_fee: Number(form.delivery_fee) || 0,
+        min_order_delivery: Number(form.min_order_delivery) || 0,
+        slot_duration_minutes: Number(form.slot_duration_minutes) || 120,
         opening_hours: form.opening_hours,
       })
       .eq("id", tenant.id);
@@ -457,6 +481,123 @@ export default function ImpostazioniPage() {
           </label>
         </Section>
 
+        {/* OPZIONI ORDINI */}
+        {tenant.business_type === "restaurant" && (
+          <Section
+            icon={Truck}
+            title="Opzioni ordini"
+            subtitle="Come i tuoi clienti ricevono gli ordini"
+          >
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-cream mb-3">
+              <div>
+                <p className="font-semibold text-night text-sm">Asporto</p>
+                <p className="text-xs text-night/50">I clienti vengono a ritirare</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, has_takeaway: !form.has_takeaway })}
+                className={`w-12 h-6 rounded-full transition relative ${form.has_takeaway ? "bg-wa" : "bg-gray-300"}`}
+              >
+                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${form.has_takeaway ? "left-6" : "left-0.5"}`} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-cream mb-4">
+              <div>
+                <p className="font-semibold text-night text-sm">Domicilio</p>
+                <p className="text-xs text-night/50">Consegni a casa del cliente</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, has_delivery: !form.has_delivery })}
+                className={`w-12 h-6 rounded-full transition relative ${form.has_delivery ? "bg-wa" : "bg-gray-300"}`}
+              >
+                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${form.has_delivery ? "left-6" : "left-0.5"}`} />
+              </button>
+            </div>
+
+            {form.has_delivery && (
+              <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-night/[0.06]">
+                <label className="block">
+                  <span className="text-sm font-semibold text-night mb-2 block">Costo consegna (€)</span>
+                  <input
+                    type="number" step="0.01" min="0"
+                    value={form.delivery_fee}
+                    onChange={(e) => setForm({ ...form, delivery_fee: parseFloat(e.target.value) || 0 })}
+                    placeholder="2.50"
+                    className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3 focus:bg-white focus:border-night/20 focus:outline-none transition"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-night mb-2 block">Ordine minimo (€)</span>
+                  <input
+                    type="number" step="0.01" min="0"
+                    value={form.min_order_delivery}
+                    onChange={(e) => setForm({ ...form, min_order_delivery: parseFloat(e.target.value) || 0 })}
+                    placeholder="10.00"
+                    className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3 focus:bg-white focus:border-night/20 focus:outline-none transition"
+                  />
+                </label>
+              </div>
+            )}
+          </Section>
+        )}
+
+        {/* TURNI PRENOTAZIONE */}
+        {tenant.business_type === "restaurant" && (
+          <Section
+            icon={CalendarClock}
+            title="Turni prenotazione tavoli"
+            subtitle="Gli orari che i clienti possono scegliere"
+          >
+            <div className="flex flex-wrap gap-2 mb-4">
+              {(form.booking_slots || []).map((slot, idx) => (
+                <div key={idx} className="flex items-center gap-1 bg-white border border-night/[0.06] rounded-full pl-3 pr-1 py-1.5">
+                  <span className="text-sm font-semibold text-night">{slot}</span>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, booking_slots: (form.booking_slots || []).filter((_, i) => i !== idx) })}
+                    className="w-6 h-6 rounded-full text-red-400 hover:bg-red-50 flex items-center justify-center transition"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2 mb-4">
+              <input
+                type="time" id="new-slot-input"
+                className="flex-1 bg-cream border border-transparent rounded-2xl px-4 py-3 focus:bg-white focus:border-night/20 focus:outline-none transition"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById("new-slot-input") as HTMLInputElement;
+                  const val = input.value;
+                  if (val && !(form.booking_slots || []).includes(val)) {
+                    setForm({ ...form, booking_slots: [...(form.booking_slots || []), val].sort() });
+                    input.value = "";
+                  }
+                }}
+                className="bg-night hover:bg-night/90 text-white px-5 py-3 rounded-2xl font-semibold text-sm transition"
+              >
+                Aggiungi
+              </button>
+            </div>
+
+            <label className="block pt-4 border-t border-night/[0.06]">
+              <span className="text-sm font-semibold text-night mb-2 block">Durata slot (minuti)</span>
+              <input
+                type="number" min="30" step="15"
+                value={form.slot_duration_minutes}
+                onChange={(e) => setForm({ ...form, slot_duration_minutes: parseInt(e.target.value) || 120 })}
+                className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3 focus:bg-white focus:border-night/20 focus:outline-none transition"
+              />
+            </label>
+          </Section>
+        )}
+
         {/* SEZIONE: BRAND */}
         <Section
           icon={Palette}
@@ -507,51 +648,72 @@ export default function ImpostazioniPage() {
         >
           <div className="space-y-2">
             {DAYS.map((d) => {
-              const isClosed = form.opening_hours[d.key] === "chiuso";
+              const dayValue = form.opening_hours[d.key] || "chiuso";
+              const isClosed = dayValue === "chiuso";
+              
+              // Estrai orari apertura/chiusura (default 09:00-19:00 se formato non valido)
+              let openTime = "09:00";
+              let closeTime = "19:00";
+              if (!isClosed && dayValue.includes("-")) {
+                const parts = dayValue.split("-");
+                if (parts.length === 2) {
+                  openTime = parts[0].trim();
+                  closeTime = parts[1].trim();
+                }
+              }
+
+              const handleTimeChange = (newOpen: string, newClose: string) => {
+                setForm({
+                  ...form,
+                  opening_hours: {
+                    ...form.opening_hours,
+                    [d.key]: `${newOpen}-${newClose}`
+                  }
+                });
+              };
+
               return (
-                <div
-                  key={d.key}
-                  className="flex items-center gap-3 bg-cream rounded-2xl px-4 py-2.5"
-                >
-                  <span className="w-20 text-sm font-semibold text-night shrink-0">
-                    {d.label}
-                  </span>
-                  <input
-                    type="text"
-                    value={form.opening_hours[d.key] || ""}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        opening_hours: {
-                          ...form.opening_hours,
-                          [d.key]: e.target.value,
-                        },
-                      })
-                    }
-                    placeholder="09:00-19:00 oppure chiuso"
-                    disabled={isClosed}
-                    className={`flex-1 bg-white border border-transparent rounded-xl px-3 py-2 text-sm focus:border-night/20 focus:outline-none transition ${
-                      isClosed ? "text-night/30 line-through" : ""
-                    }`}
-                  />
+                <div key={d.key} className="flex items-center gap-3 bg-cream rounded-2xl px-4 py-2.5">
+                  <span className="w-20 text-sm font-semibold text-night shrink-0">{d.label}</span>
+                  
+                  {isClosed ? (
+                    <span className="flex-1 text-sm text-night/40 italic">Chiuso</span>
+                  ) : (
+                    <div className="flex-1 flex items-center gap-2">
+                      <input
+                        type="time"
+                        value={openTime}
+                        onChange={(e) => handleTimeChange(e.target.value, closeTime)}
+                        className="bg-white border border-night/[0.06] rounded-lg px-2 py-1.5 text-sm focus:border-night/20 focus:outline-none"
+                      />
+                      <span className="text-night/30">—</span>
+                      <input
+                        type="time"
+                        value={closeTime}
+                        onChange={(e) => handleTimeChange(openTime, e.target.value)}
+                        className="bg-white border border-night/[0.06] rounded-lg px-2 py-1.5 text-sm focus:border-night/20 focus:outline-none"
+                      />
+                    </div>
+                  )}
+
                   <button
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
                       setForm({
                         ...form,
                         opening_hours: {
                           ...form.opening_hours,
-                          [d.key]: isClosed ? "09:00-19:00" : "chiuso",
-                        },
-                      })
-                    }
+                          [d.key]: isClosed ? "09:00-19:00" : "chiuso"
+                        }
+                      });
+                    }}
                     className={`text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0 transition ${
                       isClosed
-                        ? "bg-red-50 text-red-500 hover:bg-red-100"
-                        : "bg-white text-night/60 hover:bg-night/5"
+                        ? "bg-green-50 text-green-600 hover:bg-green-100"
+                        : "bg-red-50 text-red-500 hover:bg-red-100"
                     }`}
                   >
-                    {isClosed ? "Chiuso" : "Aperto"}
+                    {isClosed ? "Apri" : "Chiudi"}
                   </button>
                 </div>
               );

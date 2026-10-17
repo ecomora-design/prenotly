@@ -1,0 +1,315 @@
+===== ALBERO =====
+.
+./.DS_Store
+./.env.local
+./.git
+./.github
+./.github/workflows
+./.github/workflows/backup.yml
+./.gitignore
+./.next
+./AGENTS.md
+./app
+./app/.DS_Store
+./app/[slug]
+./app/[slug]/BookingClient.tsx
+./app/[slug]/BookingClient.tsx.bak
+./app/[slug]/MenuClient.tsx
+./app/[slug]/page.tsx
+./app/[slug]/TrialExpired.tsx
+./app/admin
+./app/admin/clienti
+./app/admin/clienti/[slug]
+./app/admin/clienti/page.tsx
+./app/admin/incassi
+./app/admin/incassi/page.tsx
+./app/admin/layout.tsx
+./app/admin/ordini
+./app/admin/ordini/page.tsx
+./app/admin/page.tsx
+./app/admin/richieste
+./app/admin/richieste/page.tsx
+./app/admin/scadenze
+./app/admin/scadenze/page.tsx
+./app/api
+./app/api/apple-icon
+./app/api/apple-icon/route.ts
+./app/api/bookings
+./app/api/bookings/create
+./app/api/google
+./app/api/google/calendar
+./app/api/google/callback
+./app/api/google/connect
+./app/api/google/disconnect
+./app/api/google/status
+./app/api/manifest
+./app/api/manifest/route.ts
+./app/api/menu
+./app/api/menu/extract
+./app/api/orders
+./app/api/orders/create
+./app/api/orders/slots-availability
+./app/api/orders/slots-manage
+./app/api/stripe
+./app/api/stripe/checkout
+./app/api/tables
+./app/api/tables/busy
+./app/api/webhooks
+./app/api/webhooks/stripe
+./app/api/whatsapp
+./app/api/whatsapp/test
+./app/cookie
+./app/cookie/page.tsx
+./app/dashboard
+./app/dashboard/abbonamento
+./app/dashboard/abbonamento/page.tsx
+./app/dashboard/calendario
+./app/dashboard/calendario/page.tsx
+./app/dashboard/clienti
+./app/dashboard/clienti/page.tsx
+./app/dashboard/impostazioni
+./app/dashboard/impostazioni/page.tsx
+./app/dashboard/layout.tsx
+./app/dashboard/ordini
+./app/dashboard/ordini/page.tsx
+./app/dashboard/pagamenti
+./app/dashboard/pagamenti/page.tsx
+./app/dashboard/page.tsx
+./app/dashboard/prenotazioni
+./app/dashboard/prenotazioni/page.tsx
+./app/dashboard/qr
+./app/dashboard/qr/page.tsx
+./app/dashboard/servizi
+./app/dashboard/servizi/page.tsx
+./app/dashboard/servizi/page.tsx.bak
+./app/disclaimer
+./app/disclaimer/page.tsx
+./app/dpa
+./app/dpa/page.tsx
+./app/favicon.ico
+./app/globals.css
+./app/layout.tsx
+./app/legal
+./app/legal/page.tsx
+./app/login
+./app/login/page.tsx
+./app/manifest.ts
+./app/onboarding
+./app/onboarding/page.tsx
+./app/page.tsx
+./app/prezzi
+./app/prezzi/page.tsx
+./app/privacy
+./app/privacy/page.tsx
+./app/pro
+./app/pro/page.tsx
+./app/ristoranti
+./app/ristoranti/page.tsx
+./app/service
+./app/service/page.tsx
+./app/service/ServiceForm.tsx
+./app/signup
+./app/signup/page.tsx
+./app/termini
+./app/termini/page.tsx
+./app/test-supabase
+./app/test-supabase/page.tsx
+./CLAUDE.md
+./components
+./components/AppEnhancer.tsx
+./components/Automations.tsx
+./components/CallMeBotSetup.tsx
+./components/ContactCTA.tsx
+./components/CookieBanner.tsx
+./components/dashboard
+./components/dashboard/EmptyState.tsx
+./components/dashboard/PageHeader.tsx
+./components/dashboard/Skeleton.tsx
+./components/dashboard/StatCard.tsx
+./components/DashboardFlow.tsx
+./components/DemoBanner.tsx
+./components/FAQ.tsx
+./components/Features.tsx
+./components/Footer.tsx
+./components/GoogleCalendarConnect.tsx
+./components/Hero.tsx
+./components/HowItWorks.tsx
+./components/InstallBanner.tsx
+./components/MenuUploader.tsx
+./components/Navbar.tsx
+./components/Notifications.tsx
+./components/OnboardingGuide.tsx
+./components/Problem.tsx
+./components/PullToRefresh.tsx
+./components/SkeletonMenu.tsx
+./components/SplashScreen.tsx
+./components/StickyCTA.tsx
+./components/TableMap.tsx
+./components/TargetAudience.tsx
+./components/ThreeSoftware.tsx
+./components/Toast.tsx
+./components/TwoSouls.tsx
+./components/UploadImage.tsx
+./components/WhatsAppButton.tsx
+./convert-icons.mjs
+./eslint.config.mjs
+./lib
+./lib/google
+./lib/google/client.ts
+./lib/plans.ts
+./lib/stripe
+./lib/stripe/client.ts
+./lib/supabase
+./lib/supabase/admin.ts
+./lib/supabase/client.ts
+./lib/supabase/server.ts
+./lib/whatsapp
+./lib/whatsapp/notify.ts
+./middleware.ts
+./next-env.d.ts
+./next.config.ts
+./node_modules
+./package-lock.json
+./package.json
+./postcss.config.mjs
+./prenotly-snapshot.txt
+./public
+./public/apple-touch-icon.png
+./public/file.svg
+./public/globe.svg
+./public/icon-192.png
+./public/icon-192.svg
+./public/icon-512.png
+./public/icon-512.svg
+./public/next.svg
+./public/vercel.svg
+./public/window.svg
+./README.md
+./tsconfig.json
+
+===== PACKAGE.JSON =====
+{
+  "name": "prenotly",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^10.1.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
+    "framer-motion": "^13.4.4",
+    "google-auth-library": "^11.2.0",
+    "googleapis": "^185.0.0",
+    "lucide-react": "^1.48.0",
+    "next": "16.3.6",
+    "openai": "^7.33.0",
+    "qr-code-styling": "^1.9.2",
+    "qrcode": "^1.5.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sharp": "^0.35.4",
+    "stripe": "^23.0.0",
+    "twilio": "^6.1.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+
+===== NEXT.CONFIG =====
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+
+===== TSCONFIG =====
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
+
+===== .ENV (nomi chiavi, valori mascherati) =====
+NEXT_PUBLIC_SUPABASE_URL=***
+NEXT_PUBLIC_SUPABASE_ANON_KEY=***
+SUPABASE_SERVICE_ROLE_KEY=***
+
+GOOGLE_CLIENT_ID=***
+GOOGLE_CLIENT_SECRET=***
+GOOGLE_REDIRECT_URI=***
+
+OPENAI_API_KEY=***
+
+STRIPE_SECRET_KEY=***
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=***
+STRIPE_WEBHOOK_SECRET=***
+NEXT_PUBLIC_APP_URL=***
+STRIPE_PRICE_FOOD=***
+STRIPE_PRICE_TABLES=***
+STRIPE_PRICE_PREMIUM=***
+STRIPE_PRICE_PRO=***
+
+===== GIT STATUS =====
+ M app/[slug]/MenuClient.tsx
+ M app/[slug]/page.tsx
+ M app/dashboard/impostazioni/page.tsx
+ M app/dashboard/ordini/page.tsx
+?? app/api/orders/slots-availability/
+?? app/api/orders/slots-manage/
+?? prenotly-snapshot.txt
+
+===== GIT LOG (ultimi 10) =====
+d8c4d5f Menu upload AI + upload foto manuale
+6f2814b Menu upload AI + upload foto manuale, rimosso AI generate
+0efa75d Fix Stripe lazy init per build Vercel
+13b2680 Fix build: use client onboarding + Stripe API version
+7eb70e2 Validazione WhatsApp + banner dashboard + fix vari
+0f7411a Skeleton + pull-to-refresh + vibrazione + status bar dinamica
+64af4df Redeploy finale
+84e9d63 Web app stile app: splash screen, toast, bottom nav + piano Premium 59,99
+cf195a4 Admin tech + eliminazione utenti + rimozione admin da cliente
+990be88 Fix import QR page
