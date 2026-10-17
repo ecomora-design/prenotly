@@ -280,7 +280,10 @@ export default function OrdiniPage() {
                   <AnimatePresence>
                     {filtered.map((order) => {
                       const cfg = ORDER_STATUS[order.status as keyof typeof ORDER_STATUS] || ORDER_STATUS.pending;
-                      const customerPhone = order.customers?.whatsapp_number?.replace(/\D/g, "") || "";
+                      let customerPhone = order.customers?.whatsapp_number?.replace(/\D/g, "") || "";
+                      if (customerPhone && !customerPhone.startsWith("39")) {
+                        customerPhone = "39" + customerPhone;
+                      }
                       const scheduledTime = order.scheduled_for
                         ? order.scheduled_for.substring(11, 16)
                         : null;
