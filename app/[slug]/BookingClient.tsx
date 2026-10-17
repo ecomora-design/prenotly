@@ -720,7 +720,7 @@ export default function BookingClient({
                       <PhoneCall size={12} /> Telefono
                     </span>
                     <input
-                      type="tel"
+                      type="tel" required
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       placeholder="+39 333 1234567"

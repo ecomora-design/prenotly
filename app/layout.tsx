@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="it" className={inter.className}>
+    <html lang="it" className={inter.className} data-scroll-behavior="smooth">
       <body>
         {children}
         <CookieBanner />

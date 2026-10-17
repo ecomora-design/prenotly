@@ -106,6 +106,7 @@ export default function MenuClient({
   const [lastOrderSnapshot, setLastOrderSnapshot] = useState<any>(null);
 
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [orderType, setOrderType] = useState<"takeaway" | "delivery">(hasTakeaway ? "takeaway" : "delivery");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
@@ -295,7 +296,7 @@ export default function MenuClient({
         body: JSON.stringify({
           slug,
           customerName,
-          customerPhone: "",
+          customerPhone,
           items: cartItems.map((i) => ({
             serviceId: i.service.id,
             name: i.service.name,
@@ -933,6 +934,13 @@ export default function MenuClient({
                   </label>
                 </div>
 
+                <div className="bg-white rounded-2xl p-4 shadow-sm mt-3">
+                  <label className="block">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Numero di telefono *</span>
+                    <input type="tel" required value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Es. 333 123 4567" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
+                  </label>
+                </div>
+
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Come lo vuoi?</span>
                   <div className={`grid gap-2 ${hasTakeaway && hasDelivery ? "grid-cols-2" : "grid-cols-1"}`}>
@@ -994,9 +1002,9 @@ export default function MenuClient({
 
                 <button
                   onClick={sendOrder}
-                  disabled={!customerName || !pickupTime || (orderType === "delivery" && !address) || submitting}
+                  disabled={!customerName || !customerPhone || !pickupTime || (orderType === "delivery" && !address) || submitting}
                   className="w-full disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
-                  style={!customerName || !pickupTime || (orderType === "delivery" && !address) || submitting ? undefined : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
+                  style={!customerName || !customerPhone || !pickupTime || (orderType === "delivery" && !address) || submitting ? undefined : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                 >
                   {submitting ? (
                     <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />Invio in corso...</>
@@ -1176,7 +1184,7 @@ export default function MenuClient({
                     <div className="border-t border-gray-100 pt-3">
                       <label className="block">
                         <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Telefono</span>
-                        <input type="tel" value={tableCustomerPhone} onChange={(e) => setTableCustomerPhone(e.target.value)} placeholder="+39 333 1234567" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
+                        <input type="tel" required value={tableCustomerPhone} onChange={(e) => setTableCustomerPhone(e.target.value)} placeholder="+39 333 1234567" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
                       </label>
                     </div>
                     <div className="border-t border-gray-100 pt-3">
