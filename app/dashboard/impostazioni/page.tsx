@@ -32,6 +32,11 @@ type Tenant = {
   delivery_fee: number | null;
   min_order_delivery: number | null;
   slot_duration_minutes: number | null;
+  enable_table_bookings: boolean | null;
+  plan_type: string | null;
+  subscription_ends_at: string | null;
+  trial_ends_at: string | null;
+  subscription_status: string | null;
 };
 
 const DAYS = [
@@ -85,6 +90,7 @@ export default function ImpostazioniPage() {
     delivery_fee: 0,
     min_order_delivery: 0,
     slot_duration_minutes: 120,
+    enable_table_bookings: true,
   });
 
   useEffect(() => {
@@ -118,6 +124,7 @@ export default function ImpostazioniPage() {
         delivery_fee: t.delivery_fee || 0,
         min_order_delivery: t.min_order_delivery || 0,
         slot_duration_minutes: t.slot_duration_minutes || 120,
+        enable_table_bookings: t.enable_table_bookings ?? true,
         opening_hours: t.opening_hours || {
           mon: "09:00-19:00",
           tue: "09:00-19:00",
@@ -199,6 +206,7 @@ export default function ImpostazioniPage() {
         delivery_fee: Number(form.delivery_fee) || 0,
         min_order_delivery: Number(form.min_order_delivery) || 0,
         slot_duration_minutes: Number(form.slot_duration_minutes) || 120,
+        enable_table_bookings: form.enable_table_bookings,
         opening_hours: form.opening_hours,
       })
       .eq("id", tenant.id);
@@ -226,6 +234,9 @@ export default function ImpostazioniPage() {
   }
 
   const brandColor = form.brand_color || "#25D366";
+
+    const isTrial = tenant?.subscription_status === 'trial';
+  const canUseTables = isTrial || tenant?.plan_type === 'food_tables' || tenant?.plan_type === 'food_premium';
 
   return (
     <div className="max-w-3xl mx-auto pb-32">
@@ -547,10 +558,32 @@ export default function ImpostazioniPage() {
         {tenant.business_type === "restaurant" && (
           <Section
             icon={CalendarClock}
-            title="Turni prenotazione tavoli"
-            subtitle="Gli orari che i clienti possono scegliere"
+            title="Prenotazione Tavoli"
+            subtitle="Gestisci se e come i clienti possono prenotare"
           >
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-cream mb-6">
+              <div>
+                <p className="font-semibold text-night text-sm">Abilita prenotazione tavoli</p>
+                <p className="text-xs text-night/50">Permetti ai clienti di prenotare un tavolo dal sito</p>
+                {!canUseTables && (
+                  <p className="text-[11px] text-orange-600 font-bold mt-1">
+                    ⚠️ Richiede il piano Food + Tavoli. <a href="/dashboard/abbonamento" className="underline">Fai l'upgrade</a>
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                disabled={!canUseTables}
+                onClick={() => setForm({ ...form, enable_table_bookings: !form.enable_table_bookings })}
+                className={`w-12 h-6 rounded-full transition relative ${form.enable_table_bookings ? "bg-wa" : "bg-gray-300"} ${!canUseTables ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${form.enable_table_bookings ? "left-6" : "left-0.5"}`} />
+              </button>
+            </div>
+
+            {form.enable_table_bookings && (
+              <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="flex flex-wrap gap-2 mb-4">
               {(form.booking_slots || []).map((slot, idx) => (
                 <div key={idx} className="flex items-center gap-1 bg-white border border-night/[0.06] rounded-full pl-3 pr-1 py-1.5">
                   <span className="text-sm font-semibold text-night">{slot}</span>
@@ -586,15 +619,17 @@ export default function ImpostazioniPage() {
               </button>
             </div>
 
-            <label className="block pt-4 border-t border-night/[0.06]">
-              <span className="text-sm font-semibold text-night mb-2 block">Durata slot (minuti)</span>
-              <input
-                type="number" min="30" step="15"
-                value={form.slot_duration_minutes}
-                onChange={(e) => setForm({ ...form, slot_duration_minutes: parseInt(e.target.value) || 120 })}
-                className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3 focus:bg-white focus:border-night/20 focus:outline-none transition"
-              />
-            </label>
+                <label className="block pt-4 border-t border-night/[0.06]">
+                  <span className="text-sm font-semibold text-night mb-2 block">Durata slot (minuti)</span>
+                  <input
+                    type="number" min="30" step="15"
+                    value={form.slot_duration_minutes}
+                    onChange={(e) => setForm({ ...form, slot_duration_minutes: parseInt(e.target.value) || 120 })}
+                    className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3 focus:bg-white focus:border-night/20 focus:outline-none transition"
+                  />
+                </label>
+              </div>
+            )}
           </Section>
         )}
 

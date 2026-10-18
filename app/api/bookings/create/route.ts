@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     const { data: tenant } = await supabase
       .from("tenants")
-      .select("id, business_name, has_table_booking, google_refresh_token, google_calendar_id")
+      .select("id, business_name, has_table_booking, enable_table_bookings, google_refresh_token, google_calendar_id")
       .eq("slug", slug)
       .single();
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     }
 
     // Verifica feature tavoli
-    if (bookingType === "table" && !tenant.has_table_booking) {
+    if (bookingType === "table" && !(tenant.enable_table_bookings ?? tenant.has_table_booking)) {
       return NextResponse.json(
         { error: "Prenotazione tavoli non attiva" },
         { status: 403 }
@@ -135,6 +135,8 @@ export async function POST(req: Request) {
 
     const prefix = bookingType === "table" ? "TB-" : "PR-";
     const bookingCode = prefix + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    console.log("DEBUG tableId ricevuto:", tableId);
 
     const { data: booking, error } = await supabase
       .from("bookings")

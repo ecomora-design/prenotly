@@ -46,8 +46,8 @@ const PLANS = {
     id: "food_tables",
     name: "Food + Tavoli",
     subtitle: "Tutto di Food + tavoli",
-    yearly: 420.00,
-    monthly: 35,
+    yearly: 479.88,
+    monthly: 39.99,
     color: "#EAB308",
     badge: "POPOLARE",
     features: [
@@ -179,8 +179,17 @@ export default function AbbonamentoPage() {
             </div>
             <p className="text-2xl md:text-3xl font-bold">{trialHoursLeft} ore rimanenti</p>
             <p className="text-sm opacity-90 mt-1">
-              Attiva l&apos;abbonamento per non perdere l&apos;accesso
+              Hai 48 ore per provare tutte le funzionalità. Se ti serve più tempo, puoi estendere fino a 7 giorni.
             </p>
+            <a 
+              href="https://wa.me/message/LLEKTVFCRCPVB1?text=Salve,%20vorrei%20estendere%20la%20demo%20del%20mio%20ristorante%20fino%20a%207%20giorni."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full font-bold text-xs mt-4 transition"
+            >
+              <MessageCircle size={14} />
+              Richiedi estensione
+            </a>
           </div>
         </motion.div>
       )}

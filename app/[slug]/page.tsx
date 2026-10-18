@@ -131,7 +131,7 @@ export default async function TenantPage({ params }: Props) {
 
   // Tavoli (solo se feature attiva)
   let tables: any[] = [];
-  if (tenant.has_table_booking) {
+  if ((tenant.enable_table_bookings ?? tenant.has_table_booking) !== false) {
     const { data: tablesData } = await supabase
       .from("tables")
       .select("*")
@@ -159,7 +159,7 @@ export default async function TenantPage({ params }: Props) {
           logoUrl={tenant.logo_url}
           coverImageUrl={tenant.cover_image_url}
           slug={slug}
-          tableBookingEnabled={tenant.has_table_booking ?? false}
+          tableBookingEnabled={(tenant.enable_table_bookings ?? tenant.has_table_booking) !== false}
           tables={tables}
           maxPartySize={tenant.max_party_size ?? 10}
           hasDelivery={tenant.has_delivery ?? true}

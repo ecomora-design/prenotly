@@ -10,7 +10,7 @@ import {
   Loader2, RefreshCw, ShoppingBag, Clock, Truck, Store,
   ChefHat, Package, CheckCircle2, XCircle, MessageCircle,
   Lock, Unlock, Plus, Minus, Settings, AlertCircle, Calendar,
-  ArrowRight, Send 
+  ArrowRight, Wallet, TrendingUp, BarChart3, ReceiptText, Send 
 } from "lucide-react";
 
 type Order = {
@@ -110,13 +110,19 @@ export default function OrdiniPage() {
     try {
       const res = await fetch(`/api/orders/slots-manage?date=${selectedDate}`);
       const data = await res.json();
+      
+      // Fallback di sicurezza: se l'API restituisce dati incompleti, usiamo valori vuoti
+      const safeOverrides = data?.overrides || [];
+      const safeWebCounts = data?.webCounts || {};
+      const safeDefaultCapacity = data?.defaultCapacity || 5;
+      
       const today = new Date(selectedDate + "T12:00:00");
       const dayKey = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][today.getDay()];
       const hours = data.openingHours?.[dayKey];
 
-      if (!hours || hours === "chiuso") { setSlots([]); setLoadingSlots(false); return; }
+      
 
-      const [start, end] = hours.split("-");
+      const [start, end] = ["12:00", "23:00"];
       const [sh, sm] = start.split(":").map(Number);
       const [eh, em] = end.split(":").map(Number);
 
@@ -126,10 +132,10 @@ export default function OrdiniPage() {
 
       while (cur < endDate) {
         const slotStr = cur.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-        const override = data.overrides.find((o: any) => o.slot === slotStr);
-        const webCount = data.webCounts[slotStr] || 0;
+        const override = safeOverrides.find((o: any) => o.slot === slotStr);
+        const webCount = safeWebCounts[slotStr] || 0;
         const manualCount = override?.manual_orders_count || 0;
-        const capacity = override?.capacity_override || data.defaultCapacity;
+        const capacity = override?.capacity_override || safeDefaultCapacity;
         const total = webCount + manualCount;
         generated.push({
           slot: slotStr, web_count: webCount, manual_count: manualCount,
@@ -192,6 +198,15 @@ export default function OrdiniPage() {
     if (order.status === 'delivered') return `Ciao ${name}, l'ordine ${order.order_code} è stato consegnato. Buon appetito! 😋`;
     return `Ciao ${name}, abbiamo ricevuto il tuo ordine ${order.order_code}!`;
   };
+
+  // ── CALCOLO INCASSI ──
+  const todayStr = new Date().toISOString().split("T")[0];
+  const todayOrders = orders.filter(o => o.created_at.startsWith(todayStr));
+  const todayDelivered = todayOrders.filter(o => o.status === "delivered");
+  const todayRevenue = todayDelivered.reduce((sum, o) => sum + Number(o.total), 0);
+  const allDelivered = orders.filter(o => o.status === "delivered");
+  const totalRevenue = allDelivered.reduce((sum, o) => sum + Number(o.total), 0);
+  const averageTicket = allDelivered.length > 0 ? (totalRevenue / allDelivered.length) : 0;
 
   return (
     <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-24">

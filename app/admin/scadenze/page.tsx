@@ -53,7 +53,7 @@ export default function ScadenzePage() {
   };
 
   const activateTenant = async (id: string) => {
-    if (!confirm("Attivare per 12 mesi?")) return;
+    if (!confirm("Attivare per 12 mesi con il piano Food + Tavoli (39,99€/mese)?")) return;
     const oneYearLater = new Date();
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
 
@@ -62,6 +62,8 @@ export default function ScadenzePage() {
       .update({
         subscription_status: "active",
         subscription_ends_at: oneYearLater.toISOString(),
+        plan_type: "food_tables",
+        enable_table_bookings: true,
       })
       .eq("id", id);
     await load();

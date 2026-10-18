@@ -10,7 +10,7 @@ import PullToRefresh from "@/components/PullToRefresh";
 import AppEnhancer from "@/components/AppEnhancer";
 import {
   Plus, Minus, ShoppingBag, X, Clock,
-  Truck, Store, MapPin, Phone, Info, Search,
+  Truck, Store, MapPin, Phone, Info, BookOpen, ChevronLeft, Search,
   ChevronRight, Utensils, Users, Calendar, CheckCircle2,
   MessageCircle, Lock, Sparkles, ArrowRight, AlertCircle } from "lucide-react";
 
@@ -102,6 +102,7 @@ export default function MenuClient({
   const [showTableUpgrade, setShowTableUpgrade] = useState(false);
   const toast = useToast();
   const [initialLoading, setInitialLoading] = useState(true);
+  const [view, setView] = useState<"welcome" | "order" | "menu">("welcome");
   const [orderSuccess, setOrderSuccess] = useState<{ code: string; total: number } | null>(null);
   const [lastOrderSnapshot, setLastOrderSnapshot] = useState<any>(null);
 
@@ -468,6 +469,83 @@ export default function MenuClient({
     }));
   }, [tables, busyTables]);
 
+  if (view === "welcome") {
+    return (
+      <div className="min-h-screen bg-[#F5F5F7] flex flex-col justify-center p-6 relative overflow-hidden">
+        {/* Sfondo decorativo */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute top-10 right-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: brandColor }} />
+          <div className="absolute bottom-10 left-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: brandColor }} />
+        </div>
+
+        <div className="max-w-md w-full mx-auto relative z-10">
+          {/* Logo e Nome */}
+          <div className="text-center mb-10">
+            {logoUrl ? (
+              <img src={logoUrl} alt={tenantName} className="w-24 h-24 rounded-3xl object-cover mx-auto mb-4 shadow-xl ring-4 ring-white" />
+            ) : (
+              <div className="w-24 h-24 rounded-3xl flex items-center justify-center text-white font-bold text-4xl mx-auto mb-4 shadow-xl ring-4 ring-white" style={{ backgroundColor: brandColor }}>
+                {tenantName.charAt(0)}
+              </div>
+            )}
+            <h1 className="text-3xl font-bold text-night mb-2">{tenantName}</h1>
+            <p className="text-gray-500 text-sm">Benvenuto! Come possiamo servirti oggi?</p>
+          </div>
+
+          {/* I 3 Pulsanti */}
+          <div className="space-y-4">
+            {/* Ordina */}
+            <button
+              onClick={() => setView("order")}
+              className="w-full bg-white rounded-3xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition active:scale-[0.98] text-left border border-transparent hover:border-gray-200 group"
+            >
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition group-hover:scale-110" style={{ backgroundColor: `${brandColor}15` }}>
+                <ShoppingBag size={28} style={{ color: brandColor }} />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-night">Ordina Online</h2>
+                <p className="text-xs text-gray-500">Asporto o domicilio direttamente dal tuo telefono.</p>
+              </div>
+            </button>
+
+            {/* Prenota Tavolo (se abilitato) */}
+            {true && (
+              <button
+                onClick={() => {
+                  setView("menu");
+                  setTableBookingOpen(true);
+                }}
+                className="w-full bg-white rounded-3xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition active:scale-[0.98] text-left border border-transparent hover:border-gray-200 group"
+              >
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition group-hover:scale-110 bg-orange-50">
+                  <Calendar size={28} className="text-orange-500" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold text-night">Prenota un Tavolo</h2>
+                  <p className="text-xs text-gray-500">Scegli il tuo tavolo preferito dalla piantina.</p>
+                </div>
+              </button>
+            )}
+
+            {/* Visualizza Menu */}
+            <button
+              onClick={() => setView("menu")}
+              className="w-full bg-white rounded-3xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition active:scale-[0.98] text-left border border-transparent hover:border-gray-200 group"
+            >
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition group-hover:scale-110 bg-blue-50">
+                <BookOpen size={28} className="text-blue-500" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-night">Sfoglia il Menu</h2>
+                <p className="text-xs text-gray-500">Guarda i piatti e i prezzi senza ordinare.</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F5F5F7] pb-32">
       <AppEnhancer brandColor={brandColor} tenantName={tenantName} />
@@ -497,10 +575,10 @@ export default function MenuClient({
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-          <div className="bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-white text-[11px] font-semibold">Aperto ora</span>
-          </div>
+          <button onClick={() => setView("welcome")} className="bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-1.5 active:scale-95 transition hover:bg-black/60">
+            <ChevronLeft size={14} className="text-white" />
+            <span className="text-white text-[11px] font-semibold">Home</span>
+          </button>
 
           {tableBookingEnabled && (
             <button
@@ -683,7 +761,7 @@ export default function MenuClient({
                               </div>
                               <div className="flex items-center justify-between mt-2">
                                 <p className="font-bold text-night text-base">€{Number(item.price).toFixed(2)}</p>
-                                {qty === 0 ? (
+                                {view === "order" && (qty === 0 ? (
                                   <motion.button
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => addToCart(item)}
@@ -713,7 +791,7 @@ export default function MenuClient({
                                       <Plus size={14} />
                                     </motion.button>
                                   </div>
-                                )}
+                                ))}
                               </div>
                             </div>
                           </motion.div>
@@ -800,7 +878,7 @@ export default function MenuClient({
 
       {/* CART FLOATING */}
       <AnimatePresence>
-        {cartCount > 0 && !cartOpen && !checkoutOpen && !orderSuccess && (
+        {view === "order" && cartCount > 0 && !cartOpen && !checkoutOpen && !orderSuccess && (
           <motion.button
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -1020,7 +1098,7 @@ export default function MenuClient({
                     <Clock size={12} /> Orario
                   </span>
                   <div className="grid grid-cols-4 gap-2">
-                    {timeSlots.map((t) => (
+                    {(timeSlots && timeSlots.length > 0 ? timeSlots : ["12:00", "12:30", "13:00", "13:30", "14:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"]).map((t) => (
                       <button key={t} onClick={() => setPickupTime(t)} className={`py-2.5 rounded-xl text-sm font-bold transition ${pickupTime === t ? "text-white" : "bg-soft text-night"}`} style={pickupTime === t ? { backgroundColor: brandColor } : undefined}>
                         {t}
                       </button>

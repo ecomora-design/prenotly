@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -10,6 +11,7 @@ import {
   Euro, LogOut, Menu, X, Loader2, Shield, Home,
   Activity, Zap, ChevronRight, Bell
 } from "lucide-react";
+import PWABanner from "@/components/PWABanner";
 
 const ADMIN_EMAIL = "movisicily@gmail.com";
 
@@ -300,6 +302,7 @@ export default function AdminLayout({
           <div className="p-4 md:p-8 pb-16">{children}</div>
         </div>
       </div>
+      <PWABanner />
     </div>
   );
 }

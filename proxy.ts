@@ -2,6 +2,29 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname
+
+  // 1. Salta tutto per admin (usa password interna, non Supabase Auth)
+  if (path.startsWith('/admin')) {
+    return NextResponse.next()
+  }
+
+  // 2. Salta tutto per le API (gestiscono l'auth da sole)
+  if (path.startsWith('/api')) {
+    return NextResponse.next()
+  }
+
+  const protectedPaths = ['/dashboard', '/onboarding']
+  const authPaths = ['/login', '/signup']
+
+  const isProtected = protectedPaths.some((p) => path.startsWith(p))
+  const isAuthPath = authPaths.some((p) => path.startsWith(p))
+
+  // 3. Se la rotta non è né protetta né di autenticazione, non sprecare risorse
+  if (!isProtected && !isAuthPath) {
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -29,15 +52,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const path = request.nextUrl.pathname
-
-  // ⚠️ /admin NON è protetto dal middleware (lo gestiamo con password interna)
-  const protectedPaths = ['/dashboard', '/onboarding', '/admin']
-  const isProtected = protectedPaths.some((p) => path.startsWith(p))
-
-  const authPaths = ['/login', '/signup']
-  const isAuthPath = authPaths.some((p) => path.startsWith(p))
-
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
@@ -56,6 +70,12 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * Escludiamo dal middleware:
+     * - file statici (_next/static, _next/image, favicon, immagini)
+     * - API routes (gestite internamente)
+     * - admin (gestito con password interna)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|api|admin|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

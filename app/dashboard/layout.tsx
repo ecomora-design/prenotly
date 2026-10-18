@@ -1,14 +1,17 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import OnboardingGuide from "@/components/OnboardingGuide";
+import PWABanner from "@/components/PWABanner";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarDays,
+  LayoutDashboard, Utensils, ShoppingBag, Calendar,
   CreditCard, QrCode, Settings, LogOut, Menu, X, Loader2,
-  ExternalLink, Users, ChevronRight, Sparkles, Bell,
+  ExternalLink, Users, ChevronRight, Sparkles, Bell, LayoutGrid
 } from "lucide-react";
 
 type Tenant = {
@@ -21,6 +24,11 @@ type Tenant = {
   trial_ends_at: string | null;
   logo_url: string | null;
   brand_color: string | null;
+  enable_table_bookings: boolean | null;
+  plan_type: string | null;
+  subscription_ends_at: string | null;
+  trial_ends_at: string | null;
+  subscription_status: string | null;
 };
 
 export default function DashboardLayout({
@@ -37,6 +45,10 @@ export default function DashboardLayout({
   const [user, setUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [realtimeAlert, setRealtimeAlert] = useState<{ type: "booking" | "order", data: any } | null>(null);
+
+
+
 
   useEffect(() => {
     async function load() {
@@ -68,6 +80,62 @@ export default function DashboardLayout({
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  
+  // ── REALTIME NOTIFICHE E SUONO (ORDINI E PRENOTAZIONI) ──
+  useEffect(() => {
+    if (!tenant?.id) return;
+    
+    const channel = supabase
+      .channel('custom-insert-channel')
+      // Ascolta nuove PRENOTAZIONI
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bookings', filter: `tenant_id=eq.${tenant.id}` },
+        (payload) => {
+          setRealtimeAlert({ type: "booking", data: payload.new });
+          playNotificationSound();
+          setTimeout(() => setRealtimeAlert(null), 12000);
+        }
+      )
+      // Ascolta nuovi ORDINI
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenant.id}` },
+        (payload) => {
+          setRealtimeAlert({ type: "order", data: payload.new });
+          playNotificationSound();
+          setTimeout(() => setRealtimeAlert(null), 12000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tenant?.id, supabase]);
+
+  const playNotificationSound = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      // Un bel suono "Ding" a due toni
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1); // A6
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.8);
+    } catch (e) {
+      console.error("Audio error", e);
+    }
+  };
+
   const handleCompleteOnboarding = async () => {
     if (!tenant) return;
     await supabase
@@ -98,6 +166,23 @@ export default function DashboardLayout({
 
   const isFood = tenant.product_type === "food" || tenant.business_type === "restaurant";
   const brandColor = tenant.brand_color || (isFood ? "#25D366" : "#8B5CF6");
+  
+  // QUI CONTROLLIAMO SE MOSTRARE LE PRENOTAZIONI
+  
+  const isTrial = tenant.subscription_status === "trial";
+  const planAllowsTables = isTrial || tenant.plan_type === "food_tables" || tenant.plan_type === "food_premium";
+  const showBookings = planAllowsTables && tenant.enable_table_bookings !== false;
+
+  // Controllo se l'abbonamento è scaduto
+  const now = Date.now();
+  const trialEnds = tenant.trial_ends_at ? new Date(tenant.trial_ends_at).getTime() : 0;
+  const subEnds = tenant.subscription_ends_at ? new Date(tenant.subscription_ends_at).getTime() : 0;
+  
+  let isExpired = false;
+  if (tenant.subscription_status === "trial" && trialEnds && trialEnds < now) isExpired = true;
+  if (tenant.subscription_status === "active" && subEnds && subEnds < now) isExpired = true;
+  if (tenant.subscription_status === "expired" || tenant.subscription_status === "suspended") isExpired = true;
+
 
   // Sidebar items grouped
   const navSections = [
@@ -109,16 +194,14 @@ export default function DashboardLayout({
     },
     {
       label: isFood ? "Vendite" : "Agenda",
-      items: isFood
-        ? [
-            { href: "/dashboard/ordini", label: "Ordini", icon: ShoppingBag },
-            { href: "/dashboard/servizi", label: "Menu", icon: Utensils },
-          ]
-        : [
-            { href: "/dashboard/prenotazioni", label: "Prenotazioni", icon: Calendar },
-            { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
-            { href: "/dashboard/servizi", label: "Servizi", icon: Utensils },
-          ],
+      items: [
+        ...(isFood ? [{ href: "/dashboard/ordini", label: "Ordini", icon: ShoppingBag }] : []),
+        ...(showBookings ? [
+          { href: "/dashboard/prenotazioni", label: "Agenda Sala", icon: Calendar },
+        ] : []),
+        { href: "/dashboard/tavoli", label: "Gestione Tavoli", icon: LayoutGrid },
+        { href: "/dashboard/servizi", label: isFood ? "Menu" : "Servizi", icon: Utensils },
+      ],
     },
     {
       label: "Clienti",
@@ -149,6 +232,40 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
+      
+      {/* REALTIME NOTIFICATION TOAST */}
+      <AnimatePresence>
+        {realtimeAlert && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className={`fixed top-6 right-6 z-[9999] bg-white rounded-2xl shadow-2xl border-2 p-4 w-80 flex gap-4 items-start ${realtimeAlert.type === "order" ? "border-blue-500" : "border-wa"}`}
+          >
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${realtimeAlert.type === "order" ? "bg-blue-100" : "bg-wa/20"}`}>
+              <Bell className={`animate-bounce ${realtimeAlert.type === "order" ? "text-blue-500" : "text-wa"}`} size={20} />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-night">
+                {realtimeAlert.type === "order" ? "Nuovo Ordine!" : "Nuova Prenotazione!"}
+              </h4>
+              <p className="text-xs text-night/60 mt-1">
+                {realtimeAlert.type === "order" 
+                  ? "Hai ricevuto un nuovo ordine di asporto/domicilio." 
+                  : "Un cliente ha appena prenotato un tavolo."}
+              </p>
+              <a 
+                href={realtimeAlert.type === "order" ? "/dashboard/ordini" : "/dashboard/prenotazioni"} 
+                className={`text-[10px] font-bold mt-2 block uppercase tracking-wider hover:underline ${realtimeAlert.type === "order" ? "text-blue-500" : "text-wa"}`}
+              >
+                Vai a {realtimeAlert.type === "order" ? "gli ordini" : "l'agenda"} &rarr;
+              </a>
+            </div>
+            <button onClick={() => setRealtimeAlert(null)} className="text-night/40 hover:text-night p-1"><X size={16} /></button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {showOnboarding && (
         <OnboardingGuide
           isFood={isFood}
@@ -157,8 +274,18 @@ export default function DashboardLayout({
         />
       )}
 
+      {/* Banner Abbonamento Scaduto */}
+      {isExpired && (
+        <div className="bg-red-500 text-white px-4 py-3 text-center text-sm sticky top-0 z-50 flex items-center justify-center gap-3 flex-wrap shadow-lg">
+          <span className="font-bold">⚠️ Il tuo abbonamento è scaduto.</span>
+          <Link href="/dashboard/abbonamento" className="bg-white text-red-600 px-4 py-1.5 rounded-full font-bold text-xs hover:bg-red-50 transition">
+            Rinnova ora
+          </Link>
+        </div>
+      )}
+
       {/* Trial banner */}
-      {showTrialBanner && (
+      {showTrialBanner && !isExpired && (
         <div className="bg-night text-white px-4 py-2.5 text-center text-xs sticky top-0 z-40">
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
             <span className="w-1.5 h-1.5 rounded-full bg-wa animate-pulse shrink-0" />
@@ -402,6 +529,7 @@ export default function DashboardLayout({
           <div className="p-4 md:p-8 pb-24 lg:pb-8 max-w-6xl mx-auto">{children}</div>
         </div>
       </div>
+      <PWABanner />
     </div>
   );
 }
