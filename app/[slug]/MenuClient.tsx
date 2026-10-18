@@ -27,11 +27,12 @@ type Table = {
   id: string;
   table_number: number;
   capacity: number;
-  position_x: number;
-  position_y: number;
   shape: string;
   is_active: boolean;
   isBusy?: boolean;
+  position_x: number;
+  position_y: number;
+  isSelected?: boolean;
 };
 
 type CartItem = { service: Service; qty: number };

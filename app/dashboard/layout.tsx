@@ -27,8 +27,6 @@ type Tenant = {
   enable_table_bookings: boolean | null;
   plan_type: string | null;
   subscription_ends_at: string | null;
-  trial_ends_at: string | null;
-  subscription_status: string | null;
 };
 
 export default function DashboardLayout({
