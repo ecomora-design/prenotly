@@ -1293,9 +1293,9 @@ export default function MenuClient({
                       )}
                     </div>
                     <TableMap
-                      tables={tablesWithStatus}
+                      tables={tablesWithStatus as any}
                       selectedId={selectedTable?.id || null}
-                      onSelect={setSelectedTable}
+                      onSelect={(t: any) => setSelectedTable(t)}
                       brandColor={brandColor}
                       partySize={partySize}
                     />
