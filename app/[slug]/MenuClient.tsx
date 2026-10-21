@@ -681,7 +681,7 @@ export default function MenuClient({
 
         {tab === "menu" && !initialLoading && (
           <PremiumMenu
-            services={filteredServices}
+            services={filteredServices as any}
             categories={categories}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
@@ -690,7 +690,7 @@ export default function MenuClient({
             brandColor={brandColor}
             addToCart={addToCart}
             removeFromCart={removeFromCart}
-            cart={cart}
+            cart={cart as any}
             view={view}
           />
         )}
