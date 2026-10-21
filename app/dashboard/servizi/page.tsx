@@ -15,6 +15,8 @@ type Service = {
   price: number;
   duration_minutes: number | null;
   is_available: boolean;
+  is_featured: boolean;
+  is_popular: boolean;
   sort_order: number;
   image_url: string | null;
 };
@@ -40,6 +42,8 @@ export default function ServiziPage() {
     price: "",
     duration_minutes: "",
     image_url: "",
+    is_featured: false,
+    is_popular: false
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +78,7 @@ export default function ServiziPage() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: "", description: "", category: "", price: "", duration_minutes: "", image_url: "" });
+    setForm({ name: "", description: "", category: "", price: "", duration_minutes: "", image_url: "", is_featured: false, is_popular: false });
     setError(null);
     setShowNewCategory(false);
     setModalOpen(true);
@@ -89,6 +93,8 @@ export default function ServiziPage() {
       price: String(s.price),
       duration_minutes: s.duration_minutes ? String(s.duration_minutes) : "",
       image_url: s.image_url || "",
+      is_featured: s.is_featured || false,
+      is_popular: s.is_popular || false
     });
     setError(null);
     setShowNewCategory(false);
@@ -109,6 +115,8 @@ export default function ServiziPage() {
       price: parseFloat(form.price) || 0,
       duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null,
       image_url: form.image_url || null,
+      is_featured: form.is_featured,
+      is_popular: form.is_popular,
     };
 
     if (editing) {
@@ -240,6 +248,12 @@ export default function ServiziPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-semibold text-night text-sm">{s.name}</h3>
+                        {s.is_featured && (
+                          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">⭐ CHEF</span>
+                        )}
+                        {s.is_popular && (
+                          <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-bold">🔥 POPOLARE</span>
+                        )}
                         {!s.is_available && (
                           <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold">
                             NON DISPONIBILE
@@ -402,6 +416,35 @@ export default function ServiziPage() {
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none"
                   />
                 </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-cream rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-night">⭐ Consiglio Chef</p>
+                    <p className="text-[10px] text-gray-500">In evidenza in alto</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, is_featured: !form.is_featured })}
+                    className={`w-10 h-5 rounded-full transition relative ${form.is_featured ? "bg-yellow-500" : "bg-gray-300"}`}
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${form.is_featured ? "left-5" : "left-1"}`} />
+                  </button>
+                </div>
+                <div className="bg-cream rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-night">🔥 Il Più Ordinato</p>
+                    <p className="text-[10px] text-gray-500">Mostra badge popolare</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, is_popular: !form.is_popular })}
+                    className={`w-10 h-5 rounded-full transition relative ${form.is_popular ? "bg-orange-500" : "bg-gray-300"}`}
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${form.is_popular ? "left-5" : "left-1"}`} />
+                  </button>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-2">
