@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
 const LANGUAGE_NAMES: Record<string, string> = {
   it: "Italian",
   en: "English",
@@ -13,7 +9,9 @@ const LANGUAGE_NAMES: Record<string, string> = {
 
 export async function POST(req: Request) {
   try {
-    const { text, targetLang } = await req.json();
+    const body = await req.json();
+    const text: string = body.text;
+    const targetLang: string = body.targetLang;
 
     if (!text || !targetLang || targetLang === "it") {
       return NextResponse.json({ translated: text });
@@ -23,6 +21,14 @@ export async function POST(req: Request) {
     if (!langName) {
       return NextResponse.json({ error: "Lingua non supportata" }, { status: 400 });
     }
+
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error("OPENAI_API_KEY mancante");
+      return NextResponse.json({ translated: text });
+    }
+
+    const openai = new OpenAI({ apiKey });
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -45,6 +51,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ translated });
   } catch (err: any) {
     console.error("Translation error:", err);
-    return NextResponse.json({ translated: text, error: err.message });
+    return NextResponse.json({ translated: "", error: err?.message || "Errore" }, { status: 500 });
   }
 }
