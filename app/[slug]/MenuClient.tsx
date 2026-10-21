@@ -474,76 +474,164 @@ export default function MenuClient({
 
   if (view === "welcome") {
     return (
-      <div className="min-h-screen bg-[#F5F5F7] flex flex-col justify-center p-6 relative overflow-hidden">
-        {/* Sfondo decorativo */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-10 right-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: brandColor }} />
-          <div className="absolute bottom-10 left-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: brandColor }} />
+      <div className="min-h-screen relative overflow-hidden bg-[#0A0A0A]">
+        {/* Blob animati di sfondo */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div 
+            animate={{ x: [0, 80, 0], y: [0, -60, 0], scale: [1, 1.2, 1] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full blur-[120px] opacity-40"
+            style={{ backgroundColor: brandColor }}
+          />
+          <motion.div 
+            animate={{ x: [0, -70, 0], y: [0, 80, 0], scale: [1, 1.3, 1] }}
+            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -bottom-32 -left-32 w-[450px] h-[450px] rounded-full blur-[110px] opacity-25"
+            style={{ backgroundColor: brandColor }}
+          />
+          <motion.div 
+            animate={{ x: [0, 50, 0], y: [0, 50, 0] }}
+            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full blur-[130px] opacity-15"
+            style={{ backgroundColor: "#FFFFFF" }}
+          />
         </div>
 
-        <div className="max-w-md w-full mx-auto relative z-10">
-          {/* Logo e Nome */}
-          <div className="text-center mb-10">
+        {/* Texture grana sottile */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none mix-blend-overlay" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
+        }} />
+
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 py-12">
+
+          {/* LOGO con glow */}
+          <motion.div 
+            initial={{ scale: 0, rotate: -180, opacity: 0 }}
+            animate={{ scale: 1, rotate: 0, opacity: 1 }}
+            transition={{ type: "spring", damping: 15, stiffness: 180, delay: 0.1 }}
+            className="relative mb-8"
+          >
+            <div 
+              className="absolute inset-0 rounded-[36px] blur-3xl opacity-50" 
+              style={{ backgroundColor: brandColor }} 
+            />
             {logoUrl ? (
-              <img src={logoUrl} alt={tenantName} className="w-24 h-24 rounded-3xl object-cover mx-auto mb-4 shadow-xl ring-4 ring-white" />
+              <img 
+                src={logoUrl} 
+                alt={tenantName} 
+                className="relative w-32 h-32 rounded-[32px] object-cover ring-2 ring-white/20 shadow-2xl" 
+              />
             ) : (
-              <div className="w-24 h-24 rounded-3xl flex items-center justify-center text-white font-bold text-4xl mx-auto mb-4 shadow-xl ring-4 ring-white" style={{ backgroundColor: brandColor }}>
+              <div 
+                className="relative w-32 h-32 rounded-[32px] flex items-center justify-center text-white font-black text-5xl ring-2 ring-white/20 shadow-2xl"
+                style={{ backgroundColor: brandColor }}
+              >
                 {tenantName.charAt(0)}
               </div>
             )}
-            <h1 className="text-3xl font-bold text-night mb-2">{tenantName}</h1>
-            <p className="text-gray-500 text-sm">Benvenuto! Come possiamo servirti oggi?</p>
-          </div>
+          </motion.div>
 
-          {/* I 3 Pulsanti */}
-          <div className="space-y-4">
-            {/* Ordina */}
-            <button
+          {/* Nome ristorante */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight leading-tight">
+              {tenantName}
+            </h1>
+            <p className="text-white/50 text-base font-medium">
+              Come possiamo servirti oggi?
+            </p>
+          </motion.div>
+
+          {/* CARD MENU */}
+          <div className="w-full max-w-md space-y-3">
+
+            {/* Ordina Online */}
+            <motion.button
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              whileHover={{ scale: 1.02, y: -3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setView("order")}
-              className="w-full bg-white rounded-3xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition active:scale-[0.98] text-left border border-transparent hover:border-gray-200 group"
+              className="w-full group relative bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-xl border border-white/10 hover:border-white/25 rounded-3xl p-5 flex items-center gap-4 transition-all duration-300 overflow-hidden text-left"
             >
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition group-hover:scale-110" style={{ backgroundColor: `${brandColor}15` }}>
-                <ShoppingBag size={28} style={{ color: brandColor }} />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+              <div 
+                className="relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
+                style={{ backgroundColor: brandColor + "25" }}
+              >
+                <ShoppingBag size={26} style={{ color: brandColor }} />
               </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-bold text-night">Ordina Online</h2>
-                <p className="text-xs text-gray-500">Asporto o domicilio direttamente dal tuo telefono.</p>
+              <div className="flex-1 min-w-0 relative">
+                <h2 className="text-lg font-bold text-white leading-tight">Ordina Online</h2>
+                <p className="text-xs text-white/50 mt-0.5">Asporto o domicilio dal tuo telefono</p>
               </div>
-            </button>
+              <ArrowRight size={20} className="text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all relative" />
+            </motion.button>
 
-            {/* Prenota Tavolo (se abilitato) */}
-            {true && (
-              <button
+            {/* Prenota Tavolo */}
+            {tableBookingEnabled && (
+              <motion.button
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                whileHover={{ scale: 1.02, y: -3 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setView("menu");
-                  setTableBookingOpen(true); setBookingStep(1);
+                  setTableBookingOpen(true);
                 }}
-                className="w-full bg-white rounded-3xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition active:scale-[0.98] text-left border border-transparent hover:border-gray-200 group"
+                className="w-full group relative bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-xl border border-white/10 hover:border-white/25 rounded-3xl p-5 flex items-center gap-4 transition-all duration-300 overflow-hidden text-left"
               >
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition group-hover:scale-110 bg-orange-50">
-                  <Calendar size={28} className="text-orange-500" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+                <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 bg-orange-500/25">
+                  <Calendar size={26} className="text-orange-400" />
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-lg font-bold text-night">Prenota un Tavolo</h2>
-                  <p className="text-xs text-gray-500">Scegli il tuo tavolo preferito dalla piantina.</p>
+                <div className="flex-1 min-w-0 relative">
+                  <h2 className="text-lg font-bold text-white leading-tight">Prenota un Tavolo</h2>
+                  <p className="text-xs text-white/50 mt-0.5">Scegli il tuo tavolo dalla piantina</p>
                 </div>
-              </button>
+                <ArrowRight size={20} className="text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all relative" />
+              </motion.button>
             )}
 
-            {/* Visualizza Menu */}
-            <button
+            {/* Sfoglia Menu */}
+            <motion.button
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.5 }}
+              whileHover={{ scale: 1.02, y: -3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setView("menu")}
-              className="w-full bg-white rounded-3xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition active:scale-[0.98] text-left border border-transparent hover:border-gray-200 group"
+              className="w-full group relative bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-xl border border-white/10 hover:border-white/25 rounded-3xl p-5 flex items-center gap-4 transition-all duration-300 overflow-hidden text-left"
             >
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition group-hover:scale-110 bg-blue-50">
-                <BookOpen size={28} className="text-blue-500" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+              <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 bg-blue-500/25">
+                <BookOpen size={26} className="text-blue-400" />
               </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-bold text-night">Sfoglia il Menu</h2>
-                <p className="text-xs text-gray-500">Guarda i piatti e i prezzi senza ordinare.</p>
+              <div className="flex-1 min-w-0 relative">
+                <h2 className="text-lg font-bold text-white leading-tight">Sfoglia il Menu</h2>
+                <p className="text-xs text-white/50 mt-0.5">Guarda i piatti senza ordinare</p>
               </div>
-            </button>
+              <ArrowRight size={20} className="text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all relative" />
+            </motion.button>
           </div>
+
+          {/* Footer */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 0.6 }}
+            className="mt-14 text-center"
+          >
+            <p className="text-[10px] text-white/25 uppercase tracking-[0.3em] font-black">
+              Powered by <span style={{ color: brandColor }}>Prenotly</span>
+            </p>
+          </motion.div>
         </div>
       </div>
     );
@@ -1236,13 +1324,34 @@ export default function MenuClient({
                       <h4 className="text-2xl font-bold text-night mb-1">Scegli il tavolo</h4>
                       <p className="text-sm text-gray-500 mb-4">Tocca un tavolo libero sulla mappa</p>
                     </div>
-                    <TableMap
-                      tables={tablesWithStatus as any}
-                      selectedId={selectedTable?.id || null}
-                      onSelect={(t: any) => setSelectedTable(t)}
-                      brandColor={brandColor}
-                      partySize={partySize}
-                    />
+                    {(tablesWithStatus as any[]).length > 0 && (
+                      Object.entries(
+                        (tablesWithStatus as any[]).reduce((acc: Record<string, any[]>, t: any) => {
+                          const zone = t.zone || "Sala Principale";
+                          if (!acc[zone]) acc[zone] = [];
+                          acc[zone].push(t);
+                          return acc;
+                        }, {})
+                      ).map(([zone, zoneTables]) => (
+                        <div key={zone} className="mb-6 last:mb-0">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="h-px bg-gray-200 flex-1" />
+                            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-1.5 px-2">
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: brandColor }} />
+                              {zone}
+                            </h4>
+                            <div className="h-px bg-gray-200 flex-1" />
+                          </div>
+                          <TableMap
+                            tables={zoneTables as any}
+                            selectedId={selectedTable?.id || null}
+                            onSelect={(t: any) => setSelectedTable(t)}
+                            brandColor={brandColor}
+                            partySize={partySize}
+                          />
+                        </div>
+                      ))
+                    )}
 
                     <div className="flex gap-2 mt-4">
                       <button

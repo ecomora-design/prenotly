@@ -40,6 +40,7 @@ export default function GestioneTavoliPage() {
   });
   
   const [isCombined, setIsCombined] = useState(false);
+  const [tableError, setTableError] = useState<string | null>(null);
   const [tablesToMerge, setTablesToMerge] = useState<string[]>([]);
 
   const loadData = async () => {
@@ -83,7 +84,18 @@ export default function GestioneTavoliPage() {
 
   const handleAddTable = async () => {
     if (!tenantId || !newTable.table_number) return;
+    setTableError(null);
     setSaving(true);
+
+    // Controllo pre-salvataggio: esiste già un tavolo con questo numero nella stessa zona?
+    const existing = tables.find(
+      (t) => t.table_number === parseInt(newTable.table_number) && (t.zone || "Sala Principale") === newTable.zone
+    );
+    if (existing) {
+      setTableError(`Esiste già un Tavolo ${newTable.table_number} in "${newTable.zone}". Scegli un altro numero o cambia zona.`);
+      setSaving(false);
+      return;
+    }
 
     const nextIndex = tables.length;
     const position_x = nextIndex % 4;
@@ -101,7 +113,11 @@ export default function GestioneTavoliPage() {
     }).select().single();
 
     if (error) {
-      alert("Errore: " + error.message);
+      if (error.message.includes("duplicate")) {
+        setTableError("Questo tavolo esiste già nella zona selezionata. Scegli un numero diverso.");
+      } else {
+        setTableError("Errore: " + error.message);
+      }
     } else if (isCombined && inserted && tablesToMerge.length > 0) {
       await supabase.from("tables").update({ parent_table_id: inserted.id }).in("id", tablesToMerge);
     }
@@ -152,7 +168,7 @@ export default function GestioneTavoliPage() {
           <p className="text-white/40 text-sm mt-1">Monitora tavoli e occupazione in tempo reale.</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => { setIsModalOpen(true); setTableError(null); }}
           className="bg-[#25D366] hover:bg-[#20ba5a] text-black px-5 py-3 rounded-xl font-bold text-sm transition inline-flex items-center gap-2 shadow-[0_0_20px_rgba(37,211,102,0.3)] active:scale-95 w-full sm:w-auto justify-center"
         >
           <Plus size={18} /> Aggiungi Tavolo
@@ -322,11 +338,22 @@ export default function GestioneTavoliPage() {
                   </h3>
                   <p className="text-[11px] text-white/40 mt-0.5">Configura un nuovo tavolo per la tua sala</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="text-white/40 hover:text-white p-1">
+                <button onClick={() => { setIsModalOpen(false); setTableError(null); }} className="text-white/40 hover:text-white p-1">
                   <X size={20} />
                 </button>
               </div>
               
+              
+              {tableError && (
+                <div className="mx-6 mt-4 bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
+                  <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-red-400 text-xs font-black">!</span>
+                  </div>
+                  <p className="text-xs text-red-300 font-medium leading-relaxed flex-1">{tableError}</p>
+                  <button onClick={() => setTableError(null)} className="text-red-400/50 hover:text-red-400 text-lg leading-none">×</button>
+                </div>
+              )}
+
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
