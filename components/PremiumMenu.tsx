@@ -12,6 +12,10 @@ type Service = {
   image_url: string | null;
   is_featured?: boolean;
   is_popular?: boolean;
+  name_en?: string | null;
+  description_en?: string | null;
+  name_de?: string | null;
+  description_de?: string | null;
 };
 
 type Props = {
@@ -26,14 +30,22 @@ type Props = {
   removeFromCart: (id: string) => void;
   cart: Record<string, { service: Service; qty: number }>;
   view: string;
+  lang?: 'it' | 'en' | 'de';
+  t?: any;
 };
 
 export default function PremiumMenu({
   services, categories, selectedCategory, setSelectedCategory,
-  searchQuery, setSearchQuery, brandColor, addToCart, removeFromCart, cart, view
+  searchQuery, setSearchQuery, brandColor, addToCart, removeFromCart, cart, view, lang = 'it', t
 }: Props) {
   
   const featured = services.find(s => s.is_featured) || services.find(s => s.image_url) || services[0];
+  const getLocalized = (item: Service) => {
+    if (lang === 'en' && item.name_en) return { name: item.name_en, description: item.description_en || item.description };
+    if (lang === 'de' && item.name_de) return { name: item.name_de, description: item.description_de || item.description };
+    return { name: item.name, description: item.description };
+  };
+
   const grouped = services.reduce((acc: Record<string, Service[]>, s) => {
     const cat = s.category || "Altro";
     if (!acc[cat]) acc[cat] = [];
@@ -61,9 +73,9 @@ export default function PremiumMenu({
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <h2 className="text-3xl md:text-5xl font-serif text-white leading-tight mb-2 drop-shadow-xl">{featured.name}</h2>
-            {featured.description && (
-              <p className="text-white/80 text-sm md:text-base line-clamp-2 mb-4 max-w-lg">{featured.description}</p>
+            <h2 className="text-3xl md:text-5xl font-serif text-white leading-tight mb-2 drop-shadow-xl">{getLocalized(featured).name}</h2>
+            {getLocalized(featured).description && (
+              <p className="text-white/80 text-sm md:text-base line-clamp-2 mb-4 max-w-lg">{getLocalized(featured).description}</p>
             )}
             <div className="flex items-center justify-between">
               <span className="text-2xl md:text-3xl font-light text-white">€ {Number(featured.price).toFixed(2)}</span>
@@ -72,7 +84,7 @@ export default function PremiumMenu({
                   onClick={() => addToCart(featured)}
                   className="bg-white text-black px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-gray-100 transition active:scale-95 shadow-xl"
                 >
-                  <Plus size={18} /> Aggiungi
+                  <Plus size={18} /> {t?.add || "Aggiungi"}
                 </button>
               )}
             </div>
@@ -86,7 +98,7 @@ export default function PremiumMenu({
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Cerca nel menu..."
+            placeholder={t?.search || "Cerca nel menu..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white border-0 rounded-2xl pl-11 pr-4 py-3.5 text-sm shadow-sm focus:outline-none focus:ring-2 transition"
@@ -146,7 +158,7 @@ export default function PremiumMenu({
                     {/* Testo e Prezzo */}
                     <div className="flex-1 w-full">
                       <div className="flex items-baseline gap-2 mb-1">
-                        <h4 className="text-xl font-bold text-night font-serif">{item.name}</h4>
+                        <h4 className="text-xl font-bold text-night font-serif">{getLocalized(item).name}</h4>
                         {item.is_popular && (
                           <span className="bg-orange-100 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest flex items-center gap-1">
                             <Flame size={10} /> Il più ordinato
@@ -158,8 +170,8 @@ export default function PremiumMenu({
                           </span>
                         )}
                       </div>
-                      {item.description && (
-                        <p className="text-sm text-night/60 leading-relaxed font-light">{item.description}</p>
+                      {getLocalized(item).description && (
+                        <p className="text-sm text-night/60 leading-relaxed font-light">{getLocalized(item).description}</p>
                       )}
                     </div>
 
@@ -173,7 +185,7 @@ export default function PremiumMenu({
                           className="px-4 py-2 rounded-full flex items-center gap-1.5 text-white shadow-sm font-bold text-xs hover:opacity-90 active:scale-95 transition"
                           style={{ backgroundColor: brandColor }}
                         >
-                          <Plus size={14} /> Aggiungi
+                          <Plus size={14} /> {t?.add || "Aggiungi"}
                         </button>
                       ) : (
                         <div className="flex items-center gap-1 rounded-full p-1 bg-night/5 border border-night/10">

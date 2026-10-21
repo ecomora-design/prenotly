@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PremiumMenu from "@/components/PremiumMenu";
 import TableMap from "@/components/TableMap";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/lib/i18n";
 import SplashScreen from "@/components/SplashScreen";
 import { ToastContainer, useToast } from "@/components/Toast";
 import SkeletonMenu from "@/components/SkeletonMenu";
@@ -105,6 +107,55 @@ export default function MenuClient({
   const [showTableUpgrade, setShowTableUpgrade] = useState(false);
   const toast = useToast();
   const [initialLoading, setInitialLoading] = useState(true);
+  const { lang, setLang, t } = useLanguage();
+
+  // Traduzione automatica delle descrizioni
+  useEffect(() => {
+    if (lang === "it" || !services || services.length === 0) return;
+
+    console.log("[TRANSLATE-EFFECT] Lang:", lang, "| Services:", services?.length);
+    const translateAll = async () => {
+      const updates: Record<string, string> = {};
+
+      for (const service of services) {
+        if (!service.description) continue;
+        const cacheKey = `${service.id}_${lang}`;
+        
+        // Se già in cache, usa quella
+        if (translationCache.current[cacheKey]) {
+          updates[service.id] = translationCache.current[cacheKey];
+          continue;
+        }
+
+        // Altrimenti chiama l'API
+        try {
+          const res = await fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: service.description,
+              targetLang: lang,
+            }),
+          });
+          const data = await res.json();
+          const translated = data.translated || service.description;
+          translationCache.current[cacheKey] = translated;
+          updates[service.id] = translated;
+        } catch (err) {
+          updates[service.id] = service.description;
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        setTranslatedDescriptions(prev => ({ ...prev, ...updates }));
+      }
+    };
+
+    translateAll();
+  }, [lang, services]);
+
+  const [translatedDescriptions, setTranslatedDescriptions] = useState<Record<string, string>>({});
+  const translationCache = useRef<Record<string, string>>({});
   const [view, setView] = useState<"welcome" | "order" | "menu">("welcome");
   const [orderSuccess, setOrderSuccess] = useState<{ code: string; total: number } | null>(null);
   const [lastOrderSnapshot, setLastOrderSnapshot] = useState<any>(null);
@@ -475,6 +526,10 @@ export default function MenuClient({
   if (view === "welcome") {
     return (
       <div className="min-h-screen relative overflow-hidden bg-[#0A0A0A]">
+        {/* Language Switcher top-right */}
+        <div className="absolute top-4 right-4 z-20">
+          <LanguageSwitcher currentLang={lang} onChange={setLang} variant="dark" />
+        </div>
         {/* Blob animati di sfondo */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div 
@@ -542,7 +597,7 @@ export default function MenuClient({
               {tenantName}
             </h1>
             <p className="text-white/50 text-base font-medium">
-              Come possiamo servirti oggi?
+              {t.welcome.split("! ")[1] || "Come possiamo servirti oggi?"}
             </p>
           </motion.div>
 
@@ -567,8 +622,8 @@ export default function MenuClient({
                 <ShoppingBag size={26} style={{ color: brandColor }} />
               </div>
               <div className="flex-1 min-w-0 relative">
-                <h2 className="text-lg font-bold text-white leading-tight">Ordina Online</h2>
-                <p className="text-xs text-white/50 mt-0.5">Asporto o domicilio dal tuo telefono</p>
+                <h2 className="text-lg font-bold text-white leading-tight">{t.orderOnline}</h2>
+                <p className="text-xs text-white/50 mt-0.5">{t.orderOnlineDesc}</p>
               </div>
               <ArrowRight size={20} className="text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all relative" />
             </motion.button>
@@ -592,8 +647,8 @@ export default function MenuClient({
                   <Calendar size={26} className="text-orange-400" />
                 </div>
                 <div className="flex-1 min-w-0 relative">
-                  <h2 className="text-lg font-bold text-white leading-tight">Prenota un Tavolo</h2>
-                  <p className="text-xs text-white/50 mt-0.5">Scegli il tuo tavolo dalla piantina</p>
+                  <h2 className="text-lg font-bold text-white leading-tight">{t.bookTable}</h2>
+                  <p className="text-xs text-white/50 mt-0.5">{t.bookTableDesc}</p>
                 </div>
                 <ArrowRight size={20} className="text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all relative" />
               </motion.button>
@@ -614,8 +669,8 @@ export default function MenuClient({
                 <BookOpen size={26} className="text-blue-400" />
               </div>
               <div className="flex-1 min-w-0 relative">
-                <h2 className="text-lg font-bold text-white leading-tight">Sfoglia il Menu</h2>
-                <p className="text-xs text-white/50 mt-0.5">Guarda i piatti senza ordinare</p>
+                <h2 className="text-lg font-bold text-white leading-tight">{t.browseMenu}</h2>
+                <p className="text-xs text-white/50 mt-0.5">{t.browseMenuDesc}</p>
               </div>
               <ArrowRight size={20} className="text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all relative" />
             </motion.button>
@@ -769,7 +824,7 @@ export default function MenuClient({
 
         {tab === "menu" && !initialLoading && (
           <PremiumMenu
-            services={filteredServices as any}
+            services={(filteredServices as any[]).map(s => ({ ...s, description: translatedDescriptions[s.id] || s.description })) as any}
             categories={categories}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
@@ -780,6 +835,8 @@ export default function MenuClient({
             removeFromCart={removeFromCart}
             cart={cart as any}
             view={view}
+            lang={lang}
+            t={t}
           />
         )}
 
@@ -868,7 +925,7 @@ export default function MenuClient({
           >
             <span className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center text-sm font-bold">{cartCount}</div>
-              <span className="text-sm">Vedi il tuo ordine</span>
+              <span className="text-sm">{t.yourOrder}</span>
             </span>
             <span className="text-lg">€{cartTotal.toFixed(2)}</span>
           </motion.button>
@@ -888,7 +945,7 @@ export default function MenuClient({
               <div className="sticky top-0 bg-[#F5F5F7] pt-3 pb-4 px-5 border-b border-gray-200/50 z-10">
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4" />
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-night">Il tuo ordine</h3>
+                  <h3 className="text-xl font-bold text-night">{t.yourOrder}</h3>
                   <button onClick={() => setCartOpen(false)} className="text-gray-500 p-2 hover:bg-white rounded-full transition">
                     <X size={20} />
                   </button>
@@ -919,12 +976,12 @@ export default function MenuClient({
 
                 <div className="bg-white rounded-2xl p-4 mb-5 shadow-sm space-y-2">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500">Subtotale</span>
+                    <span className="text-gray-500">{t.subtotal}</span>
                     <span className="font-semibold text-night">€{cartSubtotal.toFixed(2)}</span>
                   </div>
                   {orderType === "delivery" && deliveryFee > 0 && (
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-500">Consegna</span>
+                      <span className="text-gray-500">{t.delivery}</span>
                       <span className="font-semibold text-night">+€{deliveryFee.toFixed(2)}</span>
                     </div>
                   )}
@@ -935,7 +992,7 @@ export default function MenuClient({
                     </div>
                   )}
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                    <span className="font-bold text-night">Totale</span>
+                    <span className="font-bold text-night">{t.total}</span>
                     <span className="font-bold text-night text-2xl">€{cartTotal.toFixed(2)}</span>
                   </div>
                 </div>
@@ -956,7 +1013,7 @@ export default function MenuClient({
                   className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-[0.98] flex items-center justify-center gap-2"
                   style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                 >
-                  Procedi all&apos;ordine <ChevronRight size={20} />
+                  {t.proceedOrder} <ChevronRight size={20} />
                 </button>
               </div>
             </motion.div>
@@ -976,7 +1033,7 @@ export default function MenuClient({
               <div className="sticky top-0 bg-[#F5F5F7] pt-3 pb-4 px-6 border-b border-gray-200/50 z-10">
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4 md:hidden" />
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-night">Completa l&apos;ordine</h3>
+                  <h3 className="text-xl font-bold text-night">{t.confirmOrder.split(" ")[0]} {t.yourOrder.toLowerCase()}</h3>
                   <button onClick={() => setCheckoutOpen(false)} className="text-gray-500 p-2 hover:bg-white rounded-full transition">
                     <X size={20} />
                   </button>
@@ -986,14 +1043,14 @@ export default function MenuClient({
               <div className="p-5 space-y-5">
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <label className="block">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Il tuo nome</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t.yourName}</span>
                     <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Mario Rossi" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
                   </label>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm mt-3">
                   <label className="block">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Numero di telefono *</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t.yourPhone} *</span>
                     
                     <div className="flex items-center gap-3">
                       <select 
@@ -1047,16 +1104,16 @@ export default function MenuClient({
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Come lo vuoi?</span>
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">{t.howYouWant}</span>
                   <div className={`grid gap-2 ${hasTakeaway && hasDelivery ? "grid-cols-2" : "grid-cols-1"}`}>
                     {hasTakeaway && (
                       <button onClick={() => setOrderType("takeaway")} className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${orderType === "takeaway" ? "text-white" : "bg-soft text-gray-600"}`} style={orderType === "takeaway" ? { backgroundColor: brandColor } : undefined}>
-                        <Store size={16} /> Asporto
+                        <Store size={16} /> {t.takeaway}
                       </button>
                     )}
                     {hasDelivery && (
                       <button onClick={() => setOrderType("delivery")} className={`flex items-center justify-center gap-2 py-3 rounded-xl transition font-semibold text-sm ${orderType === "delivery" ? "text-white" : "bg-soft text-gray-600"}`} style={orderType === "delivery" ? { backgroundColor: brandColor } : undefined}>
-                        <Truck size={16} /> Domicilio {deliveryFee > 0 && <span className="text-xs opacity-70">+€{deliveryFee.toFixed(2)}</span>}
+                        <Truck size={16} /> {t.deliveryOption} {deliveryFee > 0 && <span className="text-xs opacity-70">+€{deliveryFee.toFixed(2)}</span>}
                       </button>
                     )}
                   </div>
@@ -1065,7 +1122,7 @@ export default function MenuClient({
                 {orderType === "delivery" && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <label className="block">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Indirizzo di consegna</span>
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t.addressLabel}</span>
                       <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Via Roma 10, Bologna" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
                     </label>
                   </div>
@@ -1073,7 +1130,7 @@ export default function MenuClient({
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <Clock size={12} /> Orario
+                    <Clock size={12} /> {t.time}
                   </span>
                   <div className="grid grid-cols-4 gap-2">
                     {(timeSlots && timeSlots.length > 0 ? timeSlots : ["12:00", "12:30", "13:00", "13:30", "14:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"]).map((t) => (
@@ -1086,14 +1143,14 @@ export default function MenuClient({
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <label className="block">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Note (opzionale)</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t.notes}</span>
                     <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Senza cipolla, ben cotta..." rows={2} className="w-full bg-transparent border-0 text-sm text-night placeholder-gray-300 focus:outline-none p-0 resize-none" />
                   </label>
                 </div>
 
                 <div className="rounded-2xl p-5 shadow-sm text-white" style={{ backgroundColor: brandColor }}>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold opacity-90">Totale da pagare</span>
+                    <span className="text-sm font-semibold opacity-90">{t.total}</span>
                     <span className="font-bold text-2xl">€{cartTotal.toFixed(2)}</span>
                   </div>
                 </div>
@@ -1112,9 +1169,9 @@ export default function MenuClient({
                   style={!customerName || !customerPhone || !pickupTime || (orderType === "delivery" && !address) || submitting ? undefined : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                 >
                   {submitting ? (
-                    <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />Invio in corso...</>
+                    <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t.sending}</>
                   ) : (
-                    <><CheckCircle2 size={20} />Conferma ordine</>
+                    <><CheckCircle2 size={20} />{t.confirmOrder}</>
                   )}
                 </button>
               </div>
@@ -1131,14 +1188,14 @@ export default function MenuClient({
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 12, delay: 0.1 }} className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: `${brandColor}15` }}>
                 <CheckCircle2 size={52} style={{ color: brandColor }} />
               </motion.div>
-              <h2 className="text-2xl font-bold text-night mb-2">Ordine confermato!</h2>
-              <p className="text-gray-600 mb-6">Grazie {customerName}! Il tuo ordine è stato inviato a {tenantName}.</p>
+              <h2 className="text-2xl font-bold text-night mb-2">{t.orderConfirmed}</h2>
+              <p className="text-gray-600 mb-6">{t.thanks} {customerName}! {t.orderSent} {tenantName}.</p>
 
               <div className="bg-soft rounded-2xl p-4 mb-6">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Codice ordine</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">{t.orderCode}</p>
                 <p className="font-mono text-lg font-bold text-night">{orderSuccess.code}</p>
                 <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Totale</span>
+                  <span className="text-sm text-gray-500">{t.total}</span>
                   <span className="font-bold text-night text-lg">€{orderSuccess.total.toFixed(2)}</span>
                 </div>
               </div>
@@ -1150,14 +1207,14 @@ export default function MenuClient({
 
               <a href={buildOrderWhatsAppUrl()} target="_blank" rel="noopener noreferrer" className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3" style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}>
                 <MessageCircle size={20} />
-                Invia ordine su WhatsApp
+                {t.sendWhatsapp}
               </a>
 
               <button
                 onClick={() => { setOrderSuccess(null); setLastOrderSnapshot(null); setCustomerName(""); setAddress(""); setNotes(""); setPickupTime(""); }}
                 className="w-full text-night py-3.5 rounded-2xl font-bold transition active:scale-95 bg-soft"
               >
-                Torna al menu
+                {t.backToMenu}
               </button>
             </motion.div>
           </div>
@@ -1213,7 +1270,7 @@ export default function MenuClient({
                 {bookingStep === 1 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                     <div>
-                      <h4 className="text-2xl font-bold text-night mb-1">Per quante persone?</h4>
+                      <h4 className="text-2xl font-bold text-night mb-1">{t.howManyPeople}</h4>
                       <p className="text-sm text-gray-500 mb-4">Seleziona il numero di ospiti</p>
                       <div className="grid grid-cols-5 gap-2">
                         {Array.from({ length: maxPartySize }, (_, i) => i + 1).map((n) => (
@@ -1234,8 +1291,8 @@ export default function MenuClient({
                     </div>
 
                     <div>
-                      <h4 className="text-2xl font-bold text-night mb-1">Quando?</h4>
-                      <p className="text-sm text-gray-500 mb-4">Scegli il giorno</p>
+                      <h4 className="text-2xl font-bold text-night mb-1">{t.when}</h4>
+                      <p className="text-sm text-gray-500 mb-4">{t.chooseDay}</p>
                       <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 hide-scrollbar">
                         {availableDays.slice(0, 14).map((d) => {
                           const active = selectedDate?.toDateString() === d.toDateString();
@@ -1264,7 +1321,7 @@ export default function MenuClient({
                       className="w-full disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2 active:scale-[0.98] mt-4"
                       style={!selectedDate ? undefined : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                     >
-                      Continua <ChevronRight size={20} />
+                      {t.continue} <ChevronRight size={20} />
                     </button>
                   </motion.div>
                 )}
@@ -1273,8 +1330,8 @@ export default function MenuClient({
                 {bookingStep === 2 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                     <div>
-                      <h4 className="text-2xl font-bold text-night mb-1">A che ora?</h4>
-                      <p className="text-sm text-gray-500 mb-4">Scegli l'orario per {partySize} {partySize === 1 ? 'persona' : 'persone'} il {selectedDate?.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}</p>
+                      <h4 className="text-2xl font-bold text-night mb-1">{t.whatTime}</h4>
+                      <p className="text-sm text-gray-500 mb-4">{t.chooseTime} · {partySize} {partySize === 1 ? t.people.slice(0, -1) : t.people} · {selectedDate?.toLocaleDateString(lang === 'it' ? 'it-IT' : lang === 'en' ? 'en-US' : 'de-DE', { day: 'numeric', month: 'long' })}</p>
                       <div className="grid grid-cols-3 gap-2">
                         {slots.map((slot) => (
                           <button
@@ -1303,7 +1360,7 @@ export default function MenuClient({
                         onClick={() => setBookingStep(1)}
                         className="px-6 py-4 rounded-2xl font-bold text-night bg-white border border-gray-200 transition active:scale-[0.98]"
                       >
-                        Indietro
+                        {t.back}
                       </button>
                       <button
                         onClick={() => setBookingStep(3)}
@@ -1311,7 +1368,7 @@ export default function MenuClient({
                         className="flex-1 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
                         style={!selectedSlot ? undefined : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                       >
-                        Continua <ChevronRight size={20} />
+                        {t.continue} <ChevronRight size={20} />
                       </button>
                     </div>
                   </motion.div>
@@ -1321,8 +1378,8 @@ export default function MenuClient({
                 {bookingStep === 3 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                     <div>
-                      <h4 className="text-2xl font-bold text-night mb-1">Scegli il tavolo</h4>
-                      <p className="text-sm text-gray-500 mb-4">Tocca un tavolo libero sulla mappa</p>
+                      <h4 className="text-2xl font-bold text-night mb-1">{t.chooseTable}</h4>
+                      <p className="text-sm text-gray-500 mb-4">{t.tapFreeTable}</p>
                     </div>
                     {(tablesWithStatus as any[]).length > 0 && (
                       Object.entries(
@@ -1358,7 +1415,7 @@ export default function MenuClient({
                         onClick={() => setBookingStep(2)}
                         className="px-6 py-4 rounded-2xl font-bold text-night bg-white border border-gray-200 transition active:scale-[0.98]"
                       >
-                        Indietro
+                        {t.back}
                       </button>
                       <button
                         onClick={() => setBookingStep(4)}
@@ -1366,7 +1423,7 @@ export default function MenuClient({
                         className="flex-1 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
                         style={!selectedTable ? undefined : { backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
                       >
-                        Continua <ChevronRight size={20} />
+                        {t.continue} <ChevronRight size={20} />
                       </button>
                     </div>
                   </motion.div>
@@ -1376,40 +1433,40 @@ export default function MenuClient({
                 {bookingStep === 4 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                     <div>
-                      <h4 className="text-2xl font-bold text-night mb-1">I tuoi dati</h4>
-                      <p className="text-sm text-gray-500 mb-4">Ti confermeremo la prenotazione su WhatsApp</p>
+                      <h4 className="text-2xl font-bold text-night mb-1">{t.yourData}</h4>
+                      <p className="text-sm text-gray-500 mb-4">{t.confirmOnWhatsapp}</p>
                     </div>
 
                     {/* Riepilogo */}
                     <div className="rounded-2xl p-4 text-white" style={{ backgroundColor: brandColor }}>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs opacity-80 font-semibold uppercase tracking-wider">Riepilogo</span>
+                        <span className="text-xs opacity-80 font-semibold uppercase tracking-wider">{t.summary}</span>
                       </div>
                       <div className="space-y-1 text-sm">
-                        <div className="flex justify-between"><span className="opacity-90">Tavolo</span><span className="font-bold">{selectedTable?.table_number}</span></div>
-                        <div className="flex justify-between"><span className="opacity-90">Persone</span><span className="font-bold">{partySize}</span></div>
-                        <div className="flex justify-between"><span className="opacity-90">Data</span><span className="font-bold">{selectedDate?.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</span></div>
+                        <div className="flex justify-between"><span className="opacity-90">{t.table}</span><span className="font-bold">{selectedTable?.table_number}</span></div>
+                        <div className="flex justify-between"><span className="opacity-90">{t.people}</span><span className="font-bold">{partySize}</span></div>
+                        <div className="flex justify-between"><span className="opacity-90">{t.date}</span><span className="font-bold">{selectedDate?.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</span></div>
                         <div className="flex justify-between"><span className="opacity-90">Orario</span><span className="font-bold">{selectedSlot}</span></div>
                       </div>
                     </div>
 
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
                       <label className="block">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Il tuo nome *</span>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t.yourName} *</span>
                         <input type="text" value={tableCustomerName} onChange={(e) => setTableCustomerName(e.target.value)} placeholder="Mario Rossi" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
                       </label>
                     </div>
 
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
                       <label className="block">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Numero di telefono *</span>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t.yourPhone} *</span>
                         <input type="tel" required value={tableCustomerPhone} onChange={(e) => setTableCustomerPhone(e.target.value)} placeholder="+39 333 1234567" className="w-full bg-transparent border-0 text-base font-semibold text-night placeholder-gray-300 focus:outline-none p-0" />
                       </label>
                     </div>
 
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
                       <label className="block">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Note (opzionale)</span>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t.notes}</span>
                         <textarea value={tableNotes} onChange={(e) => setTableNotes(e.target.value)} placeholder="Es. seggiolone per bambino..." rows={2} className="w-full bg-transparent border-0 text-sm text-night placeholder-gray-300 focus:outline-none p-0 resize-none" />
                       </label>
                     </div>
@@ -1426,7 +1483,7 @@ export default function MenuClient({
                         onClick={() => setBookingStep(3)}
                         className="px-6 py-4 rounded-2xl font-bold text-night bg-white border border-gray-200 transition active:scale-[0.98]"
                       >
-                        Indietro
+                        {t.back}
                       </button>
                       <button
                         onClick={sendTableBooking}
@@ -1457,11 +1514,11 @@ export default function MenuClient({
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 12, delay: 0.1 }} className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: `${brandColor}15` }}>
                 <CheckCircle2 size={52} style={{ color: brandColor }} />
               </motion.div>
-              <h2 className="text-2xl font-bold text-night mb-2">Tavolo prenotato!</h2>
-              <p className="text-gray-600 mb-6">Ti aspettiamo da {tenantName} 🍽️</p>
+              <h2 className="text-2xl font-bold text-night mb-2">{t.bookingConfirmed}</h2>
+              <p className="text-gray-600 mb-6">{t.seeYouAt} {tenantName} 🍽️</p>
 
               <div className="bg-soft rounded-2xl p-4 mb-6">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Codice prenotazione</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">{t.bookingCode}</p>
                 <p className="font-mono text-lg font-bold text-night">{tableSuccess.code}</p>
               </div>
 

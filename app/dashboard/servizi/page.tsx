@@ -19,6 +19,10 @@ type Service = {
   is_popular: boolean;
   sort_order: number;
   image_url: string | null;
+  name_en: string | null;
+  description_en: string | null;
+  name_de: string | null;
+  description_de: string | null;
 };
 
 export default function ServiziPage() {
@@ -447,7 +451,58 @@ export default function ServiziPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              
+<div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
+  <p className="text-xs font-black text-blue-900 uppercase tracking-widest mb-3 flex items-center gap-2">
+    <span className="text-base">🌍</span> Traduzioni (opzionale)
+  </p>
+  
+  <details className="group">
+    <summary className="cursor-pointer text-xs font-bold text-blue-700 hover:text-blue-900 py-1">
+      🇬🇧 Inglese
+    </summary>
+    <div className="mt-3 space-y-2">
+      <input
+        type="text"
+        value={(form as any).name_en || ""}
+        onChange={(e) => setForm({ ...form, name_en: e.target.value } as any)}
+        placeholder="Nome in inglese"
+        className="w-full bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+      />
+      <textarea
+        value={(form as any).description_en || ""}
+        onChange={(e) => setForm({ ...form, description_en: e.target.value } as any)}
+        placeholder="Descrizione in inglese"
+        rows={2}
+        className="w-full bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none resize-none"
+      />
+    </div>
+  </details>
+
+  <details className="group mt-2">
+    <summary className="cursor-pointer text-xs font-bold text-blue-700 hover:text-blue-900 py-1">
+      🇩🇪 Tedesco
+    </summary>
+    <div className="mt-3 space-y-2">
+      <input
+        type="text"
+        value={(form as any).name_de || ""}
+        onChange={(e) => setForm({ ...form, name_de: e.target.value } as any)}
+        placeholder="Nome in tedesco"
+        className="w-full bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+      />
+      <textarea
+        value={(form as any).description_de || ""}
+        onChange={(e) => setForm({ ...form, description_de: e.target.value } as any)}
+        placeholder="Descrizione in tedesco"
+        rows={2}
+        className="w-full bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none resize-none"
+      />
+    </div>
+  </details>
+</div>
+
+<div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
