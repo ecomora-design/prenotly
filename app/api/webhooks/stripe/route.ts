@@ -19,6 +19,7 @@ export async function POST(req: Request) {
 
   const supabase = createAdminClient();
 
+  // ── CHECKOUT COMPLETATO ──
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const tenantId = session.metadata?.tenant_id;
@@ -56,24 +57,35 @@ export async function POST(req: Request) {
     }
   }
 
+  // ── SUBSCRIPTION AGGIORNATA ──
   if (event.type === "customer.subscription.updated") {
     const sub = event.data.object as Stripe.Subscription;
     const customerId = sub.customer as string;
-    if (sub.status === "active" && sub.current_period_end) {
-      const endsAt = new Date(sub.current_period_end * 1000);
-      await supabase.from("tenants").update({
-        subscription_status: "active",
-        subscription_ends_at: endsAt.toISOString(),
-      }).eq("stripe_customer_id", customerId);
+
+    // In API recenti, current_period_end è dentro items.data[0]
+    const item = sub.items?.data?.[0];
+    const periodEnd = (item as any)?.current_period_end || (sub as any).current_period_end;
+
+    if (sub.status === "active" && periodEnd) {
+      const endsAt = new Date(periodEnd * 1000);
+      await supabase
+        .from("tenants")
+        .update({
+          subscription_status: "active",
+          subscription_ends_at: endsAt.toISOString(),
+        })
+        .eq("stripe_customer_id", customerId);
     }
   }
 
+  // ── SUBSCRIPTION CANCELLED ──
   if (event.type === "customer.subscription.deleted") {
     const sub = event.data.object as Stripe.Subscription;
     const customerId = sub.customer as string;
-    await supabase.from("tenants").update({
-      subscription_status: "expired",
-    }).eq("stripe_customer_id", customerId);
+    await supabase
+      .from("tenants")
+      .update({ subscription_status: "expired" })
+      .eq("stripe_customer_id", customerId);
   }
 
   return NextResponse.json({ received: true });
