@@ -7,7 +7,7 @@ import UploadImage from "@/components/UploadImage";
 import GoogleCalendarConnect from "@/components/GoogleCalendarConnect";
 import { motion } from "framer-motion";
 import {
-  Loader2, Save, CheckCircle2, Clock, MapPin, Phone, Truck, CalendarClock, X,
+  Loader2, Save, CheckCircle2, Clock, MapPin, Phone, Truck, CalendarClock, X, Plus,
   Store, Image as ImageIcon, Palette, Globe, FileText,
   MessageCircle, AlertCircle, Sparkles, ExternalLink
 } from "lucide-react";
@@ -684,80 +684,99 @@ export default function ImpostazioniPage() {
           <div className="space-y-2">
             {DAYS.map((d) => {
               const dayValue = form.opening_hours[d.key] || "chiuso";
-              const isClosed = dayValue === "chiuso";
+              const isClosed = dayValue === "chiuso" || !dayValue;
+              const shifts = isClosed ? [] : dayValue.split(",").map((s) => s.trim()).filter(Boolean);
               
-              // Estrai orari apertura/chiusura (default 09:00-19:00 se formato non valido)
-              let openTime = "09:00";
-              let closeTime = "19:00";
-              if (!isClosed && dayValue.includes("-")) {
-                const parts = dayValue.split("-");
-                if (parts.length === 2) {
-                  openTime = parts[0].trim();
-                  closeTime = parts[1].trim();
-                }
-              }
-
-              const handleTimeChange = (newOpen: string, newClose: string) => {
-                setForm({
-                  ...form,
-                  opening_hours: {
-                    ...form.opening_hours,
-                    [d.key]: `${newOpen}-${newClose}`
-                  }
-                });
+              const saveShifts = (newShifts: string[]) => {
+                const newValue = newShifts.length === 0 ? "chiuso" : newShifts.join(",");
+                setForm({ ...form, opening_hours: { ...form.opening_hours, [d.key]: newValue } });
               };
-
+              
+              const addShift = () => {
+                const newShifts = [...shifts, "12:00-15:00"];
+                saveShifts(newShifts);
+              };
+              
+              const removeShift = (idx: number) => {
+                saveShifts(shifts.filter((_, i) => i !== idx));
+              };
+              
+              const updateShift = (idx: number, newShift: string) => {
+                const newShifts = [...shifts];
+                newShifts[idx] = newShift;
+                saveShifts(newShifts);
+              };
+              
+              const toggleClosed = () => {
+                if (isClosed) {
+                  saveShifts(["09:00-13:00", "15:00-19:00"]);
+                } else {
+                  saveShifts([]);
+                }
+              };
+              
               return (
-                <div key={d.key} className="flex items-center gap-3 bg-cream rounded-2xl px-4 py-2.5">
-                  <span className="w-20 text-sm font-semibold text-night shrink-0">{d.label}</span>
+                <div key={d.key} className="bg-cream rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-night">{d.label}</span>
+                    <button
+                      type="button"
+                      onClick={toggleClosed}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 transition ${
+                        isClosed 
+                          ? "bg-green-50 text-green-600 hover:bg-green-100" 
+                          : "bg-red-50 text-red-500 hover:bg-red-100"
+                      }`}
+                    >
+                      {isClosed ? "Apri" : "Chiudi"}
+                    </button>
+                  </div>
                   
                   {isClosed ? (
-                    <span className="flex-1 text-sm text-night/40 italic">Chiuso</span>
+                    <p className="text-sm text-night/40 italic py-1">Chiuso</p>
                   ) : (
-                    <div className="flex-1 flex items-center gap-2">
-                      <input
-                        type="time"
-                        value={openTime}
-                        onChange={(e) => handleTimeChange(e.target.value, closeTime)}
-                        className="bg-white border border-night/[0.06] rounded-lg px-2 py-1.5 text-sm focus:border-night/20 focus:outline-none"
-                      />
-                      <span className="text-night/30">—</span>
-                      <input
-                        type="time"
-                        value={closeTime}
-                        onChange={(e) => handleTimeChange(openTime, e.target.value)}
-                        className="bg-white border border-night/[0.06] rounded-lg px-2 py-1.5 text-sm focus:border-night/20 focus:outline-none"
-                      />
+                    <div className="space-y-2">
+                      {shifts.map((shift, idx) => {
+                        const [start, end] = shift.split("-");
+                        return (
+                          <div key={idx} className="flex items-center gap-2">
+                            <input
+                              type="time"
+                              value={start || "09:00"}
+                              onChange={(e) => updateShift(idx, `${e.target.value}-${end || "19:00"}`)}
+                              className="bg-white border border-night/[0.06] rounded-lg px-2.5 py-2 text-sm font-semibold focus:border-night/20 focus:outline-none transition"
+                            />
+                            <span className="text-night/30">—</span>
+                            <input
+                              type="time"
+                              value={end || "19:00"}
+                              onChange={(e) => updateShift(idx, `${start || "09:00"}-${e.target.value}`)}
+                              className="bg-white border border-night/[0.06] rounded-lg px-2.5 py-2 text-sm font-semibold focus:border-night/20 focus:outline-none transition"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeShift(idx)}
+                              className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition"
+                              title="Rimuovi fascia"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={addShift}
+                        className="text-xs font-bold text-night/60 hover:text-night px-3 py-2 rounded-lg hover:bg-white transition inline-flex items-center gap-1"
+                      >
+                        <Plus size={12} /> Aggiungi fascia
+                      </button>
                     </div>
                   )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setForm({
-                        ...form,
-                        opening_hours: {
-                          ...form.opening_hours,
-                          [d.key]: isClosed ? "09:00-19:00" : "chiuso"
-                        }
-                      });
-                    }}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0 transition ${
-                      isClosed
-                        ? "bg-green-50 text-green-600 hover:bg-green-100"
-                        : "bg-red-50 text-red-500 hover:bg-red-100"
-                    }`}
-                  >
-                    {isClosed ? "Apri" : "Chiudi"}
-                  </button>
                 </div>
               );
             })}
           </div>
-          <p className="text-xs text-night/40 mt-3">
-            Formato: <code className="bg-cream px-1.5 py-0.5 rounded">09:00-19:00</code> per più fasce:{" "}
-            <code className="bg-cream px-1.5 py-0.5 rounded">12:00-15:00,19:00-23:00</code>
-          </p>
         </Section>
 
         {/* SEZIONE: GOOGLE CALENDAR (solo beauty) */}

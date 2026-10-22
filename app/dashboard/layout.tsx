@@ -195,9 +195,13 @@ export default function DashboardLayout({
       items: [
         ...(isFood ? [{ href: "/dashboard/ordini", label: "Ordini", icon: ShoppingBag }] : []),
         ...(showBookings ? [
+          ...(isFood ? [
           { href: "/dashboard/prenotazioni", label: "Agenda Sala", icon: Calendar },
+        ] : [
+          { href: "/dashboard/appuntamenti", label: "Appuntamenti", icon: Calendar },
+        ]),
         ] : []),
-        { href: "/dashboard/tavoli", label: "Gestione Tavoli", icon: LayoutGrid },
+        ...(isFood ? [{ href: "/dashboard/tavoli", label: "Gestione Tavoli", icon: LayoutGrid }] : []),
         { href: "/dashboard/report", label: "Report Incassi", icon: BarChart3 },
         { href: "/dashboard/servizi", label: isFood ? "Menu" : "Servizi", icon: Utensils },
       ],
