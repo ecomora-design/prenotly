@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, Check, X, MessageCircle, Sparkles,
   Utensils, Scissors, Code2, Shield, Zap, Users, Clock,
-  CreditCard, Headphones, TrendingUp, Star
+  CreditCard, Headphones, TrendingUp, Star, Lock
 } from "lucide-react";
 
 export const metadata = {
@@ -18,38 +18,36 @@ export default function PrezziPage() {
   const plans = [
     {
       id: "food",
-      emoji: "🍕",
+      icon: Utensils,
       name: "Prenotly Food",
-      subtitle: "Per ristoranti, pizzerie, bar e asporto",
+      subtitle: "Ristoranti, pizzerie, bar",
+      description: "Menu digitale e ordini asporto o domicilio. Zero commissioni.",
       price: "29,99",
       period: "/mese",
-      color: "wa",
+      color: "#25D366",
       features: [
         "Menu digitale personalizzabile",
         "Ordini asporto e domicilio",
-        "Dashboard completa",
+        "Notifiche realtime in dashboard",
+        "Dashboard gestionale completa",
         "Web app brandizzata",
         "Aggiornamenti illimitati",
         "Supporto WhatsApp",
       ],
       upgradeNote: "Prenotazione tavoli opzionale +10 €/mese",
-      notIncluded: [
-        "Multi-sede",
-        "Integrazione con POS",
-        "API personalizzate",
-      ],
       cta: "Attiva Food",
       highlight: false,
       link: "/signup?plan=food",
     },
     {
       id: "beauty",
-      emoji: "💇",
+      icon: Scissors,
       name: "Prenotly Beauty",
-      subtitle: "Per parrucchieri, estetiste e beauty",
+      subtitle: "Parrucchieri, estetiste, beauty",
+      description: "Agenda intelligente con slot in tempo reale e sync calendario.",
       price: "29,99",
       period: "/mese",
-      color: "violet",
+      color: "#8B5CF6",
       features: [
         "Calendario intelligente",
         "Prenotazioni con slot in tempo reale",
@@ -59,51 +57,41 @@ export default function PrezziPage() {
         "Dashboard completa",
         "Web app brandizzata",
       ],
-      notIncluded: [
-        "Multi-operatore avanzato",
-        "Pagamenti integrati",
-        "App native iOS/Android",
-      ],
+      upgradeNote: null,
       cta: "Attiva Beauty",
       highlight: true,
       link: "/signup?plan=beauty",
     },
     {
       id: "service",
-      emoji: "🛠️",
+      icon: Code2,
       name: "Prenotly Service",
-      subtitle: "Software su misura per la tua attività",
-      price: "Su preventivo",
-      period: "gratuito e senza impegno",
-      color: "blue",
+      subtitle: "Software su misura",
+      description: "Hai esigenze particolari? Progettiamo un software custom.",
+      price: null,
+      period: "Su preventivo",
+      color: "#3B82F6",
       features: [
         "Analisi delle esigenze",
         "Progettazione UX/UI",
         "Sviluppo completamente custom",
         "Integrazione WhatsApp",
-        "Integrazione gestionale esistente",
         "Multi-sede e multi-operatore",
         "API personalizzate",
         "Supporto e manutenzione dedicati",
       ],
-      notIncluded: [],
+      upgradeNote: null,
       cta: "Richiedi preventivo",
       highlight: false,
       link: "https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20un%20preventivo%20per%20un%20software%20su%20misura",
     },
   ];
 
-  const colorMap: Record<string, { bg: string; text: string; btn: string; ring: string; border: string }> = {
-    wa: { bg: "bg-wa/10", text: "text-waDark", btn: "bg-wa hover:bg-waDark", ring: "ring-wa", border: "border-wa/30" },
-    violet: { bg: "bg-violet-50", text: "text-violet-500", btn: "bg-violet-500 hover:bg-violet-600", ring: "ring-violet-500", border: "border-violet-300" },
-    blue: { bg: "bg-blue-50", text: "text-blue-500", btn: "bg-blue-600 hover:bg-blue-700", ring: "ring-blue-500", border: "border-blue-300" },
-  };
-
   const reasons = [
     { icon: Zap, title: "Attivo in 10 minuti", text: "Registrati, configuri e la tua web app è subito online. Nessun tecnico, nessuna installazione." },
     { icon: Clock, title: "Demo gratuita 48 ore", text: "Provi tutto gratis per 48 ore. Se ti piace attivi, altrimenti non paghi nulla." },
     { icon: Shield, title: "Disdici quando vuoi", text: "Nessun vincolo, nessuna penale. Se non fa per te, un click e sei fuori." },
-    { icon: CreditCard, title: "Pagamento automatico", text: "Carta o IBAN dalla dashboard. Fatturazione elettronica inclusa, tutto in regola." },
+    { icon: CreditCard, title: "Pagamento sicuro", text: "Carta o IBAN dalla dashboard. Fatturazione elettronica inclusa, tutto in regola." },
     { icon: Headphones, title: "Supporto in italiano", text: "Ti aiutiamo via WhatsApp, sempre. Anche quando configuri la prima volta." },
     { icon: TrendingUp, title: "Zero commissioni", text: "Nessuna commissione sulle tue prenotazioni o ordini. Paghi solo l'abbonamento." },
   ];
@@ -113,21 +101,29 @@ export default function PrezziPage() {
       <Navbar />
 
       {/* HERO */}
-      <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-gradient-to-b from-white to-soft">
-        <div className="container-x max-w-3xl text-center">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-wa mb-6">
+      <section className="relative pt-28 pb-12 md:pt-40 md:pb-20 bg-white overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-[#25D366]/[0.08] to-transparent rounded-full blur-3xl" />
+        </div>
+
+        <div className="container-x relative max-w-3xl text-center">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-[#425466] hover:text-[#0A2540] mb-8 transition">
             <ArrowLeft size={16} /> Torna alla home
           </Link>
 
-          <span className="inline-block bg-wa/10 text-waDark text-xs md:text-sm font-semibold px-3.5 py-1.5 rounded-full mb-5">
-            💎 Prezzi chiari, nessuna sorpresa
-          </span>
+          <div className="inline-flex items-center gap-2 bg-white border border-[#E6EBF1] rounded-full px-4 py-1.5 mb-6 shadow-sm">
+            <Sparkles size={12} className="text-[#25D366]" />
+            <span className="text-[11px] font-semibold text-[#0A2540]/70">Prezzi chiari, nessuna sorpresa</span>
+          </div>
 
-          <h1 className="text-[32px] leading-tight md:text-5xl font-bold text-night mb-4">
-            Un prezzo giusto per il software che ti fa guadagnare tempo e clienti.
+          <h1 className="text-[40px] leading-[1.05] md:text-6xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.03em] mb-6">
+            Il prezzo giusto per<br />
+            <span className="bg-gradient-to-r from-[#128C7E] via-[#25D366] to-[#0F766E] bg-clip-text text-transparent">
+              far crescere il locale.
+            </span>
           </h1>
-          <p className="text-gray-600 text-[15px] md:text-lg">
-            Inizia con <strong className="text-night">48 ore di demo gratuita</strong>. Poi scegli il piano più adatto a te. Disdici quando vuoi, nessun vincolo.
+          <p className="text-[#425466] text-base md:text-xl leading-relaxed max-w-2xl mx-auto">
+            Inizia con <strong className="text-[#0A2540]">48 ore di demo gratuita</strong>. Poi scegli il piano che preferisci. Disdici quando vuoi, nessun vincolo.
           </p>
         </div>
       </section>
@@ -135,114 +131,148 @@ export default function PrezziPage() {
       {/* PIANI */}
       <section className="py-12 md:py-20 bg-white">
         <div className="container-x">
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto">
             {plans.map((p) => {
-              const c = colorMap[p.color];
+              const Icon = p.icon;
               const isExternal = p.link.startsWith("http");
               return (
                 <div
                   key={p.id}
-                  className={`rounded-3xl border-2 p-7 md:p-8 flex flex-col relative bg-white ${
-                    p.highlight ? `${c.border} shadow-2xl md:scale-[1.03]` : "border-gray-100"
+                  className={`relative flex flex-col bg-white rounded-3xl p-7 md:p-8 transition-all ${
+                    p.highlight
+                      ? "border-2 border-[#25D366]/30 shadow-2xl shadow-[#25D366]/10 md:scale-[1.02]"
+                      : "border border-[#E6EBF1] hover:border-[#0A2540]/20 hover:shadow-lg"
                   }`}
                 >
                   {p.highlight && (
-                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold text-white px-3 py-1.5 rounded-full ${c.btn}`}>
-                      ⭐ Più scelto
-                    </span>
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="inline-flex items-center gap-1 bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-lg">
+                        <Star size={10} fill="white" /> Più scelto
+                      </span>
+                    </div>
                   )}
 
-                  <div className="text-center pb-6 border-b border-gray-100">
-                    <div className="text-5xl mb-3">{p.emoji}</div>
-                    <h3 className="text-2xl font-bold text-night mb-1">{p.name}</h3>
-                    <p className={`text-sm font-semibold ${c.text}`}>{p.subtitle}</p>
-
-                    <div className="mt-6">
-                      {p.id === "service" ? (
-                        <>
-                          <p className="text-2xl md:text-3xl font-bold text-night">Su preventivo</p>
-                          <p className="text-xs text-gray-500 mt-1">Gratuito e senza impegno</p>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-sm text-gray-500 align-top">da €</span>
-                          <span className="text-4xl md:text-5xl font-bold text-night">{p.price}</span>
-                          <span className="text-sm text-gray-500">{p.period}</span>
-                          <p className="text-xs text-gray-500 mt-1">IVA esclusa · Fatturazione mensile</p>
-                        </>
-                      )}
+                  {/* Icona + Nome */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: p.color + "15" }}
+                    >
+                      <Icon size={22} style={{ color: p.color }} strokeWidth={2} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-[#0A2540] leading-tight">{p.name}</h3>
+                      <p className="text-xs text-[#425466]/70 mt-0.5">{p.subtitle}</p>
                     </div>
                   </div>
 
-                  <ul className="space-y-3 py-6 flex-1">
+                  <p className="text-sm text-[#425466] leading-relaxed mb-6 min-h-[40px]">
+                    {p.description}
+                  </p>
+
+                  {/* Prezzo */}
+                  <div className="pb-6 mb-6 border-b border-[#E6EBF1]">
+                    {p.price ? (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs font-semibold text-[#425466]">€</span>
+                        <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{p.price}</span>
+                        <span className="text-sm text-[#425466]/60 font-semibold">{p.period}</span>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-3xl font-bold text-[#0A2540] tracking-tight">Su preventivo</p>
+                        <p className="text-xs text-[#425466]/60 mt-1">Gratuito e senza impegno</p>
+                      </div>
+                    )}
+                    {p.price && (
+                      <p className="text-[11px] text-[#425466]/60 mt-2">IVA esclusa · Fatturazione annuale</p>
+                    )}
+                  </div>
+
+                  {/* Feature */}
+                  <ul className="space-y-2.5 mb-6 flex-1">
                     {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-gray-700 text-sm">
-                        <Check size={16} className={`${c.text} mt-0.5 shrink-0`} />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                    {p.notIncluded.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-gray-400 text-sm">
-                        <X size={16} className="mt-0.5 shrink-0" />
-                        <span className="line-through">{f}</span>
+                      <li key={f} className="flex items-start gap-2.5 text-sm">
+                        <div
+                          className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                          style={{ backgroundColor: p.color + "15" }}
+                        >
+                          <Check size={10} style={{ color: p.color }} strokeWidth={3} />
+                        </div>
+                        <span className="text-[#425466]">{f}</span>
                       </li>
                     ))}
                   </ul>
 
+                  {/* Upgrade Note */}
+                  {p.upgradeNote && (
+                    <div className="mb-5 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-100 text-[11px] font-bold text-amber-800 flex items-start gap-1.5">
+                      <Sparkles size={11} className="shrink-0 mt-0.5" />
+                      <span>{p.upgradeNote}</span>
+                    </div>
+                  )}
+
+                  {/* CTA */}
                   {isExternal ? (
                     <a
                       href={p.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`${c.btn} text-white px-6 py-3.5 rounded-full font-bold transition inline-flex items-center justify-center gap-2 active:scale-95`}
+                      className="group inline-flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-sm transition-all active:scale-[0.98] bg-white border-2 border-[#0A2540] text-[#0A2540] hover:bg-[#0A2540] hover:text-white"
                     >
-                      <MessageCircle size={18} />
+                      <MessageCircle size={15} />
                       {p.cta}
                     </a>
                   ) : (
                     <Link
                       href={p.link}
-                      className={`${c.btn} text-white px-6 py-3.5 rounded-full font-bold transition inline-flex items-center justify-center gap-2 active:scale-95`}
+                      className={`group inline-flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-sm transition-all active:scale-[0.98] ${
+                        p.highlight
+                          ? "bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#0F766E] text-white shadow-lg shadow-[#25D366]/30"
+                          : "bg-[#0A2540] hover:bg-[#0A2540]/90 text-white"
+                      }`}
                     >
                       {p.cta}
-                      <ArrowRight size={18} />
+                      <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
                     </Link>
                   )}
 
-                  <p className="text-xs text-gray-500 text-center mt-3">
-                    Demo gratuita 48 ore inclusa
+                  <p className="text-[10px] text-[#425466]/50 text-center mt-3">
+                    ✓ Demo gratuita 48 ore inclusa
                   </p>
                 </div>
               );
             })}
           </div>
 
-          <p className="text-center text-gray-500 text-sm mt-10 max-w-2xl mx-auto">
-            Tutti i piani includono <strong className="text-night">dashboard</strong>, <strong className="text-night">automazioni WhatsApp</strong>, <strong className="text-night">web app brandizzata</strong> e <strong className="text-night">aggiornamenti gratuiti</strong>.
+          <p className="text-center text-[#425466] text-sm mt-12 max-w-2xl mx-auto">
+            Tutti i piani includono <strong className="text-[#0A2540]">dashboard</strong>, <strong className="text-[#0A2540]">notifiche realtime</strong>, <strong className="text-[#0A2540]">web app brandizzata</strong> e <strong className="text-[#0A2540]">aggiornamenti gratuiti</strong>.
           </p>
         </div>
       </section>
 
       {/* PERCHÉ SCEGLIERCI */}
-      <section className="py-16 md:py-24 bg-soft">
+      <section className="py-16 md:py-24 bg-[#FAFBFC]">
         <div className="container-x">
-          <div className="max-w-3xl mx-auto text-center mb-10 md:mb-14">
-            <span className="inline-block bg-wa/10 text-waDark text-xs md:text-sm font-semibold px-3.5 py-1.5 rounded-full mb-4">
-              Perché scegliere Prenotly
-            </span>
-            <h2 className="text-[28px] md:text-4xl font-bold text-night">
-              Sei buone ragioni per iniziare oggi
+          <div className="max-w-3xl mx-auto text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-white border border-[#E6EBF1] rounded-full px-4 py-1.5 mb-5 shadow-sm">
+              <Sparkles size={12} className="text-[#25D366]" />
+              <span className="text-[11px] font-semibold text-[#0A2540]/70 uppercase tracking-wider">Perché Prenotly</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight leading-tight">
+              Sei buone ragioni<br />
+              <span className="text-[#425466]">per iniziare oggi.</span>
             </h2>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
             {reasons.map((r) => (
-              <div key={r.title} className="bg-white p-6 rounded-2xl hover:shadow-lg transition">
-                <div className="w-11 h-11 rounded-xl bg-wa/10 flex items-center justify-center mb-4">
-                  <r.icon className="text-waDark" size={22} />
+              <div key={r.title} className="group bg-white p-6 rounded-2xl border border-[#E6EBF1] hover:border-[#25D366]/30 hover:shadow-lg transition-all">
+                <div className="w-11 h-11 rounded-xl bg-[#25D366]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <r.icon className="text-[#128C7E]" size={20} strokeWidth={2} />
                 </div>
-                <h3 className="font-bold text-night mb-1.5">{r.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{r.text}</p>
+                <h3 className="font-bold text-[#0A2540] mb-1.5 text-sm">{r.title}</h3>
+                <p className="text-xs text-[#425466] leading-relaxed">{r.text}</p>
               </div>
             ))}
           </div>
@@ -251,42 +281,66 @@ export default function PrezziPage() {
 
       {/* CONFRONTO */}
       <section className="py-16 md:py-24 bg-white">
-        <div className="container-x max-w-4xl">
-          <div className="text-center mb-10 md:mb-14">
-            <h2 className="text-[28px] md:text-4xl font-bold text-night">
-              Cosa ottieni con Prenotly
+        <div className="container-x max-w-5xl">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight leading-tight mb-4">
+              La differenza è netta.
             </h2>
-            <p className="text-gray-600 mt-4 text-[15px] md:text-lg">
-              A confronto con i metodi tradizionali
+            <p className="text-[#425466] text-base md:text-lg">
+              Prenotly vs i metodi tradizionali
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-red-50 rounded-3xl p-7 border border-red-100">
-              <h3 className="text-xl font-bold text-red-600 mb-5 flex items-center gap-2">
-                <X size={22} /> Senza Prenotly
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-red-50/50 rounded-3xl p-7 border border-red-100">
+              <h3 className="text-lg font-bold text-red-600 mb-6 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                  <X size={16} className="text-red-600" strokeWidth={3} />
+                </div>
+                Senza Prenotly
               </h3>
-              <ul className="space-y-3 text-gray-700 text-sm">
-                <li>❌ Telefono che squilla mentre lavori</li>
-                <li>❌ Prenotazioni scritte su carta</li>
-                <li>❌ Clienti che non si presentano (30% no-show)</li>
-                <li>❌ Commissioni su ogni prenotazione (TheFork, Treatwell)</li>
-                <li>❌ Nessuna visibilità su ordini e agenda</li>
-                <li>❌ Zero dati per decidere</li>
+              <ul className="space-y-3 text-[#425466] text-sm">
+                {[
+                  "Telefono che squilla mentre lavori",
+                  "Prenotazioni scritte su carta",
+                  "Clienti che non si presentano (30% no-show)",
+                  "Commissioni su ogni prenotazione",
+                  "Nessuna visibilità su ordini e agenda",
+                  "Zero dati per decidere",
+                ].map((t, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <X size={9} className="text-red-500" strokeWidth={3} />
+                    </div>
+                    <span>{t}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            <div className="bg-wa/5 rounded-3xl p-7 border border-wa/20">
-              <h3 className="text-xl font-bold text-waDark mb-5 flex items-center gap-2">
-                <Check size={22} /> Con Prenotly
+            <div className="bg-[#25D366]/[0.05] rounded-3xl p-7 border border-[#25D366]/20">
+              <h3 className="text-lg font-bold text-[#128C7E] mb-6 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#25D366]/15 flex items-center justify-center">
+                  <Check size={16} className="text-[#128C7E]" strokeWidth={3} />
+                </div>
+                Con Prenotly
               </h3>
-              <ul className="space-y-3 text-gray-700 text-sm">
-                <li>✅ Automazioni WhatsApp attiva 24/7</li>
-                <li>✅ Agenda digitale sempre aggiornata</li>
-                <li>✅ Promemoria anti no-show (fino -80%)</li>
-                <li>✅ Zero commissioni sulle prenotazioni</li>
-                <li>✅ Dashboard con statistiche in tempo reale</li>
-                <li>✅ Dati per far crescere l'attività</li>
+              <ul className="space-y-3 text-[#425466] text-sm">
+                {[
+                  "Notifiche realtime in dashboard 24/7",
+                  "Agenda digitale sempre aggiornata",
+                  "Promemoria anti no-show (fino -80%)",
+                  "Zero commissioni sulle prenotazioni",
+                  "Dashboard con statistiche in tempo reale",
+                  "Dati per far crescere l'attività",
+                ].map((t, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-[#25D366]/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check size={9} className="text-[#128C7E]" strokeWidth={3} />
+                    </div>
+                    <span>{t}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -294,68 +348,80 @@ export default function PrezziPage() {
       </section>
 
       {/* FIDUCIA */}
-      <section className="py-16 md:py-24 bg-soft">
+      <section className="py-16 md:py-24 bg-[#FAFBFC]">
         <div className="container-x max-w-3xl text-center">
-          <div className="flex justify-center gap-1 mb-4">
+          <div className="flex justify-center gap-1 mb-5">
             {[1,2,3,4,5].map((i) => (
-              <Star key={i} size={24} className="fill-yellow-400 text-yellow-400" />
+              <Star key={i} size={20} className="fill-[#25D366] text-[#25D366]" />
             ))}
           </div>
-          <h2 className="text-[24px] md:text-3xl font-bold text-night mb-6">
-            Provalo 48 ore gratis. Poi decidi.
+          <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight leading-tight mb-4">
+            Provalo 48 ore gratis.<br />
+            <span className="text-[#425466]">Poi decidi.</span>
           </h2>
-          <p className="text-gray-600 text-[15px] md:text-lg mb-8">
+          <p className="text-[#425466] text-base md:text-lg mb-8 max-w-lg mx-auto">
             Nessuna carta di credito richiesta per iniziare.<br className="hidden md:block" />
-            Se in 48 ore capisci che non fa per te, non paghi nulla. Zero rischi, zero trappole.
+            Se in 48 ore capisci che non fa per te, non paghi nulla.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/signup"
-              className="bg-wa hover:bg-waDark text-white px-7 py-4 rounded-full font-bold transition shadow-lg shadow-wa/30 inline-flex items-center justify-center gap-2 active:scale-95"
+              className="group bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#0F766E] text-white px-8 py-4 rounded-full font-bold text-sm transition-all shadow-lg shadow-[#25D366]/30 hover:shadow-xl hover:shadow-[#25D366]/40 inline-flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               Inizia la demo gratuita
-              <ArrowRight size={18} />
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <a
               href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20maggiori%20informazioni%20sui%20prezzi"
               target="_blank"
               rel="noopener noreferrer"
-              className="border border-gray-300 hover:border-night text-night px-7 py-4 rounded-full font-bold transition inline-flex items-center justify-center gap-2 active:scale-95"
+              className="bg-white hover:bg-[#FAFBFC] border border-[#E6EBF1] hover:border-[#0A2540]/20 text-[#0A2540] px-8 py-4 rounded-full font-bold text-sm transition inline-flex items-center justify-center gap-2"
             >
-              <MessageCircle size={18} />
+              <MessageCircle size={16} />
               Parla con noi
             </a>
           </div>
         </div>
       </section>
 
-      {/* CTA FINALE */}
-      <section className="py-20 md:py-28 bg-gradient-to-br from-night via-night to-waDark text-white">
-        <div className="container-x max-w-3xl text-center">
-          <div className="text-5xl mb-6">🚀</div>
-          <h2 className="text-[28px] md:text-4xl font-bold mb-4">
-            Pronto a far crescere la tua attività?
-          </h2>
-          <p className="text-white/80 text-[15px] md:text-lg mb-8">
-            Attiva la demo gratuita 48 ore. Nessuna carta, nessun vincolo.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/signup"
-              className="bg-wa hover:bg-waDark px-7 py-4 rounded-full font-bold transition shadow-xl shadow-wa/30 inline-flex items-center justify-center gap-2 active:scale-95"
-            >
-              Inizia ora
-              <ArrowRight size={18} />
-            </Link>
-            <a
-              href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20maggiori%20informazioni"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-white/30 hover:bg-white/10 px-7 py-4 rounded-full font-bold transition inline-flex items-center justify-center gap-2 active:scale-95"
-            >
-              <MessageCircle size={18} />
-              Parla con noi
-            </a>
+      {/* CTA FINALE con card */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="container-x max-w-4xl">
+          <div className="relative rounded-[40px] overflow-hidden bg-gradient-to-br from-[#0A2540] via-[#0A2540] to-[#128C7E] p-10 md:p-16 text-white text-center">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#25D366]/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#00D4FF]/10 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 rounded-full px-4 py-1.5 mb-6">
+                <Lock size={12} className="text-[#25D366]" />
+                <span className="text-[11px] font-semibold text-white/90">Pagamento sicuro · SSL</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-4">
+                Pronto a far crescere<br />
+                <span className="text-[#25D366]">la tua attività?</span>
+              </h2>
+              <p className="text-white/70 text-base md:text-lg mb-8 max-w-lg mx-auto">
+                Attiva la demo gratuita 48 ore. Nessuna carta, nessun vincolo.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="/signup"
+                  className="group bg-white hover:bg-[#FAFBFC] text-[#0A2540] px-8 py-4 rounded-full font-bold text-sm transition-all shadow-xl inline-flex items-center justify-center gap-2 active:scale-[0.98]"
+                >
+                  Inizia ora
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                </Link>
+                <a
+                  href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20maggiori%20informazioni"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border border-white/30 hover:bg-white/10 text-white px-8 py-4 rounded-full font-bold text-sm transition inline-flex items-center justify-center gap-2"
+                >
+                  <MessageCircle size={16} />
+                  Parla con noi
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
