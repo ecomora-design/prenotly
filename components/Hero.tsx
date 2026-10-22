@@ -45,17 +45,12 @@ export default function Hero() {
         </motion.div>
 
         {/* TITOLO */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-center text-[44px] leading-[1.05] sm:text-6xl md:text-7xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.03em] max-w-5xl mx-auto"
-        >
+        <h1 className="text-center text-[44px] leading-[1.05] sm:text-6xl md:text-7xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.03em] max-w-5xl mx-auto">
           Prenotazioni, ordini e clienti.<br />
           <span className="bg-gradient-to-r from-[#128C7E] via-[#25D366] to-[#0F766E] bg-clip-text text-transparent">
             Senza complicazioni.
           </span>
-        </motion.h1>
+        </h1>
 
         {/* SOTTOTITOLO */}
         <motion.p

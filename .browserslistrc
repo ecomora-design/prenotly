@@ -1,0 +1,7 @@
+# Target moderno: rimuove ~14KB di polyfill inutili
+last 2 Chrome versions
+last 2 Safari versions
+last 2 Firefox versions
+last 2 Edge versions
+iOS >= 15
+not dead
