@@ -227,6 +227,18 @@ export default function DashboardLayout({
     },
   ];
 
+
+  const planBadge = (() => {
+    if (tenant.subscription_status !== "active") return null;
+    const plans: Record<string, { label: string; color: string }> = {
+      food_base: { label: "FOOD", color: "#25D366" },
+      food_tables: { label: "FOOD + TAVOLI", color: "#EAB308" },
+      food_premium: { label: "PREMIUM", color: "#8B5CF6" },
+      beauty: { label: "PRO", color: "#8B5CF6" },
+    };
+    return plans[tenant.plan_type || ""] || null;
+  })();
+
   const trialHoursLeft = tenant.trial_ends_at
     ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60)))
     : 0;
@@ -336,9 +348,19 @@ export default function DashboardLayout({
                 <p className="text-sm font-semibold text-night truncate">
                   {tenant.business_name}
                 </p>
-                <p className="text-[10px] text-night/40 capitalize truncate">
-                  {tenant.product_type || tenant.business_type}
-                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <p className="text-[10px] text-night/40 capitalize truncate">
+                    {tenant.product_type || tenant.business_type}
+                  </p>
+                  {planBadge && (
+                    <span
+                      className="text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider"
+                      style={{ backgroundColor: planBadge.color + "20", color: planBadge.color }}
+                    >
+                      {planBadge.label}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -471,9 +493,19 @@ export default function DashboardLayout({
                     <p className="text-sm font-bold text-night truncate">
                       {tenant.business_name}
                     </p>
-                    <p className="text-[10px] text-night/40 capitalize">
-                      {tenant.product_type || tenant.business_type}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <p className="text-[10px] text-night/40 capitalize">
+                        {tenant.product_type || tenant.business_type}
+                      </p>
+                      {planBadge && (
+                        <span
+                          className="text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider"
+                          style={{ backgroundColor: planBadge.color + "20", color: planBadge.color }}
+                        >
+                          {planBadge.label}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
