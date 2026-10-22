@@ -70,12 +70,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Escludiamo dal middleware:
-     * - file statici (_next/static, _next/image, favicon, immagini)
-     * - API routes (gestite internamente)
-     * - admin (gestito con password interna)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|api|admin|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|api|admin|sitemap\\.xml|robots\\.txt|manifest|.*\\\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
-}
+};
