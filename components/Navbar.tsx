@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Menu, X, User, LogOut, MessageCircle } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -51,20 +51,24 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           scrolled || open
-            ? "bg-white/95 backdrop-blur border-b border-gray-100"
+            ? "bg-[#FAFAF7]/85 backdrop-blur-xl border-b border-night/[0.06]"
             : "bg-transparent"
         }`}
       >
-        <div className="container-x py-3 md:py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl md:text-2xl font-bold text-night">
-            Prenot<span className="text-wa">ly</span>
+        <div className="container-x py-4 md:py-5 flex items-center justify-between">
+          <Link href="/" className="text-xl md:text-2xl font-display font-bold text-night tracking-tight">
+            Prenot<span className="text-waDark">ly</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-7">
+          <div className="hidden lg:flex items-center gap-8">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="text-gray-700 hover:text-wa transition text-sm font-medium">
+              <Link
+                key={l.href}
+                href={l.href}
+                className="text-night/60 hover:text-night transition text-[13px] font-semibold tracking-wide"
+              >
                 {l.label}
               </Link>
             ))}
@@ -73,54 +77,38 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="bg-wa hover:bg-waDark text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg shadow-wa/20 inline-flex items-center gap-2 text-sm"
+                  className="bg-night hover:bg-night/90 text-white px-5 py-2.5 rounded-full font-bold transition inline-flex items-center gap-2 text-xs shadow-sm"
                 >
-                  <User size={16} />
+                  <User size={14} />
                   Dashboard
                 </button>
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[180px]">
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-soft"
-                    >
+                  <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-night/[0.06] py-2 min-w-[200px]">
+                    <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-night hover:bg-cream transition">
                       La mia attività
                     </Link>
-                    <Link
-                      href="/dashboard/impostazioni"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-soft"
-                    >
+                    <Link href="/dashboard/impostazioni" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-night hover:bg-cream transition">
                       Impostazioni
                     </Link>
-                    <Link
-                      href="/dashboard/abbonamento"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-soft"
-                    >
+                    <Link href="/dashboard/abbonamento" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-night hover:bg-cream transition">
                       Abbonamento
                     </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 inline-flex items-center gap-2"
-                    >
-                      <LogOut size={14} />
-                      Esci
+                    <button onClick={handleLogout} className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 inline-flex items-center gap-2 transition">
+                      <LogOut size={14} /> Esci
                     </button>
                   </div>
                 )}
               </div>
             ) : (
               <>
-                <Link href="/login" className="text-gray-700 hover:text-wa font-medium transition text-sm">
+                <Link href="/login" className="text-night/60 hover:text-night font-semibold transition text-[13px]">
                   Accedi
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-wa hover:bg-waDark text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg shadow-wa/20 text-sm"
+                  className="bg-night hover:bg-night/90 text-white px-5 py-2.5 rounded-full font-bold transition text-xs shadow-sm"
                 >
-                  Attiva ora
+                  Prova gratis
                 </Link>
               </>
             )}
@@ -131,20 +119,20 @@ export default function Navbar() {
             onClick={() => setOpen(!open)}
             aria-label="Menu"
           >
-            {open ? <X size={26} /> : <Menu size={26} />}
+            {open ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </nav>
 
       {open && (
-        <div className="fixed inset-0 z-40 bg-white pt-20 px-6 lg:hidden overflow-y-auto">
+        <div className="fixed inset-0 z-40 bg-[#FAFAF7] pt-20 px-6 lg:hidden overflow-y-auto">
           <div className="flex flex-col gap-1 pb-8">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="text-night text-lg font-semibold py-4 border-b border-gray-100 active:text-wa"
+                className="text-night text-lg font-display py-4 border-b border-night/[0.06]"
               >
                 {l.label}
               </Link>
@@ -152,52 +140,23 @@ export default function Navbar() {
 
             {user ? (
               <>
-                <Link
-                  href="/dashboard"
-                  onClick={() => setOpen(false)}
-                  className="bg-wa text-white px-6 py-4 rounded-full text-center font-semibold mt-6"
-                >
+                <Link href="/dashboard" onClick={() => setOpen(false)} className="bg-night text-white px-6 py-4 rounded-full text-center font-bold mt-6">
                   Vai alla dashboard
                 </Link>
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    handleLogout();
-                  }}
-                  className="text-red-600 py-4 text-center font-semibold"
-                >
+                <button onClick={() => { setOpen(false); handleLogout(); }} className="text-red-500 py-4 text-center font-semibold">
                   Esci
                 </button>
               </>
             ) : (
               <>
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="text-night text-lg font-semibold py-4 text-center border border-gray-200 rounded-full mt-6"
-                >
+                <Link href="/login" onClick={() => setOpen(false)} className="text-night text-lg font-semibold py-4 text-center border border-night/[0.1] rounded-full mt-6">
                   Accedi
                 </Link>
-                <Link
-                  href="/signup"
-                  onClick={() => setOpen(false)}
-                  className="bg-wa text-white px-6 py-4 rounded-full text-center font-semibold mt-3"
-                >
-                  Attiva ora
+                <Link href="/signup" onClick={() => setOpen(false)} className="bg-night text-white px-6 py-4 rounded-full text-center font-bold mt-3">
+                  Prova gratis
                 </Link>
               </>
             )}
-
-            <a
-              href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20maggiori%20informazioni"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setOpen(false)}
-              className="text-wa text-center font-semibold py-4 inline-flex items-center justify-center gap-2"
-            >
-              <MessageCircle size={18} />
-              Parla con noi
-            </a>
           </div>
         </div>
       )}

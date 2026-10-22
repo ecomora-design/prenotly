@@ -33,38 +33,37 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section className="py-16 md:py-24 bg-cream">
+    <section id="faq" className="py-16 md:py-28 bg-[#FAFAF7]">
       <div className="container-x max-w-3xl">
-        <div className="mb-10 md:mb-14">
-          <p className="text-xs font-bold text-waDark uppercase tracking-widest mb-3">
+        <div className="text-center mb-14 md:mb-16">
+          <p className="text-[10px] font-black text-waDark uppercase tracking-[0.25em] mb-4">
             Domande frequenti
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-night tracking-tight">
-            Le risposte che cerchi.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-display text-night tracking-tight leading-tight">
+            Le risposte<br />
+            <span className="italic">che cerchi.</span>
           </h2>
         </div>
 
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {faqs.map((f, i) => (
             <div
               key={f.q}
-              className="bg-white rounded-2xl border border-night/5 overflow-hidden"
+              className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${
+                open === i ? "border-night/15 shadow-lg" : "border-night/[0.06] hover:border-night/10"
+              }`}
             >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
-                className="w-full text-left p-5 font-semibold text-night flex justify-between items-center gap-4"
+                className="w-full text-left p-4 sm:p-5 md:p-6 font-display text-base sm:text-lg text-night flex justify-between items-center gap-3"
               >
-                <span className="text-[15px]">{f.q}</span>
-                <span className="shrink-0 w-7 h-7 rounded-full bg-cream flex items-center justify-center">
-                  {open === i ? (
-                    <Minus size={16} className="text-waDark" />
-                  ) : (
-                    <Plus size={16} className="text-night/60" />
-                  )}
-                </span>
+                <span>{f.q}</span>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all ${open === i ? "bg-night text-wa" : "bg-[#FAFAF7] text-night/40"}`}>
+                  {open === i ? <Minus size={14} /> : <Plus size={14} />}
+                </div>
               </button>
               {open === i && (
-                <div className="px-5 pb-5 text-sm text-night/60 leading-relaxed">
+                <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 text-sm text-night/60 leading-relaxed">
                   {f.a}
                 </div>
               )}

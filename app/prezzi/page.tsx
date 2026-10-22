@@ -27,13 +27,12 @@ export default function PrezziPage() {
       features: [
         "Menu digitale personalizzabile",
         "Ordini asporto e domicilio",
-        "Prenotazioni tavoli con slot orari",
-        "Automazioni WhatsApp automatica",
         "Dashboard completa",
         "Web app brandizzata",
         "Aggiornamenti illimitati",
         "Supporto WhatsApp",
       ],
+      upgradeNote: "Prenotazione tavoli opzionale +10 €/mese",
       notIncluded: [
         "Multi-sede",
         "Integrazione con POS",
@@ -57,7 +56,6 @@ export default function PrezziPage() {
         "Scelta del tipo di servizio",
         "Sync con Google Calendar",
         "Promemoria anti no-show",
-        "Automazioni WhatsApp automatica",
         "Dashboard completa",
         "Web app brandizzata",
       ],

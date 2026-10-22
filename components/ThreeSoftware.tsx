@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Sparkles, Utensils, Scissors, Code2 } from "lucide-react";
 
 export default function ThreeSoftware() {
   const products = [
@@ -8,17 +8,20 @@ export default function ThreeSoftware() {
       label: "Food",
       subtitle: "Ristoranti, pizzerie, bar",
       description:
-        "Menu digitale, ordini d'asporto e domicilio. Tutto su WhatsApp, zero commissioni.",
+        "Menu digitale e ordini d'asporto o domicilio. Zero commissioni sui tuoi incassi.",
       features: [
         "Menu digitale personalizzabile",
         "Ordini asporto e domicilio",
-        "Prenotazioni tavoli",
-        "Dashboard per gestire tutto",
+        "Notifiche realtime in dashboard",
+        "Dashboard gestionale completa",
       ],
+      note: "Prenotazione tavoli opzionale (+10 €/mese)",
       price: "29,99",
       period: "/mese",
       cta: "Scopri Food",
       link: "/ristoranti",
+      icon: Utensils,
+      color: "#25D366",
       dark: false,
     },
     {
@@ -26,7 +29,7 @@ export default function ThreeSoftware() {
       label: "Pro",
       subtitle: "Studi, professionisti, servizi",
       description:
-        "Agenda intelligente per qualsiasi attività su appuntamento. Sincronizzata con Google Calendar.",
+        "Agenda intelligente per attività su appuntamento. Sincronizzata con Google Calendar.",
       features: [
         "Agenda intelligente",
         "Prenotazioni con slot in tempo reale",
@@ -37,6 +40,8 @@ export default function ThreeSoftware() {
       period: "/mese",
       cta: "Scopri Pro",
       link: "/pro",
+      icon: Scissors,
+      color: "#8B5CF6",
       dark: true,
     },
     {
@@ -55,137 +60,159 @@ export default function ThreeSoftware() {
       period: "",
       cta: "Richiedi preventivo",
       link: "/service",
+      icon: Code2,
+      color: "#3B82F6",
       dark: false,
     },
   ];
 
   return (
-    <section id="software" className="py-16 md:py-24 bg-white">
+    <section id="software" className="py-16 md:py-28 bg-[#FAFAF7]">
       <div className="container-x">
         {/* Header */}
-        <div className="max-w-2xl mb-10 md:mb-14">
-          <p className="text-xs font-bold text-waDark uppercase tracking-widest mb-3">
-            I tre software
-          </p>
-          <h2 className="text-3xl md:text-5xl font-bold text-night tracking-tight leading-tight">
-            Scegli quello giusto per te.
+        <div className="text-center max-w-2xl mx-auto mb-14 md:mb-20">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-night/[0.08] text-night/60 text-[10px] font-black uppercase tracking-widest mb-5">
+            <Sparkles size={12} /> Tre prodotti, un'unica filosofia
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-display text-night tracking-tight leading-[1.05] mb-4">
+            Il software giusto<br />
+            <span className="italic">per la tua attività.</span>
           </h2>
-          <p className="text-night/60 mt-4 text-base md:text-lg">
-            Tre prodotti distinti, un unico obiettivo: farti risparmiare tempo.
+          <p className="text-night/50 text-base md:text-lg leading-relaxed">
+            Tre soluzioni distinte, progettate per farti risparmiare tempo e offrire un'esperienza memorabile ai tuoi clienti.
           </p>
         </div>
 
         {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-5">
-          {products.map((p) => (
-            <div
-              key={p.id}
-              className={`rounded-3xl p-7 md:p-8 flex flex-col ${
-                p.dark
-                  ? "bg-night text-white"
-                  : "bg-cream text-night border border-night/5"
-              }`}
-            >
-              {/* Label */}
-              <div className="mb-6">
-                <span
-                  className={`inline-block text-[11px] font-bold uppercase tracking-widest mb-3 ${
-                    p.dark ? "text-wa" : "text-waDark"
-                  }`}
-                >
-                  Prenotly {p.label}
-                </span>
-                <h3
-                  className={`text-xl md:text-2xl font-bold leading-tight ${
-                    p.dark ? "text-white" : "text-night"
-                  }`}
-                >
-                  {p.subtitle}
-                </h3>
-              </div>
-
-              <p
-                className={`text-sm leading-relaxed mb-6 ${
-                  p.dark ? "text-white/70" : "text-night/60"
-                }`}
-              >
-                {p.description}
-              </p>
-
-              {/* Features */}
-              <ul className="space-y-2.5 mb-8 flex-1">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <Check
-                      size={16}
-                      className={`shrink-0 mt-0.5 ${
-                        p.dark ? "text-wa" : "text-waDark"
-                      }`}
-                    />
-                    <span className={p.dark ? "text-white/85" : "text-night/80"}>
-                      {f}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Price */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {products.map((p) => {
+            const Icon = p.icon;
+            return (
               <div
-                className={`pt-6 border-t mb-6 ${
-                  p.dark ? "border-white/10" : "border-night/10"
+                key={p.id}
+                className={`group relative rounded-[28px] md:rounded-[32px] p-6 md:p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${
+                  p.dark
+                    ? "bg-night text-white shadow-2xl shadow-night/20"
+                    : "bg-white text-night border border-night/[0.06] shadow-sm hover:shadow-xl"
                 }`}
               >
-                <div className="flex items-baseline gap-1">
+                {/* Icona */}
+                <div className="mb-6">
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+                    style={{ backgroundColor: p.color + (p.dark ? "25" : "15") }}
+                  >
+                    <Icon size={26} style={{ color: p.color }} strokeWidth={2} />
+                  </div>
+                  <span
+                    className="inline-block text-[10px] font-black uppercase tracking-[0.2em] mb-2"
+                    style={{ color: p.dark ? p.color : p.color }}
+                  >
+                    Prenotly {p.label}
+                  </span>
+                  <h3
+                    className={`text-xl sm:text-2xl font-display leading-tight ${
+                      p.dark ? "text-white" : "text-night"
+                    }`}
+                  >
+                    {p.subtitle}
+                  </h3>
+                </div>
+
+                <p
+                  className={`text-sm leading-relaxed mb-6 ${
+                    p.dark ? "text-white/60" : "text-night/50"
+                  }`}
+                >
+                  {p.description}
+                </p>
+
+                {/* Features */}
+                <ul className="space-y-3 mb-6 flex-1">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm">
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                          p.dark ? "bg-white/10" : "bg-night/5"
+                        }`}
+                      >
+                        <Check size={10} style={{ color: p.color }} strokeWidth={3} />
+                      </div>
+                      <span className={p.dark ? "text-white/85" : "text-night/70"}>
+                        {f}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Note upgrade (solo per Food) */}
+                {"note" in p && p.note && (
+                  <div
+                    className={`mb-6 px-3 py-2 rounded-xl text-[11px] font-bold flex items-center gap-1.5 ${
+                      p.dark ? "bg-white/5 text-white/70" : "bg-night/5 text-night/60"
+                    }`}
+                  >
+                    <Sparkles size={11} style={{ color: p.color }} />
+                    {p.note}
+                  </div>
+                )}
+
+                {/* Price */}
+                <div
+                  className={`pt-6 border-t mb-6 ${
+                    p.dark ? "border-white/10" : "border-night/[0.06]"
+                  }`}
+                >
                   {p.price === "Su preventivo" ? (
                     <span
-                      className={`text-2xl md:text-3xl font-bold ${
+                      className={`text-2xl font-display ${
                         p.dark ? "text-white" : "text-night"
                       }`}
                     >
                       Su preventivo
                     </span>
                   ) : (
-                    <>
+                    <div className="flex items-baseline gap-1">
                       <span
-                        className={`text-sm mb-1 ${
-                          p.dark ? "text-white/50" : "text-night/50"
+                        className={`text-xs ${
+                          p.dark ? "text-white/40" : "text-night/40"
                         }`}
                       >
-                        da €
+                        da
                       </span>
                       <span
-                        className={`text-3xl md:text-4xl font-bold ${
+                        className={`text-3xl sm:text-4xl font-display tracking-tight ${
                           p.dark ? "text-white" : "text-night"
                         }`}
                       >
-                        {p.price}
+                        €{p.price}
                       </span>
                       <span
-                        className={`text-sm ${
-                          p.dark ? "text-white/50" : "text-night/50"
+                        className={`text-xs font-bold ${
+                          p.dark ? "text-white/40" : "text-night/40"
                         }`}
                       >
                         {p.period}
                       </span>
-                    </>
+                    </div>
                   )}
                 </div>
-              </div>
 
-              {/* CTA */}
-              <Link
-                href={p.link}
-                className={`inline-flex items-center justify-center gap-2 py-3.5 rounded-full font-semibold text-sm transition active:scale-[0.98] ${
-                  p.dark
-                    ? "bg-wa hover:bg-wa/90 text-white"
-                    : "bg-night hover:bg-night/90 text-white"
-                }`}
-              >
-                {p.cta}
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-          ))}
+                {/* CTA */}
+                <Link
+                  href={p.link}
+                  className={`inline-flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-sm transition-all active:scale-[0.98] ${
+                    p.dark
+                      ? "bg-white text-night hover:bg-white/90"
+                      : "bg-night hover:bg-night/90 text-white"
+                  }`}
+                >
+                  {p.cta}
+                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
