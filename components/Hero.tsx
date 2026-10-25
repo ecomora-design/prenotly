@@ -22,15 +22,23 @@ export default function Hero() {
           className="flex items-center justify-center gap-3 mb-8"
         >
           <div className="flex -space-x-2">
-            {["#25D366", "#128C7E", "#0F766E", "#22C55E"].map((c, i) => (
+            {[
+              { initials: "MR", bg: "#25D366" },
+              { initials: "GB", bg: "#128C7E" },
+              { initials: "LC", bg: "#0F766E" },
+              { initials: "SM", bg: "#22C55E" },
+            ].map((u, i) => (
               <div
                 key={i}
                 className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-white text-[9px] font-bold"
-                style={{ backgroundColor: c }}
+                style={{ backgroundColor: u.bg }}
               >
-                {String.fromCharCode(65 + i)}
+                {u.initials}
               </div>
             ))}
+            <div className="w-7 h-7 rounded-full border-2 border-white bg-white flex items-center justify-center text-[#0A2540] text-[9px] font-black shadow-sm">
+              +116
+            </div>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="flex gap-0.5">
@@ -39,7 +47,7 @@ export default function Hero() {
               ))}
             </div>
             <span className="text-[11px] font-semibold text-[#0A2540]/60">
-              4.9/5 · 500+ attività italiane
+              4.9/5 · 120 attività italiane
             </span>
           </div>
         </motion.div>
