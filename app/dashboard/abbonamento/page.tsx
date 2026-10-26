@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import SuccessPaymentModal from "@/components/SuccessPaymentModal";
 import {
   Loader2, CheckCircle2, Clock, MessageCircle,
-  Sparkles, Lock, Calendar, Utensils, Crown, CreditCard, Scissors, Star
+  Sparkles, Lock, Calendar, Utensils, Crown, CreditCard, Star
 } from "lucide-react";
 
 type Tenant = {
@@ -20,85 +19,64 @@ type Tenant = {
   business_type: string;
 };
 
-type Interval = "yearly" | "monthly";
-
 const PLANS = {
-  food_base: {
-    id: "food_base",
-    name: "Prenotly Food",
-    subtitle: "Menu + Ordini",
+  food_menu: {
+    id: "food_menu",
+    name: "Menu Digitale",
+    subtitle: "Solo visualizzazione",
     icon: Utensils,
-    color: "#25D366",
+    color: "#64748B",
     isFood: true,
-    yearly: { price: "29,99", total: "359,88" },
-    monthly: { price: "49,99", total: "49,99" },
+    price: "9,99",
+    interval: "/mese",
     features: [
       "Menu digitale personalizzabile",
-      "Ordini asporto e domicilio",
-      "Notifiche realtime",
-      "Dashboard completa",
-      "Zero commissioni",
+      "Categorie, foto e allergeni",
+      "QR Code per il tavolo",
+      "Web app brandizzata",
+      "Aggiornamenti illimitati",
     ],
-    upgradeNote: "Prenotazione tavoli opzionale +10 €/mese",
+    upgradeNote: "Nessun ordine o prenotazione incluso",
   },
-  food_tables: {
-    id: "food_tables",
-    name: "Prenotly Food + Tavoli",
-    subtitle: "Food + prenotazione tavoli",
+  food_standard: {
+    id: "food_standard",
+    name: "Food + Ordini",
+    subtitle: "Menu, Ordini e Tavoli",
     icon: Calendar,
-    color: "#EAB308",
+    color: "#25D366",
     badge: "POPOLARE",
     isFood: true,
-    yearly: { price: "39,99", total: "479,88" },
-    monthly: { price: "59,99", total: "59,99" },
+    price: "29,99",
+    interval: "/mese",
     features: [
-      "✨ Tutto di Food",
-      "🍽️ Mappa tavoli interattiva",
+      "✨ Tutto del Menu Digitale",
+      "🛍️ Ordini asporto e domicilio",
       "📅 Prenotazione tavoli online",
-      "👥 Gestione capienza",
-      "🔔 Promemoria anti no-show",
+      "🔔 Notifiche realtime in dashboard",
+      "👥 Gestione capienza e turni",
+      "📊 Statistiche di base",
     ],
     upgradeNote: null,
   },
   food_premium: {
     id: "food_premium",
-    name: "Prenotly Food Premium",
-    subtitle: "Tutto + pagamenti online",
+    name: "Premium Pro",
+    subtitle: "Pagamenti, QR e Fatturazione",
     icon: Crown,
     color: "#8B5CF6",
     badge: "TUTTO INCLUSO",
     isFood: true,
-    yearly: { price: "59,99", total: "719,88" },
-    monthly: { price: "79,99", total: "79,99" },
+    price: "99,99",
+    interval: "/mese",
     features: [
-      "✨ Tutto di Food + Tavoli",
-      "💳 Pagamenti carta in-app",
-      "📱 Apple Pay + Google Pay",
+      "✨ Tutto di Food + Ordini",
+      "💳 Pagamenti in-app (Stripe)",
+      "📱 Ordini diretti da QR Code",
       "🧾 Fatturazione automatica",
-      "🔒 Sicurezza Stripe",
+      "🗄️ Database e report su misura",
+      "🔒 Sicurezza avanzata",
     ],
-    upgradeNote: null,
-  },
-  beauty: {
-    id: "beauty",
-    name: "Prenotly Pro",
-    subtitle: "Agenda intelligente",
-    icon: Scissors,
-    color: "#8B5CF6",
-    isFood: false,
-    yearly: { price: "29,99", total: "359,88" },
-    monthly: { price: "49,99", total: "49,99" },
-    features: [
-      "Agenda intelligente",
-      "Servizi illimitati con durata",
-      "Prenotazioni con slot in tempo reale",
-      "Sync con Google Calendar",
-      "Promemoria anti no-show",
-      "Multi-operatore",
-      "Zero commissioni",
-      "Supporto in italiano",
-    ],
-    upgradeNote: null,
+    upgradeNote: "Software interno per comande e cucina",
   },
 };
 
@@ -108,7 +86,6 @@ export default function AbbonamentoPage() {
 
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [interval, setInterval] = useState<Interval>("yearly");
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   useEffect(() => {
@@ -133,7 +110,7 @@ export default function AbbonamentoPage() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planType: planId, interval }),
+        body: JSON.stringify({ planType: planId }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
@@ -149,8 +126,6 @@ export default function AbbonamentoPage() {
     return <div className="flex items-center justify-center h-[70vh]"><Loader2 className="animate-spin text-[#25D366]" size={32} /></div>;
   }
 
-  const isFood = tenant.product_type === "food" || tenant.business_type === "restaurant";
-
   const isActive = tenant.subscription_status === "active";
   const trialHoursLeft = tenant.trial_ends_at
     ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60)))
@@ -158,7 +133,6 @@ export default function AbbonamentoPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFBFC] pb-20">
-      <SuccessPaymentModal />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 mb-8">
         <div className="max-w-5xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white border border-[#E6EBF1] rounded-full px-4 py-1.5 mb-5 shadow-sm">
@@ -196,7 +170,7 @@ export default function AbbonamentoPage() {
             <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0"><CheckCircle2 className="text-emerald-600" size={24} /></div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-[#0A2540] text-sm">Piano attivo ({tenant.subscription_interval === "yearly" ? "annuale" : "mensile"})</p>
+                <p className="font-bold text-[#0A2540] text-sm">Piano attivo</p>
                 {tenant.subscription_ends_at && <p className="text-xs text-[#425466]">Rinnovo il {new Date(tenant.subscription_ends_at).toLocaleDateString("it-IT")}</p>}
               </div>
             </div>
@@ -204,24 +178,10 @@ export default function AbbonamentoPage() {
         </div>
       )}
 
-      <div className="px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="max-w-5xl mx-auto flex justify-center">
-          <div className="inline-flex bg-white rounded-full p-1.5 border border-[#E6EBF1] shadow-sm">
-            <button onClick={() => setInterval("yearly")} className={"px-5 py-2.5 rounded-full text-sm font-bold transition flex items-center gap-2 " + (interval === "yearly" ? "bg-[#0A2540] text-white shadow-md" : "text-[#425466] hover:text-[#0A2540]")}>
-              Annuale <span className={"text-[10px] font-black px-2 py-0.5 rounded-full " + (interval === "yearly" ? "bg-[#25D366] text-white" : "bg-[#25D366]/15 text-[#128C7E]")}>-40%</span>
-            </button>
-            <button onClick={() => setInterval("monthly")} className={"px-5 py-2.5 rounded-full text-sm font-bold transition " + (interval === "monthly" ? "bg-[#0A2540] text-white shadow-md" : "text-[#425466] hover:text-[#0A2540]")}>
-              Mensile
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className={`mx-auto grid gap-5 ${isFood ? "max-w-6xl md:grid-cols-3" : "max-w-md"}`}>
-          {(Object.values(PLANS) as any[]).filter((p: any) => p.isFood === isFood).map((plan) => {
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-5">
+          {(Object.values(PLANS) as any[]).map((plan) => {
             const Icon = plan.icon;
-            const pricing = interval === "yearly" ? plan.yearly : plan.monthly;
             const isCurrent = isActive && tenant.plan_type === plan.id;
             const isHighlight = plan.badge === "POPOLARE";
 
@@ -253,11 +213,11 @@ export default function AbbonamentoPage() {
                 <div className="pb-6 mb-6 border-b border-[#E6EBF1]">
                   <div className="flex items-baseline gap-1">
                     <span className="text-xs font-semibold text-[#425466]">€</span>
-                    <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{pricing.price}</span>
-                    <span className="text-sm text-[#425466]/60 font-semibold">/mese</span>
+                    <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{plan.price}</span>
+                    <span className="text-sm text-[#425466]/60 font-semibold">{plan.interval}</span>
                   </div>
                   <p className="text-[11px] text-[#425466]/60 mt-2">
-                    {interval === "yearly" ? "Fatturazione annuale: €" + pricing.total + " + IVA" : "Fatturazione mensile: €" + pricing.total + " + IVA"}
+                    Fatturazione mensile + IVA
                   </p>
                 </div>
                 <ul className="space-y-2.5 mb-6 flex-1">
