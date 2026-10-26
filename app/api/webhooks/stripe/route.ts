@@ -77,6 +77,52 @@ export async function POST(req: Request) {
     }
   }
 
+  // ── SUBSCRIPTION CREATED (fallback a checkout.session.completed) ──
+  if (event.type === "customer.subscription.created") {
+    console.log("[WEBHOOK] customer.subscription.created");
+    const sub = event.data.object as Stripe.Subscription;
+    const tenantId = sub.metadata?.tenant_id;
+    const planType = sub.metadata?.plan_type;
+    const interval = sub.metadata?.interval;
+
+    console.log("[WEBHOOK] Dati subscription:");
+    console.log("  tenant_id:", tenantId);
+    console.log("  plan_type:", planType);
+    console.log("  interval:", interval);
+
+    if (tenantId && planType) {
+      const finalInterval = interval || "monthly";
+      const now = new Date();
+      let endsAt: Date;
+      if (finalInterval === "yearly") {
+        endsAt = new Date(now);
+        endsAt.setFullYear(endsAt.getFullYear() + 1);
+      } else {
+        endsAt = new Date(now);
+        endsAt.setMonth(endsAt.getMonth() + 1);
+      }
+
+      const { data, error } = await supabase
+        .from("tenants")
+        .update({
+          subscription_status: "active",
+          plan_type: planType,
+          subscription_interval: finalInterval,
+          subscription_ends_at: endsAt.toISOString(),
+          enable_table_bookings: planType === "food_standard" || planType === "food_premium",
+          stripe_subscription_id: sub.id,
+        })
+        .eq("id", tenantId)
+        .select();
+
+      if (error) {
+        console.error("[WEBHOOK] ❌ ERRORE DB:", error.message);
+        return NextResponse.json({ error: "Errore DB: " + error.message }, { status: 500 });
+      }
+      console.log("[WEBHOOK] ✅ DB aggiornato da subscription.created. Righe:", data?.length);
+    }
+  }
+
   if (event.type === "customer.subscription.updated") {
     console.log("[WEBHOOK] customer.subscription.updated");
     const sub = event.data.object as Stripe.Subscription;
