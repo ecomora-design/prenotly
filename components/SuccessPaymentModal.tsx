@@ -79,6 +79,8 @@ export default function SuccessPaymentModal() {
     setOpen(false);
     // Rimuovi il parametro success dall'URL
     router.replace("/dashboard/abbonamento");
+    // Ricarica la pagina per aggiornare anche il badge nella sidebar
+    setTimeout(() => window.location.reload(), 100);
   };
 
   if (!open || !planType) return null;

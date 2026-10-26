@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   Loader2, CheckCircle2, Clock, MessageCircle,
@@ -88,21 +88,32 @@ export default function AbbonamentoPage() {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
+  const searchParams = useSearchParams();
+  const isSuccess = searchParams.get("success") === "true";
+
+  const loadTenant = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push("/login"); return; }
+    const { data: link } = await supabase
+      .from("tenant_users")
+      .select("tenant_id, tenants(*)")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!link || !link.tenants) { router.push("/onboarding"); return; }
+    setTenant(link.tenants as unknown as Tenant);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login"); return; }
-      const { data: link } = await supabase
-        .from("tenant_users")
-        .select("tenant_id, tenants(*)")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!link || !link.tenants) { router.push("/onboarding"); return; }
-      setTenant(link.tenants as unknown as Tenant);
-      setLoading(false);
-    }
-    load();
+    loadTenant();
   }, []);
+
+  // Se arriviamo con ?success=true dopo Stripe, ricarica il tenant dal DB
+  useEffect(() => {
+    if (isSuccess) {
+      setTimeout(() => loadTenant(), 1500);
+    }
+  }, [isSuccess]);
 
   const handleCheckout = async (planId: string) => {
     setCheckoutLoading(planId);
