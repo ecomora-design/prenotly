@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import SuccessPaymentModal from "@/components/SuccessPaymentModal";
 import {
   Loader2, CheckCircle2, Clock, MessageCircle,
   Sparkles, Lock, Calendar, Utensils, Crown, CreditCard, Star
@@ -21,74 +22,34 @@ type Tenant = {
 
 const PLANS = {
   food_menu: {
-    id: "food_menu",
-    name: "Menu Digitale",
-    subtitle: "Solo visualizzazione",
-    icon: Utensils,
-    color: "#64748B",
-    isFood: true,
-    price: "9,99",
-    interval: "/mese",
-    features: [
-      "Menu digitale personalizzabile",
-      "Categorie, foto e allergeni",
-      "QR Code per il tavolo",
-      "Web app brandizzata",
-      "Aggiornamenti illimitati",
-    ],
+    id: "food_menu", name: "Menu Digitale", subtitle: "Solo visualizzazione",
+    icon: Utensils, color: "#64748B", price: "9,99", interval: "/mese",
+    features: ["Menu digitale personalizzabile", "Categorie, foto e allergeni", "QR Code per il tavolo", "Web app brandizzata", "Aggiornamenti illimitati"],
     upgradeNote: "Nessun ordine o prenotazione incluso",
   },
   food_standard: {
-    id: "food_standard",
-    name: "Food + Ordini",
-    subtitle: "Menu, Ordini e Tavoli",
-    icon: Calendar,
-    color: "#25D366",
-    badge: "POPOLARE",
-    isFood: true,
-    price: "29,99",
-    interval: "/mese",
-    features: [
-      "✨ Tutto del Menu Digitale",
-      "🛍️ Ordini asporto e domicilio",
-      "📅 Prenotazione tavoli online",
-      "🔔 Notifiche realtime in dashboard",
-      "👥 Gestione capienza e turni",
-      "📊 Statistiche di base",
-    ],
+    id: "food_standard", name: "Food + Ordini", subtitle: "Menu, Ordini e Tavoli",
+    icon: Calendar, color: "#25D366", badge: "POPOLARE", price: "29,99", interval: "/mese",
+    features: ["✨ Tutto del Menu Digitale", "🛍️ Ordini asporto e domicilio", "📅 Prenotazione tavoli online", "🔔 Notifiche realtime", "👥 Gestione capienza e turni", "📊 Statistiche di base"],
     upgradeNote: null,
   },
   food_premium: {
-    id: "food_premium",
-    name: "Premium Pro",
-    subtitle: "Pagamenti, QR e Fatturazione",
-    icon: Crown,
-    color: "#8B5CF6",
-    badge: "TUTTO INCLUSO",
-    isFood: true,
-    price: "99,99",
-    interval: "/mese",
-    features: [
-      "✨ Tutto di Food + Ordini",
-      "💳 Pagamenti in-app (Stripe)",
-      "📱 Ordini diretti da QR Code",
-      "🧾 Fatturazione automatica",
-      "🗄️ Database e report su misura",
-      "🔒 Sicurezza avanzata",
-    ],
+    id: "food_premium", name: "Premium Pro", subtitle: "Pagamenti, QR e Fatturazione",
+    icon: Crown, color: "#8B5CF6", badge: "TUTTO INCLUSO", price: "99,99", interval: "/mese",
+    features: ["✨ Tutto di Food + Ordini", "💳 Pagamenti in-app (Stripe)", "📱 Ordini diretti da QR Code", "🧾 Fatturazione automatica", "🗄️ Database e report su misura", "🔒 Sicurezza avanzata"],
     upgradeNote: "Software interno per comande e cucina",
   },
 };
 
-export default function AbbonamentoPage() {
+function AbbonamentoContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
-  const searchParams = useSearchParams();
   const isSuccess = searchParams.get("success") === "true";
 
   const loadTenant = async () => {
@@ -108,11 +69,16 @@ export default function AbbonamentoPage() {
     loadTenant();
   }, []);
 
-  // Se arriviamo con ?success=true dopo Stripe, ricarica il tenant dal DB
+  // Se torniamo da Stripe con ?success=true, facciamo polling per 8 secondi
   useEffect(() => {
-    if (isSuccess) {
-      setTimeout(() => loadTenant(), 1500);
-    }
+    if (!isSuccess) return;
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      loadTenant();
+      if (attempts >= 5) clearInterval(interval);
+    }, 1500);
+    return () => clearInterval(interval);
   }, [isSuccess]);
 
   const handleCheckout = async (planId: string) => {
@@ -144,6 +110,8 @@ export default function AbbonamentoPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFBFC] pb-20">
+      <SuccessPaymentModal />
+
       <div className="px-4 sm:px-6 lg:px-8 pt-8 mb-8">
         <div className="max-w-5xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white border border-[#E6EBF1] rounded-full px-4 py-1.5 mb-5 shadow-sm">
@@ -181,7 +149,7 @@ export default function AbbonamentoPage() {
             <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0"><CheckCircle2 className="text-emerald-600" size={24} /></div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-[#0A2540] text-sm">Piano attivo</p>
+                <p className="font-bold text-[#0A2540] text-sm">Piano attivo: {PLANS[tenant.plan_type as keyof typeof PLANS]?.name || tenant.plan_type}</p>
                 {tenant.subscription_ends_at && <p className="text-xs text-[#425466]">Rinnovo il {new Date(tenant.subscription_ends_at).toLocaleDateString("it-IT")}</p>}
               </div>
             </div>
@@ -195,7 +163,6 @@ export default function AbbonamentoPage() {
             const Icon = plan.icon;
             const isCurrent = isActive && tenant.plan_type === plan.id;
             const isHighlight = plan.badge === "POPOLARE";
-
             return (
               <div key={plan.id} className={"relative bg-white rounded-3xl p-7 md:p-8 transition-all flex flex-col " + (isHighlight ? "border-2 border-[#25D366]/30 shadow-2xl shadow-[#25D366]/10 md:scale-[1.02]" : "border border-[#E6EBF1] hover:border-[#0A2540]/20 hover:shadow-lg")}>
                 {plan.badge && (
@@ -227,9 +194,7 @@ export default function AbbonamentoPage() {
                     <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{plan.price}</span>
                     <span className="text-sm text-[#425466]/60 font-semibold">{plan.interval}</span>
                   </div>
-                  <p className="text-[11px] text-[#425466]/60 mt-2">
-                    Fatturazione mensile + IVA
-                  </p>
+                  <p className="text-[11px] text-[#425466]/60 mt-2">Fatturazione mensile + IVA</p>
                 </div>
                 <ul className="space-y-2.5 mb-6 flex-1">
                   {plan.features.map((f: string) => (
@@ -272,5 +237,13 @@ export default function AbbonamentoPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AbbonamentoPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-[70vh]"><Loader2 className="animate-spin text-[#25D366]" size={32} /></div>}>
+      <AbbonamentoContent />
+    </Suspense>
   );
 }
