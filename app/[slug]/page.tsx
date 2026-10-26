@@ -148,6 +148,7 @@ export default async function TenantPage({ params }: Props) {
       <>
         {isDemo && <DemoBanner type="ristorante" />}
         <MenuClient
+          planType={tenant.plan_type}
           tenantName={tenant.business_name}
           tenantAddress={tenant.address}
           tenantPhone={tenant.phone}

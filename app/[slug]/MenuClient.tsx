@@ -52,6 +52,7 @@ type Props = {
   logoUrl?: string | null;
   coverImageUrl?: string | null;
   slug: string;
+  planType?: string | null;
   tableBookingEnabled?: boolean;
   tableSlots?: string[] | null;
   maxPartySize?: number;
@@ -76,6 +77,7 @@ function isValidWhatsApp(phone: string | null | undefined): boolean {
 
 
 export default function MenuClient({
+  planType,
   tenantName,
   tenantAddress,
   tenantPhone,
@@ -157,6 +159,7 @@ export default function MenuClient({
   const [translatedDescriptions, setTranslatedDescriptions] = useState<Record<string, string>>({});
   const translationCache = useRef<Record<string, string>>({});
   const [view, setView] = useState<"welcome" | "order" | "menu">("welcome");
+  const isMenuOnly = planType === "food_menu";
   const [orderSuccess, setOrderSuccess] = useState<{ code: string; total: number } | null>(null);
   const [lastOrderSnapshot, setLastOrderSnapshot] = useState<any>(null);
 
@@ -605,6 +608,7 @@ export default function MenuClient({
           <div className="w-full max-w-md space-y-3">
 
             {/* Ordina Online */}
+            {!isMenuOnly && (
             <motion.button
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -627,9 +631,10 @@ export default function MenuClient({
               </div>
               <ArrowRight size={20} className="text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all relative" />
             </motion.button>
+          )}
 
             {/* Prenota Tavolo */}
-            {tableBookingEnabled && (
+            {tableBookingEnabled && !isMenuOnly && (
               <motion.button
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -726,7 +731,7 @@ export default function MenuClient({
             <span className="text-white text-[11px] font-semibold">Home</span>
           </button>
 
-          {tableBookingEnabled && (
+          {tableBookingEnabled && !isMenuOnly && (
             <button
               onClick={() => setTableBookingOpen(true)}
               className="bg-white/95 backdrop-blur-md rounded-full px-3.5 py-2 flex items-center gap-1.5 active:scale-95 transition shadow-lg"
@@ -913,7 +918,7 @@ export default function MenuClient({
 
       {/* CART FLOATING */}
       <AnimatePresence>
-        {view === "order" && cartCount > 0 && !cartOpen && !checkoutOpen && !orderSuccess && (
+        {!isMenuOnly && view === "order" && cartCount > 0 && !cartOpen && !checkoutOpen && !orderSuccess && (
           <motion.button
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

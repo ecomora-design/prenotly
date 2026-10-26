@@ -163,11 +163,16 @@ export default function DashboardLayout({
   if (!tenant) return null;
 
   const isFood = tenant.product_type === "food" || tenant.business_type === "restaurant";
+  const isTrial = tenant.subscription_status === "trial";
+  const isMenuOnly = !isTrial && tenant.plan_type === "food_menu";
+  
+  const menuOnlyBlockedRoutes = ["/dashboard/ordini", "/dashboard/prenotazioni", "/dashboard/tavoli", "/dashboard/clienti", "/dashboard/report", "/dashboard/calendario"];
+  const isBlockedRoute = isMenuOnly && menuOnlyBlockedRoutes.some(r => pathname.startsWith(r));
+  const planAllowsOrders = isTrial || tenant.plan_type !== "food_menu";
   const brandColor = tenant.brand_color || (isFood ? "#25D366" : "#8B5CF6");
   
   // QUI CONTROLLIAMO SE MOSTRARE LE PRENOTAZIONI
   
-  const isTrial = tenant.subscription_status === "trial";
   const planAllowsTables = isTrial || tenant.plan_type === "food_standard" || tenant.plan_type === "food_premium";
   const showBookings = planAllowsTables && tenant.enable_table_bookings !== false;
 
@@ -208,7 +213,7 @@ export default function DashboardLayout({
     },
     {
       label: "Clienti",
-      items: [
+      items: isFood && !planAllowsOrders ? [] : [
         { href: "/dashboard/clienti", label: "Rubrica clienti", icon: Users },
       ],
     },
@@ -370,7 +375,7 @@ export default function DashboardLayout({
 
           {/* Nav sections */}
           <nav className="flex-1 overflow-y-auto p-3">
-            {navSections.map((section, sIdx) => (
+            {navSections.filter(s => s.items.length > 0).map((section, sIdx) => (
               <div key={section.label} className={sIdx > 0 ? "mt-5" : ""}>
                 <p className="text-[10px] font-bold text-night/30 uppercase tracking-widest px-3 mb-1.5">
                   {section.label}
@@ -562,7 +567,22 @@ export default function DashboardLayout({
             </div>
           )}
 
-          <div className="p-4 md:p-8 pb-24 lg:pb-8 max-w-6xl mx-auto">{children}</div>
+          <div className="p-4 md:p-8 pb-24 lg:pb-8 max-w-6xl mx-auto">
+          {isBlockedRoute ? (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <h2 className="text-xl font-bold text-night mb-2">Funzionalità non inclusa</h2>
+              <p className="text-sm text-night/60 mb-6">
+                Il tuo piano <strong>Menu Digitale</strong> non include questa sezione. Passa a <strong>Food + Ordini</strong> per sbloccare ordini, prenotazioni, tavoli e clienti.
+              </p>
+              <Link href="/dashboard/abbonamento" className="bg-night hover:bg-night/90 text-white px-6 py-3 rounded-full font-bold text-sm transition active:scale-95">
+                Passa al piano superiore
+              </Link>
+            </div>
+          ) : children}
+        </div>
         </div>
       </div>
       <PWABanner />

@@ -28,10 +28,11 @@ export async function POST(req: Request) {
     const planType = session.metadata?.plan_type;
     const interval = session.metadata?.interval;
 
-    if (tenantId && planType && interval) {
+    if (tenantId && planType) {
+      const finalInterval = interval || "monthly";
       const now = new Date();
       let endsAt: Date;
-      if (interval === "yearly") {
+      if (finalInterval === "yearly") {
         endsAt = new Date(now);
         endsAt.setFullYear(endsAt.getFullYear() + 1);
       } else {
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
         .update({
           subscription_status: "active",
           plan_type: planType,
-          subscription_interval: interval,
+          subscription_interval: finalInterval,
           subscription_ends_at: endsAt.toISOString(),
           enable_table_bookings: planType === "food_standard" || planType === "food_premium",
           stripe_subscription_id: session.subscription as string,

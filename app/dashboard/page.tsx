@@ -25,6 +25,7 @@ type Tenant = {
   brand_color: string | null;
   has_table_booking: boolean | null;
   has_online_payments: boolean | null;
+  plan_type: string | null;
 };
 
 export default function DashboardPage() {
@@ -98,6 +99,8 @@ export default function DashboardPage() {
   }
 
   const isFood = tenant.product_type === "food" || tenant.business_type === "restaurant";
+  const isTrial = tenant.subscription_status === "trial";
+  const isMenuOnly = !isTrial && tenant.plan_type === "food_menu";
   const brandColor = tenant.brand_color || (isFood ? "#25D366" : "#8B5CF6");
   const trialHoursLeft = tenant.trial_ends_at ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60))) : 0;
   const firstName = tenant.business_name.split(" ")[0];

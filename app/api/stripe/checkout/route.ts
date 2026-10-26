@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: appUrl + "/dashboard/abbonamento?success=true&session_id={CHECKOUT_SESSION_ID}",
       cancel_url: appUrl + "/dashboard/abbonamento?canceled=true",
-      metadata: { tenant_id: tenant.id, plan_type: planType },
+      metadata: { tenant_id: tenant.id, plan_type: planType, interval: "monthly" },
     });
 
     return NextResponse.json({ url: session.url });
