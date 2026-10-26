@@ -18,7 +18,7 @@ export default function FAQ() {
     },
     {
       q: "Quanto costa davvero?",
-      a: "29,99 €/mese, IVA esclusa. Pagamento annuale di 359,88 €. Nessuna commissione sui tuoi incassi.",
+      a: "I piani partono da 9,99 €/mese per il solo menu. Il piano completo con ordini e tavoli costa 29,99 €/mese. Nessuna commissione sui tuoi incassi.",
     },
     {
       q: "Se non mi trovo bene?",

@@ -4,7 +4,7 @@ import { ArrowRight, Check, Sparkles, Utensils, Scissors, Code2 } from "lucide-r
 export default function ThreeSoftware() {
   const products = [
     {
-      id: "food",
+      id: "food_standard",
       label: "Food",
       subtitle: "Ristoranti, pizzerie, bar",
       description:
@@ -16,10 +16,10 @@ export default function ThreeSoftware() {
         "Dashboard gestionale completa",
       ],
       note: "Prenotazione tavoli opzionale (+10 €/mese)",
-      price: "29,99",
+      price: "9,99",
       period: "/mese",
-      cta: "Scopri Food",
-      link: "/ristoranti",
+      cta: "Scopri i piani",
+      link: "/prezzi",
       icon: Utensils,
       color: "#25D366",
       dark: false,

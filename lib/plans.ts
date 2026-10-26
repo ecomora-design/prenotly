@@ -1,57 +1,54 @@
 export const PLANS = {
-  food_base: {
-    id: "food_base",
-    name: "Food",
-    subtitle: "Menu + Ordini",
+  food_menu: {
+    id: "food_menu",
+    name: "Menu Digitale",
+    subtitle: "Solo menu",
+    yearly: 119.88,
+    monthly: 9.99,
+    color: "#64748B",
+    icon: "utensils",
+    features: [
+      "Menu digitale personalizzabile",
+      "Categorie, foto e allergeni",
+      "QR Code per il tavolo",
+      "Web app brandizzata",
+      "Aggiornamenti illimitati",
+    ],
+  },
+  food_standard: {
+    id: "food_standard",
+    name: "Food + Ordini",
+    subtitle: "Menu, Ordini e Tavoli",
     yearly: 359.88,
     monthly: 29.99,
     color: "#25D366",
-    icon: "utensils",
-    features: [
-      "Menu digitale illimitato",
-      "Ordini asporto e domicilio",
-      "Automazioni WhatsApp",
-      "Dashboard completa",
-      "QR Code personalizzato",
-      "Zero commissioni",
-    ],
-  },
-  food_tables: {
-    id: "food_tables",
-    name: "Food + Tavoli",
-    subtitle: "Tutto di Food + prenotazione tavoli",
-    yearly: 420.00,
-    monthly: 35,
-    color: "#EAB308",
     icon: "calendar",
     badge: "POPOLARE",
     features: [
-      "✨ Tutto di Food Base",
-      "🍽️ Mappa tavoli interattiva",
+      "✨ Tutto di Menu Digitale",
+      "🛍️ Ordini asporto e domicilio",
       "📅 Prenotazione tavoli online",
+      "🔔 Notifiche realtime",
       "👥 Gestione capienza e turni",
-      "🔔 Promemoria anti no-show",
-      "📊 Statistiche occupazione",
+      "📊 Statistiche di base",
     ],
   },
   food_premium: {
     id: "food_premium",
-    name: "Food Premium",
-    subtitle: "Tutto + pagamenti online",
-    yearly: 719.88,
-    monthly: 59.99,
+    name: "Premium Pro",
+    subtitle: "Tutto + pagamenti + QR + fatturazione",
+    yearly: 1199.88,
+    monthly: 99.99,
     color: "#8B5CF6",
     icon: "crown",
     badge: "TUTTO INCLUSO",
     features: [
-      "✨ Tutto di Food + Tavoli",
-      "💳 Pagamenti con carta in-app",
-      "📱 Apple Pay + Google Pay",
+      "✨ Tutto di Food + Ordini",
+      "💳 Pagamenti in-app (Stripe)",
+      "📱 Ordini diretti da QR Code",
       "🧾 Fatturazione automatica",
-      "💰 Fondi direttamente sul conto",
-      "🔒 Sicurezza Stripe",
-      "🎁 Sconti e coupon",
-      "📊 Statistiche incassi",
+      "🗄️ Database e report su misura",
+      "🔒 Sicurezza avanzata",
     ],
   },
   beauty: {
@@ -92,11 +89,11 @@ export const PLANS = {
 export type PlanId = keyof typeof PLANS;
 
 export function getPlanFromTenant(tenant: any) {
-  if (tenant.plan_type === "tables") return PLANS.food_tables;
-  if (tenant.plan_type === "premium") return PLANS.food_premium;
+  if (tenant.plan_type === "food_standard") return PLANS.food_standard;
+  if (tenant.plan_type === "food_premium") return PLANS.food_premium;
   if (tenant.plan_type === "beauty") return PLANS.beauty;
   if (tenant.plan_type === "service") return PLANS.service;
-  return PLANS.food_base;
+  return PLANS.food_menu;
 }
 
-export const FOOD_PLANS = [PLANS.food_base, PLANS.food_tables, PLANS.food_premium];
+export const FOOD_PLANS = [PLANS.food_menu, PLANS.food_standard, PLANS.food_premium];

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
           plan_type: planType,
           subscription_interval: interval,
           subscription_ends_at: endsAt.toISOString(),
-          enable_table_bookings: planType === "food_tables" || planType === "food_premium",
+          enable_table_bookings: planType === "food_standard" || planType === "food_premium",
           stripe_subscription_id: session.subscription as string,
         })
         .eq("id", tenantId);

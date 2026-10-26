@@ -151,7 +151,7 @@ export default function SignupPage() {
                 },
                 {
                   icon: Euro,
-                  title: "29,99 €/mese, zero commissioni",
+                  title: "Da 9,99 €/mese, zero commissioni",
                   desc: "Non tratteniamo nulla sui tuoi incassi.",
                 },
                 {
@@ -215,7 +215,7 @@ export default function SignupPage() {
               <div className="inline-flex items-center gap-2 bg-night text-white rounded-full px-4 py-1.5 mb-5">
                 <Sparkles size={12} className="text-wa" />
                 <span className="text-[11px] font-bold uppercase tracking-wider">
-                  10 minuti · 29,99 €/mese
+                  10 minuti · da 9,99 €/mese
                 </span>
               </div>
               <h1 className="text-3xl font-bold text-night tracking-tight mb-3">

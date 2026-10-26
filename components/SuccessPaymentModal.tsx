@@ -7,32 +7,36 @@ import { CheckCircle2, Sparkles, X, ArrowRight, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const PLAN_NAMES: Record<string, string> = {
-  food_base: "Prenotly Food",
-  food_tables: "Prenotly Food + Tavoli",
-  food_premium: "Prenotly Food Premium",
+  food_menu: "Menu Digitale",
+  food_standard: "Food + Ordini",
+  
+  food_premium: "Premium Pro",
   beauty: "Prenotly Pro",
 };
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  food_base: [
+  food_menu: [
     "Menu digitale personalizzabile",
-    "Ordini asporto e domicilio",
-    "Notifiche realtime in dashboard",
-    "Dashboard gestionale completa",
+    "Categorie, foto e allergeni",
+    "QR Code per il tavolo",
+    "Web app brandizzata",
+    "Aggiornamenti illimitati",
   ],
-  food_tables: [
-    "Tutto di Food",
-    "Mappa tavoli interattiva",
+  food_standard: [
+    "Tutto del Menu Digitale",
+    "Ordini asporto e domicilio",
     "Prenotazione tavoli online",
+    "Notifiche realtime",
     "Gestione capienza e turni",
-    "Promemoria anti no-show",
+    "Statistiche di base",
   ],
   food_premium: [
-    "Tutto di Food + Tavoli",
-    "Pagamenti con carta in-app",
-    "Apple Pay + Google Pay",
+    "Tutto di Food + Ordini",
+    "Pagamenti in-app (Stripe)",
+    "Ordini diretti da QR Code",
     "Fatturazione automatica",
-    "Sicurezza Stripe",
+    "Database e report su misura",
+    "Sicurezza avanzata",
   ],
   beauty: [
     "Agenda intelligente",

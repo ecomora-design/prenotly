@@ -1600,7 +1600,7 @@ export default function MenuClient({
                 </div>
 
                 <a
-                  href={`https://wa.me/message/LLEKTVFCRCPVB1?text=${encodeURIComponent(`Ciao! Vorrei attivare la prenotazione tavoli per ${tenantName}. Piano Food + Tavoli a 420 €/anno.`)}`}
+                  href={`https://wa.me/message/LLEKTVFCRCPVB1?text=${encodeURIComponent(`Ciao! Vorrei attivare la prenotazione tavoli per ${tenantName}. Piano Food + Ordini a 359,88 €/anno.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-wa hover:bg-wa/90 text-white py-4 rounded-2xl font-bold transition active:scale-[0.98] flex items-center justify-center gap-2"

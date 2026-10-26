@@ -236,7 +236,7 @@ export default function ImpostazioniPage() {
   const brandColor = form.brand_color || "#25D366";
 
     const isTrial = tenant?.subscription_status === 'trial';
-  const canUseTables = isTrial || tenant?.plan_type === 'food_tables' || tenant?.plan_type === 'food_premium';
+  const canUseTables = isTrial || tenant?.plan_type === 'food_standard' || tenant?.plan_type === 'food_premium';
 
   return (
     <div className="max-w-3xl mx-auto pb-32">
@@ -567,7 +567,7 @@ export default function ImpostazioniPage() {
                 <p className="text-xs text-night/50">Permetti ai clienti di prenotare un tavolo dal sito</p>
                 {!canUseTables && (
                   <p className="text-[11px] text-orange-600 font-bold mt-1">
-                    ⚠️ Richiede il piano Food + Tavoli. <a href="/dashboard/abbonamento" className="underline">Fai l'upgrade</a>
+                    ⚠️ Richiede almeno il piano Food + Ordini. <a href="/dashboard/abbonamento" className="underline">Fai l'upgrade</a>
                   </p>
                 )}
               </div>

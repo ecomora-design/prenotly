@@ -6,27 +6,19 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const PRICE_MAP: Record<string, string> = {
-  "food_base_yearly": process.env.STRIPE_PRICE_FOOD_YEARLY!,
-  "food_base_monthly": process.env.STRIPE_PRICE_FOOD_MONTHLY!,
-  "food_tables_yearly": process.env.STRIPE_PRICE_TABLES_YEARLY!,
-  "food_tables_monthly": process.env.STRIPE_PRICE_TABLES_MONTHLY!,
-  "food_premium_yearly": process.env.STRIPE_PRICE_PREMIUM_YEARLY!,
-  "food_premium_monthly": process.env.STRIPE_PRICE_PREMIUM_MONTHLY!,
-  "beauty_yearly": process.env.STRIPE_PRICE_PRO_YEARLY!,
-  "beauty_monthly": process.env.STRIPE_PRICE_PRO_MONTHLY!,
+  "food_menu": process.env.STRIPE_PRICE_FOOD_MENU!,
+  "food_standard": process.env.STRIPE_PRICE_FOOD_STANDARD!,
+  "food_premium": process.env.STRIPE_PRICE_FOOD_PREMIUM!,
 };
 
 export async function POST(req: Request) {
   try {
-    const { planType, interval } = await req.json();
-    if (!planType || !interval) {
-      return NextResponse.json({ error: "Parametri mancanti" }, { status: 400 });
-    }
-    const key = planType + "_" + interval;
-    const priceId = PRICE_MAP[key];
-    if (!priceId) {
-      return NextResponse.json({ error: "Piano non valido" }, { status: 400 });
-    }
+    const { planType } = await req.json();
+    if (!planType) return NextResponse.json({ error: "Parametri mancanti" }, { status: 400 });
+
+    const priceId = PRICE_MAP[planType];
+    if (!priceId) return NextResponse.json({ error: "Piano non valido" }, { status: 400 });
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
@@ -38,9 +30,8 @@ export async function POST(req: Request) {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (!link?.tenants) {
-      return NextResponse.json({ error: "Attività non trovata" }, { status: 404 });
-    }
+    if (!link?.tenants) return NextResponse.json({ error: "Attività non trovata" }, { status: 404 });
+
     const tenant = link.tenants as any;
     let customerId = tenant.stripe_customer_id;
 
@@ -62,7 +53,7 @@ export async function POST(req: Request) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: appUrl + "/dashboard/abbonamento?success=true&session_id={CHECKOUT_SESSION_ID}",
       cancel_url: appUrl + "/dashboard/abbonamento?canceled=true",
-      metadata: { tenant_id: tenant.id, plan_type: planType, interval: interval },
+      metadata: { tenant_id: tenant.id, plan_type: planType },
     });
 
     return NextResponse.json({ url: session.url });

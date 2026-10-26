@@ -168,7 +168,7 @@ export default function DashboardLayout({
   // QUI CONTROLLIAMO SE MOSTRARE LE PRENOTAZIONI
   
   const isTrial = tenant.subscription_status === "trial";
-  const planAllowsTables = isTrial || tenant.plan_type === "food_tables" || tenant.plan_type === "food_premium";
+  const planAllowsTables = isTrial || tenant.plan_type === "food_standard" || tenant.plan_type === "food_premium";
   const showBookings = planAllowsTables && tenant.enable_table_bookings !== false;
 
   // Controllo se l'abbonamento è scaduto
@@ -231,8 +231,9 @@ export default function DashboardLayout({
   const planBadge = (() => {
     if (tenant.subscription_status !== "active") return null;
     const plans: Record<string, { label: string; color: string }> = {
-      food_base: { label: "FOOD", color: "#25D366" },
-      food_tables: { label: "FOOD + TAVOLI", color: "#EAB308" },
+      food_menu: { label: "MENU", color: "#64748B" },
+      food_standard: { label: "FOOD", color: "#25D366" },
+      
       food_premium: { label: "PREMIUM", color: "#8B5CF6" },
       beauty: { label: "PRO", color: "#8B5CF6" },
     };

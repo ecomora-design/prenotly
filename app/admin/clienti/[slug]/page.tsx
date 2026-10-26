@@ -30,7 +30,7 @@ export default function ClienteDetailPage() {
   const [savingSub, setSavingSub] = useState(false);
   const [subForm, setSubForm] = useState({
     subscription_status: "trial",
-    plan_type: "food_base",
+    plan_type: "food_menu",
     trial_ends_at: "",
     subscription_ends_at: "",
     enable_table_bookings: false,
@@ -44,7 +44,7 @@ export default function ClienteDetailPage() {
       setTenant(t);
       setSubForm({
         subscription_status: t.subscription_status || "trial",
-        plan_type: t.plan_type || "food_base",
+        plan_type: t.plan_type || "food_menu",
         trial_ends_at: t.trial_ends_at ? new Date(t.trial_ends_at).toISOString().slice(0, 16) : "",
         subscription_ends_at: t.subscription_ends_at ? new Date(t.subscription_ends_at).toISOString().slice(0, 16) : "",
         enable_table_bookings: t.enable_table_bookings === true,
@@ -96,13 +96,13 @@ export default function ClienteDetailPage() {
   };
 
   const handleActivate = async () => {
-    if (!confirm("Attivare questo cliente per 12 mesi con piano Food + Tavoli?")) return;
+    if (!confirm("Attivare questo cliente per 12 mesi con piano Food + Ordini (29,99€/mese)?")) return;
     const oneYearLater = new Date();
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
     await supabase.from("tenants").update({
       subscription_status: "active",
       subscription_ends_at: oneYearLater.toISOString(),
-      plan_type: "food_tables",
+      plan_type: "food_standard",
       enable_table_bookings: true,
     }).eq("id", tenant.id);
     window.location.reload();
@@ -269,9 +269,9 @@ export default function ClienteDetailPage() {
               <div>
                 <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Piano Sottoscritto</label>
                 <select value={subForm.plan_type} onChange={e => setSubForm({...subForm, plan_type: e.target.value})} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] outline-none transition">
-                  <option value="food_base">Food Base (29,99€/m)</option>
-                  <option value="food_tables">Food + Tavoli (39,99€/m)</option>
-                  <option value="food_premium">Food Premium (59,99€/m)</option>
+                  <option value="food_menu">Menu Digitale (9,99€/m)</option>
+                  <option value="food_standard">Food + Ordini (29,99€/m)</option>
+                  <option value="food_premium">Premium Pro (99,99€/m)</option>
                   <option value="beauty">Pro / Beauty (29,99€/m)</option>
                 </select>
               </div>
