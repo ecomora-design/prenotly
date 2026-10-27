@@ -8,8 +8,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
-  console.log("═══════════════════════════════════════");
-  console.log("[WEBHOOK] Ricevuta richiesta");
 
   const body = await req.text();
   const sig = req.headers.get("stripe-signature") ?? "";
@@ -17,10 +15,8 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
-    console.log("[WEBHOOK] Firma verificata OK. Tipo:", event.type);
   } catch (err: any) {
     console.error("[WEBHOOK] ❌ Firma non valida:", err.message);
-    console.log("[WEBHOOK] Secret usato (primi 20):", endpointSecret?.substring(0, 20));
     return NextResponse.json({ error: "Firma non valida" }, { status: 400 });
   }
 
@@ -31,8 +27,6 @@ export async function POST(req: Request) {
     const tenantId = session.metadata?.tenant_id;
     const planType = session.metadata?.plan_type;
     const interval = session.metadata?.interval;
-
-    console.log("[WEBHOOK] Dati ricevuti:");
     console.log("  tenant_id:", tenantId);
     console.log("  plan_type:", planType);
     console.log("  interval:", interval);
@@ -49,8 +43,6 @@ export async function POST(req: Request) {
         endsAt = new Date(now);
         endsAt.setMonth(endsAt.getMonth() + 1);
       }
-
-      console.log("[WEBHOOK] Aggiorno DB con plan_type:", planType, "scade:", endsAt.toISOString());
 
       const { data, error } = await supabase
         .from("tenants")
@@ -70,8 +62,6 @@ export async function POST(req: Request) {
         console.error("[WEBHOOK] Dettagli:", JSON.stringify(error, null, 2));
         return NextResponse.json({ error: "Errore DB: " + error.message }, { status: 500 });
       }
-
-      console.log("[WEBHOOK] ✅ DB aggiornato. Righe modificate:", data?.length);
     } else {
       console.error("[WEBHOOK] ❌ Metadata mancanti!", { tenantId, planType });
     }
@@ -79,13 +69,10 @@ export async function POST(req: Request) {
 
   // ── SUBSCRIPTION CREATED (fallback a checkout.session.completed) ──
   if (event.type === "customer.subscription.created") {
-    console.log("[WEBHOOK] customer.subscription.created");
     const sub = event.data.object as Stripe.Subscription;
     const tenantId = sub.metadata?.tenant_id;
     const planType = sub.metadata?.plan_type;
     const interval = sub.metadata?.interval;
-
-    console.log("[WEBHOOK] Dati subscription:");
     console.log("  tenant_id:", tenantId);
     console.log("  plan_type:", planType);
     console.log("  interval:", interval);
@@ -119,12 +106,10 @@ export async function POST(req: Request) {
         console.error("[WEBHOOK] ❌ ERRORE DB:", error.message);
         return NextResponse.json({ error: "Errore DB: " + error.message }, { status: 500 });
       }
-      console.log("[WEBHOOK] ✅ DB aggiornato da subscription.created. Righe:", data?.length);
     }
   }
 
   if (event.type === "customer.subscription.updated") {
-    console.log("[WEBHOOK] customer.subscription.updated");
     const sub = event.data.object as Stripe.Subscription;
     const customerId = sub.customer as string;
     const item = sub.items?.data?.[0];
@@ -139,13 +124,9 @@ export async function POST(req: Request) {
   }
 
   if (event.type === "customer.subscription.deleted") {
-    console.log("[WEBHOOK] customer.subscription.deleted");
     const sub = event.data.object as Stripe.Subscription;
     const customerId = sub.customer as string;
     await supabase.from("tenants").update({ subscription_status: "expired" }).eq("stripe_customer_id", customerId);
   }
-
-  console.log("[WEBHOOK] ✅ Elaborazione completata");
-  console.log("═══════════════════════════════════════");
   return NextResponse.json({ received: true });
 }
