@@ -94,8 +94,9 @@ const whatsappValid = useMemo(() => {
         business_name: businessName,
         business_type: businessType,
         description: description || null,
-       whatsapp_number: whatsapp.replace(/\s/g, ""),
+        whatsapp_number: whatsapp.replace(/\s/g, ""),
         is_active: true,
+        plan_type: businessType === "restaurant" ? "food_menu" : "beauty",
       })
       .select()
       .single();
