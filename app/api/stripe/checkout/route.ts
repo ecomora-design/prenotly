@@ -19,6 +19,29 @@ export async function POST(req: Request) {
     const priceId = PRICE_MAP[planType];
     if (!priceId) return NextResponse.json({ error: "Piano non valido" }, { status: 400 });
 
+    // Validazione: verifica che il prezzo corrisponda al piano
+    try {
+      const price = await stripe.prices.retrieve(priceId);
+      const expectedAmounts: Record<string, number> = {
+        "food_menu": 999,
+        "food_standard": 2999,
+        "food_premium": 9999,
+      };
+      if (price.unit_amount !== expectedAmounts[planType]) {
+        console.error("[CHECKOUT] ❌ INCOERENZA PREZZO:", {
+          planType,
+          priceId,
+          expected: expectedAmounts[planType],
+          actual: price.unit_amount,
+        });
+        return NextResponse.json({ 
+          error: "Configurazione prezzo errata. Contatta il supporto." 
+        }, { status: 500 });
+      }
+    } catch (err: any) {
+      console.error("[CHECKOUT] Errore validazione prezzo:", err.message);
+    }
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
