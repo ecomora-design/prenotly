@@ -46,7 +46,7 @@ type Props = {
   tenantPhone: string | null;
   tenantDescription: string | null;
   openingHours: Record<string, string> | null;
-  appNumber: string;
+  whatsappNumber: string;
   services: Service[];
   brandColor?: string;
   logoUrl?: string | null;
@@ -83,7 +83,7 @@ export default function MenuClient({
   tenantPhone,
   tenantDescription,
   openingHours,
-  appNumber,
+  whatsappNumber,
   services,
   brandColor = "#25D366",
   logoUrl,
@@ -437,8 +437,8 @@ export default function MenuClient({
     lines.push(`👤 ${lastOrderSnapshot.customerName}`);
     if (lastOrderSnapshot.notes) lines.push(`📝 Note: ${lastOrderSnapshot.notes}`);
 
-    if (!isValidApp(appNumber)) return "#";
-    const phone = appNumber.replace(/\s|\+|-/g, "");
+    if (!isValidApp(whatsappNumber)) return "#";
+    const phone = whatsappNumber.replace(/\s|\+|-/g, "");
     return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
   };
 
@@ -493,12 +493,12 @@ export default function MenuClient({
       lines.push(`📞 ${tableCustomerPhone}`);
       if (tableNotes) lines.push(`📝 Note: ${tableNotes}`);
 
-      if (!isValidApp(appNumber)) {
+      if (!isValidApp(whatsappNumber)) {
         setSubmitError("Il ristorante non ha ancora configurato App. Riprova più tardi.");
         setSubmitting(false);
         return;
       }
-      const phone = appNumber.replace(/\s|\+|-/g, "");
+      const phone = whatsappNumber.replace(/\s|\+|-/g, "");
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
 
       setTableSuccess({ code, waUrl });
@@ -789,7 +789,7 @@ export default function MenuClient({
               </a>
             )}
             <a
-              href={`https://wa.me/${appNumber.replace(/\s|\+|-/g, "")}?text=Ciao!%20Vorrei%20informazioni`}
+              href={`https://wa.me/${whatsappNumber.replace(/\s|\+|-/g, "")}?text=Ciao!%20Vorrei%20informazioni`}
               target="_blank"
               rel="noopener noreferrer"
               className={`py-3.5 flex items-center justify-center gap-2 text-xs font-bold text-night active:bg-soft transition ${!tenantPhone ? "col-span-2" : ""}`}

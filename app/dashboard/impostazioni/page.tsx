@@ -21,7 +21,7 @@ type Tenant = {
   description: string | null;
   address: string | null;
   phone: string | null;
-  app_number: string | null;
+  whatsapp_number: string | null;
   opening_hours: Record<string, string> | null;
   brand_color: string | null;
   logo_url: string | null;
@@ -79,7 +79,7 @@ export default function ImpostazioniPage() {
     description: "",
     address: "",
     phone: "",
-    app_number: "",
+    whatsapp_number: "",
     brand_color: "#25D366",
     logo_url: "",
     cover_image_url: "",
@@ -114,7 +114,7 @@ export default function ImpostazioniPage() {
         description: t.description || "",
         address: t.address || "",
         phone: t.phone || "",
-        app_number: t.app_number || "",
+        whatsapp_number: t.whatsapp_number || "",
         brand_color: t.brand_color || "#25D366",
         logo_url: t.logo_url || "",
         cover_image_url: t.cover_image_url || "",
@@ -196,7 +196,7 @@ export default function ImpostazioniPage() {
         description: form.description.trim() || null,
         address: form.address.trim() || null,
         phone: form.phone.trim() || null,
-        app_number: form.app_number.trim(),
+        whatsapp_number: form.whatsapp_number.trim(),
         brand_color: form.brand_color,
         logo_url: form.logo_url || null,
         cover_image_url: form.cover_image_url || null,
@@ -480,8 +480,8 @@ export default function ImpostazioniPage() {
             </span>
             <input
               type="tel"
-              value={form.app_number}
-              onChange={(e) => setForm({ ...form, app_number: e.target.value })}
+              value={form.whatsapp_number}
+              onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })}
               placeholder="+39 333 1234567"
               required
               className="w-full bg-cream border border-transparent rounded-2xl px-4 py-3.5 text-[15px] focus:bg-white focus:border-night/20 focus:outline-none transition"

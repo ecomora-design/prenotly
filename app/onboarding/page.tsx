@@ -94,7 +94,7 @@ const appValid = useMemo(() => {
         business_name: businessName,
         business_type: businessType,
         description: description || null,
-        app_number: app.replace(/\s/g, ""),
+        whatsapp_number: app.replace(/\s/g, ""),
         is_active: true,
         plan_type: businessType === "restaurant" ? "food_menu" : "servizi",
       })

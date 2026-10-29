@@ -22,7 +22,7 @@ type Props = {
   tenantAddress: string | null;
   tenantPhone: string | null;
   tenantDescription: string | null;
-  appNumber: string;
+  whatsappNumber: string;
   services: Service[];
   openingHours: Record<string, string> | null;
   brandColor: string;
@@ -37,7 +37,7 @@ const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 export default function BookingClient({
   tenantName, tenantAddress, tenantPhone, tenantDescription,
-  appNumber, services, openingHours, brandColor, logoUrl, slug
+  whatsappNumber, services, openingHours, brandColor, logoUrl, slug
 }: Props) {
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -244,7 +244,7 @@ export default function BookingClient({
                 <Phone size={11} /> Chiama
               </a>
             )}
-            <a href={`https://wa.me/${appNumber.replace(/\D/g, "")}`} className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur border border-night/[0.06] text-night/70 px-3 py-1.5 rounded-full text-[11px] font-bold hover:bg-white transition shadow-sm">
+            <a href={`https://wa.me/${whatsappNumber.replace(/\D/g, "")}`} className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur border border-night/[0.06] text-night/70 px-3 py-1.5 rounded-full text-[11px] font-bold hover:bg-white transition shadow-sm">
               <MessageCircle size={11} /> App
             </a>
             {tenantAddress && (

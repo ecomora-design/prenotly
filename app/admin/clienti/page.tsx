@@ -18,7 +18,7 @@ type Tenant = {
   business_name: string;
   business_type: string;
   product_type: string | null;
-  app_number: string | null;
+  whatsapp_number: string | null;
   subscription_status: string | null;
   trial_ends_at: string | null;
   subscription_ends_at: string | null;
@@ -60,7 +60,7 @@ export default function AdminClientiPage() {
     return (
       t.business_name.toLowerCase().includes(q) ||
       t.slug.toLowerCase().includes(q) ||
-      (t.app_number || "").includes(q)
+      (t.whatsapp_number || "").includes(q)
     );
   });
 
@@ -150,7 +150,7 @@ export default function AdminClientiPage() {
               const trialHoursLeft = t.trial_ends_at
                 ? Math.max(0, Math.ceil((new Date(t.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60)))
                 : 0;
-              const phone = (t.app_number || "").replace(/\D/g, "");
+              const phone = (t.whatsapp_number || "").replace(/\D/g, "");
 
               return (
                 <motion.div

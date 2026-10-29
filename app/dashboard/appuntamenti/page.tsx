@@ -20,7 +20,7 @@ type Appointment = {
   status: string;
   notes: string | null;
   duration_minutes: number | null;
-  customers: { name: string | null; app_number: string | null } | null;
+  customers: { name: string | null; whatsapp_number: string | null } | null;
 };
 
 const STATUS_CONFIG = {
@@ -81,11 +81,11 @@ export default function AppuntamentiPage() {
 
     const { data: customers } = await supabase
       .from("customers")
-      .select("id, name, app_number")
+      .select("id, name, whatsapp_number")
       .eq("tenant_id", link.tenant_id);
 
-    const custMap: Record<string, { name: string | null; app_number: string | null }> = {};
-    (customers || []).forEach((c: any) => { custMap[c.id] = { name: c.name, app_number: c.app_number }; });
+    const custMap: Record<string, { name: string | null; whatsapp_number: string | null }> = {};
+    (customers || []).forEach((c: any) => { custMap[c.id] = { name: c.name, whatsapp_number: c.whatsapp_number }; });
 
     setAppointments(
       rawAppointments.map((a: any) => ({
@@ -264,7 +264,7 @@ export default function AppuntamentiPage() {
                   <AnimatePresence>
                     {groupedByTime[time].map((appointment) => {
                       const config = STATUS_CONFIG[appointment.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.pending;
-                      const customerPhone = appointment.customers?.app_number?.replace(/\D/g, "") || "";
+                      const customerPhone = appointment.customers?.whatsapp_number?.replace(/\D/g, "") || "";
 
                       return (
                         <motion.div
@@ -411,17 +411,17 @@ function ManualAppointmentModal({ tenantId, onClose, onSaved, selectedDate }: { 
           .from("customers")
           .select("id")
           .eq("tenant_id", tenantId)
-          .eq("app_number", form.customerPhone)
+          .eq("whatsapp_number", form.customerPhone)
           .maybeSingle();
         if (existing) {
           customerId = existing.id;
           await supabase.from("customers").update({ name: form.customerName }).eq("id", customerId);
         } else {
-          const { data: created } = await supabase.from("customers").insert({ tenant_id: tenantId, name: form.customerName, app_number: form.customerPhone }).select("id").single();
+          const { data: created } = await supabase.from("customers").insert({ tenant_id: tenantId, name: form.customerName, whatsapp_number: form.customerPhone }).select("id").single();
           customerId = created?.id || null;
         }
       } else {
-        const { data: created } = await supabase.from("customers").insert({ tenant_id: tenantId, name: form.customerName, app_number: "" }).select("id").single();
+        const { data: created } = await supabase.from("customers").insert({ tenant_id: tenantId, name: form.customerName, whatsapp_number: "" }).select("id").single();
         customerId = created?.id || null;
       }
 

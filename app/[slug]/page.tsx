@@ -154,7 +154,7 @@ export default async function TenantPage({ params }: Props) {
           tenantPhone={tenant.phone}
           tenantDescription={tenant.description}
           openingHours={tenant.opening_hours}
-          appNumber={tenant.app_number || ""}
+          whatsappNumber={tenant.whatsapp_number || ""}
           services={services || []}
           brandColor={tenant.brand_color || "#25D366"}
           logoUrl={tenant.logo_url}
@@ -182,7 +182,7 @@ export default async function TenantPage({ params }: Props) {
         tenantAddress={tenant.address}
         tenantPhone={tenant.phone}
         tenantDescription={tenant.description}
-        appNumber={tenant.app_number || ""}
+        whatsappNumber={tenant.whatsapp_number || ""}
         services={services || []}
         openingHours={tenant.opening_hours}
         brandColor={tenant.brand_color || "#8B5CF6"}

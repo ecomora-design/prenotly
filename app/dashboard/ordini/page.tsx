@@ -27,7 +27,7 @@ type Order = {
   notes: string | null;
   created_at: string;
   customer_id: string | null;
-  customers: { name: string | null; app_number: string | null } | null;
+  customers: { name: string | null; whatsapp_number: string | null } | null;
 };
 
 type SlotData = {
@@ -91,12 +91,12 @@ export default function OrdiniPage() {
 
     const { data: customersData } = await supabase
       .from("customers")
-      .select("id, name, app_number")
+      .select("id, name, whatsapp_number")
       .eq("tenant_id", link.tenant_id);
 
-    const customersMap: Record<string, { name: string; app_number: string | null }> = {};
+    const customersMap: Record<string, { name: string; whatsapp_number: string | null }> = {};
     (customersData || []).forEach(c => {
-      if (c.id) customersMap[c.id] = { name: c.name || "Cliente", app_number: c.app_number || null };
+      if (c.id) customersMap[c.id] = { name: c.name || "Cliente", whatsapp_number: c.whatsapp_number || null };
     });
 
     const enhancedOrders = rawOrders.map(o => {
@@ -386,7 +386,7 @@ export default function OrdiniPage() {
                   <AnimatePresence>
                     {filtered.map((order) => {
                       const cfg = ORDER_STATUS[order.status as keyof typeof ORDER_STATUS] || ORDER_STATUS.pending;
-                      const customerPhone = order.customers?.app_number?.replace(/\D/g, "") || "";
+                      const customerPhone = order.customers?.whatsapp_number?.replace(/\D/g, "") || "";
                       const scheduledTime = order.scheduled_for ? order.scheduled_for.substring(11, 16) : null;
 
                       return (

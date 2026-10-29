@@ -8,7 +8,7 @@ import { Loader2, MessageCircle, Search, Users } from "lucide-react";
 type Customer = {
   id: string;
   name: string | null;
-  app_number: string;
+  whatsapp_number: string;
   email: string | null;
   created_at: string;
 };
@@ -51,7 +51,7 @@ export default function ClientiPage() {
     const q = search.toLowerCase();
     return (
       (c.name || "").toLowerCase().includes(q) ||
-      c.app_number.includes(q)
+      c.whatsapp_number.includes(q)
     );
   });
 
@@ -98,7 +98,7 @@ export default function ClientiPage() {
       ) : (
         <div className="space-y-2">
           {filtered.map((c) => {
-            const phone = c.app_number.replace(/\D/g, "");
+            const phone = c.whatsapp_number.replace(/\D/g, "");
             return (
               <div key={c.id} className="bg-white rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -109,7 +109,7 @@ export default function ClientiPage() {
                     <p className="font-semibold text-night text-sm truncate">
                       {c.name || "Cliente anonimo"}
                     </p>
-                    <p className="text-xs text-gray-500">{c.app_number}</p>
+                    <p className="text-xs text-gray-500">{c.whatsapp_number}</p>
                   </div>
                 </div>
                 <a
