@@ -6,6 +6,7 @@ import CookieBanner from "@/components/CookieBanner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
+  metadataBase: new URL("https://www.prenotly-italia.it"),
   title: "Prenotly — Prenotazioni e ordini su App",
   description:
     "Il software italiano per ristoranti, servizi e professionisti. Prenotazioni e ordini direttamente su App.",
