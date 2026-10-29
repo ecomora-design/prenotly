@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import {
-  Loader2, ArrowLeft, ExternalLink, Eye, MessageCircle, Users, LogIn,
+  Loader2, ArrowLeft, ExternalLink, Eye, ListChecks, MessageCircle, Users, LogIn,
   ShoppingBag, Calendar, Phone, MapPin, Trash2, CheckCircle2, 
   Clock, XCircle, AlertCircle, Zap, Copy, Check, CreditCard, Crown,
   TrendingUp, Activity, ArrowUpRight, BarChart3
@@ -195,6 +195,9 @@ export default function ClienteDetailPage() {
           <button onClick={handleCopy} className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
             {copied ? <Check size={16} className="text-[#25D366]" /> : <Copy size={16} />} {copied ? "Copiato" : "Copia Link"}
           </button>
+          <Link href={`/admin/clienti/${slug}/servizi`} className="bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-400 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
+            <ListChecks size={16} /> Gestisci servizi
+          </Link>
           <button onClick={handlePreview} className="bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 disabled:opacity-50">
             <Eye size={16} />
             "Anteprima cliente"
