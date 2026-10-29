@@ -797,6 +797,7 @@ export default function OrdiniPage() {
 
       {showManualModal && (
         <ManualOrderModal
+          isOpen={showManualModal}
           onClose={() => setShowManualModal(false)}
           tenantId={tenantIdForNotif}
           onSaved={() => loadOrders(false)}
