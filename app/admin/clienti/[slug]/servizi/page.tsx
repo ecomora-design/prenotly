@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import UploadImage from "@/components/UploadImage";
 import {
   Loader2, ArrowLeft, Plus, Pencil, Trash2, X, Check,
   ShoppingBag, AlertCircle, Save, Clock, Euro, Image as ImageIcon
@@ -284,12 +285,16 @@ export default function ServiziAdminPage() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">URL Immagine</label>
-                  <div className="relative">
-                    <ImageIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-                    <input type="url" value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })}
-                      className="w-full bg-[#111] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm focus:border-[#25D366] outline-none transition" placeholder="https://..." />
-                  </div>
+                  <UploadImage
+                    tenantId={tenant.id}
+                    bucket="tenant-assets"
+                    folder="services"
+                    currentUrl={form.image_url || null}
+                    onUpload={(url) => setForm({ ...form, image_url: url })}
+                    label="Immagine servizio"
+                    hint="JPG, PNG, HEIC · Max 20MB · Consigliata quadrata"
+                    aspect="square"
+                  />
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 pt-2">
