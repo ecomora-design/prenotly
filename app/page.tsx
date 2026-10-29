@@ -10,6 +10,24 @@ import AppButton from "@/components/AppButton";
 export default function Home() {
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Prenotly",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "description": "Software per prenotazioni online e gestione appuntamenti per ristoranti, beauty e professionisti.",
+            "offers": {
+              "@type": "Offer",
+              "price": "29.99",
+              "priceCurrency": "EUR"
+            }
+          })
+        }}
+      />
       <Navbar />
       <Hero />
       <ThreeSoftware />
