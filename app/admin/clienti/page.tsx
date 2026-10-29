@@ -25,6 +25,9 @@ type Tenant = {
   created_at: string;
   logo_url: string | null;
   brand_color: string | null;
+  category: string | null;
+  plan_type: string | null;
+  _counts?: { orders: number; bookings: number; customers: number };
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: any }> = {
@@ -41,20 +44,49 @@ export default function AdminClientiPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("tutti");
+  const [categoryFilter, setCategoryFilter] = useState("tutte");
 
-  async function load() {
+  async function load(showSkeleton = false) {
+    if (showSkeleton) setLoading(true);
     const { data } = await supabase
       .from("tenants")
       .select("*")
       .order("created_at", { ascending: false });
-    setTenants(data || []);
+    
+    // Carica i conteggi in parallelo per ogni tenant
+    const enriched = await Promise.all((data || []).map(async (t) => {
+      const [orders, bookings, customers] = await Promise.all([
+        supabase.from("orders").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
+        supabase.from("bookings").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
+        supabase.from("customers").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
+      ]);
+      return {
+        ...t,
+        _counts: {
+          orders: orders.count || 0,
+          bookings: bookings.count || 0,
+          customers: customers.count || 0,
+        },
+      };
+    }));
+    
+    setTenants(enriched);
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(true); }, []);
+
+  // Auto-refresh ogni 30 secondi (senza skeleton)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      load(false);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filtered = tenants.filter((t) => {
     if (filter !== "tutti" && t.subscription_status !== filter) return false;
+    if (categoryFilter !== "tutte" && (t.category || "nessuna") !== categoryFilter) return false;
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     return (
@@ -79,7 +111,7 @@ export default function AdminClientiPage() {
         breadcrumb={[{ label: "Admin" }, { label: "Clienti" }]}
         actions={
           <button
-            onClick={load}
+            onClick={() => load(false)}
             className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] text-white/70 px-3 py-2 rounded-full text-xs font-semibold transition"
           >
             <RefreshCw size={13} />
@@ -101,6 +133,20 @@ export default function AdminClientiPage() {
               className="w-full bg-black/20 border border-white/[0.06] rounded-full pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:border-white/[0.15] placeholder-white/30"
             />
           </div>
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="bg-black/20 border border-white/[0.06] rounded-full px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-white/[0.15] text-white/80"
+          >
+            <option value="tutte">Tutte le categorie</option>
+            <option value="ristoranti">Ristoranti</option>
+            <option value="pizzerie">Pizzerie</option>
+            <option value="servizi">Servizi</option>
+            <option value="dentisti">Dentisti</option>
+            <option value="parrucchieri">Parrucchieri</option>
+            <option value="nessuna">Non assegnate</option>
+          </select>
 
           <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1">
             {(["tutti", "trial", "active", "expired"] as const).map((f) => (
@@ -134,10 +180,11 @@ export default function AdminClientiPage() {
       ) : (
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
           {/* Header desktop */}
-          <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_40px] gap-4 px-5 py-3 border-b border-white/[0.06] text-[10px] font-mono text-white/30 uppercase tracking-widest">
+          <div className="hidden md:grid grid-cols-[2fr_0.8fr_1.2fr_0.8fr_1fr_40px] gap-4 px-5 py-3 border-b border-white/[0.06] text-[10px] font-mono text-white/30 uppercase tracking-widest">
             <div>Attività</div>
             <div>Stato</div>
-            <div>Scadenza</div>
+            <div>Piano / Categoria</div>
+            <div className="text-center">Attività</div>
             <div>Iscritto</div>
             <div></div>
           </div>
@@ -161,7 +208,7 @@ export default function AdminClientiPage() {
                 >
                   <div
                     onClick={() => router.push(`/admin/clienti/${t.slug}`)}
-                    className="grid grid-cols-[2fr_auto] md:grid-cols-[2fr_1fr_1fr_1fr_40px] gap-4 items-center px-5 py-4 hover:bg-white/[0.03] transition group cursor-pointer"
+                    className="grid grid-cols-[2fr_auto] md:grid-cols-[2fr_0.8fr_1.2fr_0.8fr_1fr_40px] gap-4 items-center px-5 py-4 hover:bg-white/[0.03] transition group cursor-pointer"
                   >
                     {/* Attività */}
                     <div className="flex items-center gap-3 min-w-0">
@@ -197,21 +244,27 @@ export default function AdminClientiPage() {
                       </span>
                     </div>
 
-                    {/* Scadenza */}
-                    <div className="hidden md:block text-xs text-white/60">
-                      {t.subscription_status === "trial" && trialHoursLeft > 0 && (
-                        <span className="text-yellow-400 font-semibold">
-                          {trialHoursLeft}h demo
-                        </span>
-                      )}
-                      {t.subscription_status === "active" && t.subscription_ends_at && (
-                        <span>
-                          {new Date(t.subscription_ends_at).toLocaleDateString("it-IT", {
-                            day: "2-digit",
-                            month: "short",
-                          })}
-                        </span>
-                      )}
+                    {/* Piano / Categoria */}
+                    <div className="hidden md:block text-xs">
+                      <p className="text-white/80 font-semibold capitalize">
+                        {t.plan_type || "—"}
+                      </p>
+                      <p className="text-white/40 capitalize text-[10px]">
+                        {t.category || "nessuna categoria"}
+                      </p>
+                    </div>
+
+                    {/* Attività (contatori) */}
+                    <div className="hidden md:flex items-center justify-center gap-2 text-[10px] font-mono">
+                      <span title="Ordini" className="bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded">
+                        {t._counts?.orders ?? 0}
+                      </span>
+                      <span title="Prenotazioni" className="bg-purple-500/10 text-purple-400 px-1.5 py-0.5 rounded">
+                        {t._counts?.bookings ?? 0}
+                      </span>
+                      <span title="Clienti" className="bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded">
+                        {t._counts?.customers ?? 0}
+                      </span>
                     </div>
 
                     {/* Iscritto */}
