@@ -779,7 +779,7 @@ export default function ImpostazioniPage() {
           </div>
         </Section>
 
-        {/* SEZIONE: GOOGLE CALENDAR (solo beauty) */}
+        {/* SEZIONE: GOOGLE CALENDAR (solo servizi) */}
         {!(
           tenant.product_type === "food" ||
           tenant.business_type === "restaurant"

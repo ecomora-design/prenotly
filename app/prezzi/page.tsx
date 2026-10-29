@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Prezzi — Prenotly Menu, Food, Premium, Beauty e Service",
+  title: "Prezzi — Prenotly Menu, Food, Premium, Servizi e Service",
   description:
-    "Prenotly Menu da €9,99/mese, Food da €29,99/mese, Premium Pro da €99,99/mese. Beauty €29,99/mese. Service su preventivo. Demo gratuita 48 ore.",
+    "Prenotly Menu da €9,99/mese, Food da €29,99/mese, Premium Pro da €99,99/mese. Servizi €29,99/mese. Service su preventivo. Demo gratuita 48 ore.",
 };
 
 export default function PrezziPage() {
@@ -84,9 +84,9 @@ export default function PrezziPage() {
 
   const otherPlans = [
     {
-      id: "beauty",
+      id: "servizi",
       icon: Scissors,
-      name: "Prenotly Beauty",
+      name: "Prenotly Servizi",
       subtitle: "Agenda intelligente",
       description: "Per parrucchieri, estetiste, studi e professionisti su appuntamento.",
       price: "29,99",
@@ -98,8 +98,8 @@ export default function PrezziPage() {
         "Promemoria anti no-show",
         "Multi-operatore",
       ],
-      cta: "Attiva Beauty",
-      link: "/signup?plan=beauty",
+      cta: "Attiva Servizi",
+      link: "/signup?plan=servizi",
     },
     {
       id: "service",
@@ -259,7 +259,7 @@ export default function PrezziPage() {
           <div className="text-center max-w-2xl mx-auto mb-12">
             <p className="text-[10px] font-black text-[#8B5CF6] uppercase tracking-[0.3em] mb-3">Per altri settori</p>
             <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight">
-              Beauty e <span className="text-[#3B82F6]">Service</span>.
+              Servizi e <span className="text-[#3B82F6]">Service</span>.
             </h2>
           </div>
 

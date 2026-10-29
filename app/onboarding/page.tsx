@@ -96,7 +96,7 @@ const appValid = useMemo(() => {
         description: description || null,
         app_number: app.replace(/\s/g, ""),
         is_active: true,
-        plan_type: businessType === "restaurant" ? "food_menu" : "beauty",
+        plan_type: businessType === "restaurant" ? "food_menu" : "servizi",
       })
       .select()
       .single();

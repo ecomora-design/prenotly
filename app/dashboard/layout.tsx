@@ -240,7 +240,7 @@ export default function DashboardLayout({
       food_standard: { label: "FOOD", color: "#25D366" },
       
       food_premium: { label: "PREMIUM", color: "#8B5CF6" },
-      beauty: { label: "PRO", color: "#8B5CF6" },
+      servizi: { label: "PRO", color: "#8B5CF6" },
     };
     return plans[tenant.plan_type || ""] || null;
   })();

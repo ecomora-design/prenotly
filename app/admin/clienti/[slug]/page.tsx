@@ -272,7 +272,7 @@ export default function ClienteDetailPage() {
                   <option value="food_menu">Menu Digitale (9,99€/m)</option>
                   <option value="food_standard">Food + Ordini (29,99€/m)</option>
                   <option value="food_premium">Premium Pro (99,99€/m)</option>
-                  <option value="beauty">Pro / Beauty (29,99€/m)</option>
+                  <option value="servizi">Pro / Servizi (29,99€/m)</option>
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-2">

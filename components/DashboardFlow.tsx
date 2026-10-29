@@ -5,7 +5,7 @@ export default function DashboardFlow() {
     {
       icon: UserPlus,
       title: "Registrati in 30 secondi",
-      text: "Crei il tuo account, scegli il software (Food, Beauty o Service) e accedi subito alla tua area riservata.",
+      text: "Crei il tuo account, scegli il software (Food, Servizi o Service) e accedi subito alla tua area riservata.",
     },
     {
       icon: LayoutDashboard,

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Prenotly Pro — Prenotazioni per beauty, studi e professionisti",
+  title: "Prenotly Pro — Prenotazioni per servizi, studi e professionisti",
   description:
     "Agenda intelligente con prenotazioni automatiche. Sincronizzata con Google Calendar. Da 29,99 €/mese.",
 };
@@ -29,7 +29,7 @@ export default function ProPage() {
     "Consulenti e avvocati",
     "Psicologi e terapeuti",
     "Fisioterapisti e osteopati",
-    "Beauty e parrucchieri",
+    "Servizi e parrucchieri",
     "Nutrizionisti e coach",
     "Personal trainer",
     "Palestre e wellness",
@@ -65,7 +65,7 @@ export default function ProPage() {
               </h1>
 
               <p className="text-base md:text-lg text-[#425466] leading-relaxed mb-8">
-                Per qualsiasi attività che lavora su appuntamento: studi, professionisti, beauty, palestre, consulenti. I clienti prenotano online, tu ricevi tutto in agenda.
+                Per qualsiasi attività che lavora su appuntamento: studi, professionisti, servizi, palestre, consulenti. I clienti prenotano online, tu ricevi tutto in agenda.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -195,7 +195,7 @@ export default function ProPage() {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-[#0A2540]">Prenotly Pro</h2>
-                <p className="text-xs text-[#425466]/60">Beauty, studi, professionisti</p>
+                <p className="text-xs text-[#425466]/60">Servizi, studi, professionisti</p>
               </div>
             </div>
 

@@ -11,7 +11,7 @@ const PLAN_NAMES: Record<string, string> = {
   food_standard: "Food + Ordini",
   
   food_premium: "Premium Pro",
-  beauty: "Prenotly Pro",
+  servizi: "Prenotly Pro",
 };
 
 const PLAN_FEATURES: Record<string, string[]> = {
@@ -38,7 +38,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "Database e report su misura",
     "Sicurezza avanzata",
   ],
-  beauty: [
+  servizi: [
     "Agenda intelligente",
     "Prenotazioni con slot in tempo reale",
     "Sync Google Calendar",

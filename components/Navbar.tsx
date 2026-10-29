@@ -44,7 +44,7 @@ export default function Navbar() {
     { href: "/#software", label: "Software" },
     { href: "/prezzi", label: "Prezzi" },
     { href: "/ristoranti", label: "Food" },
-    { href: "/pro", label: "Beauty" },
+    { href: "/pro", label: "Servizi" },
     { href: "/#faq", label: "FAQ" },
   ];
 

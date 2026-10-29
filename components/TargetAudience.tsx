@@ -11,7 +11,7 @@ export default function TargetAudience() {
     { icon: Sparkles, title: "Consulenti & Avvocati", text: "Prenotazioni in tempo reale, meno no-show." },
     { icon: Stethoscope, title: "Studi medici", text: "Appuntamenti gestiti in automatico, senza segretaria." },
     { icon: Dumbbell, title: "Palestre & Coach", text: "Lezioni, sessioni e prove gratuite prenotabili." },
-    { icon: UserRound, title: "Beauty & Parrucchieri", text: "Prenotazioni in tempo reale, meno no-show." },
+    { icon: UserRound, title: "Servizi & Parrucchieri", text: "Prenotazioni in tempo reale, meno no-show." },
   ];
 
   return (
@@ -41,7 +41,7 @@ export default function TargetAudience() {
 
         <div>
           <h3 className="text-xl font-bold text-night mb-6 flex items-center gap-3">
-            <span className="text-2xl">💇</span> Servizi & Beauty
+            <span className="text-2xl">💇</span> Servizi & Servizi
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((s) => (
