@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import {
-  Loader2, ArrowLeft, ExternalLink, MessageCircle, Users,
+  Loader2, ArrowLeft, ExternalLink, MessageCircle, Users, LogIn,
   ShoppingBag, Calendar, Phone, MapPin, Trash2, CheckCircle2, 
   Clock, XCircle, AlertCircle, Zap, Copy, Check, CreditCard, Crown,
   TrendingUp, Activity, ArrowUpRight, BarChart3
@@ -28,6 +28,7 @@ export default function ClienteDetailPage() {
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [savingSub, setSavingSub] = useState(false);
+  const [impersonating, setImpersonating] = useState(false);
   const [subForm, setSubForm] = useState({
     subscription_status: "trial",
     plan_type: "food_menu",
@@ -95,6 +96,25 @@ export default function ClienteDetailPage() {
     await navigator.clipboard.writeText(`https://prenotly-italia.it/${slug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleImpersonate = async () => {
+    if (!confirm("Vuoi accedere come questo cliente in una nuova tab?")) return;
+    setImpersonating(true);
+    try {
+      const res = await fetch("/api/admin/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId: tenant.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert("Errore: " + (data.error || "Sconosciuto")); return; }
+      window.open(data.url, "_blank");
+    } catch (err) {
+      alert("Errore: " + (err instanceof Error ? err.message : "Sconosciuto"));
+    } finally {
+      setImpersonating(false);
+    }
   };
 
   const handleSaveSubscription = async () => {
@@ -190,6 +210,10 @@ export default function ClienteDetailPage() {
         <div className="flex gap-2">
           <button onClick={handleCopy} className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
             {copied ? <Check size={16} className="text-[#25D366]" /> : <Copy size={16} />} {copied ? "Copiato" : "Copia Link"}
+          </button>
+          <button onClick={handleImpersonate} disabled={impersonating} className="bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 disabled:opacity-50">
+            {impersonating ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
+            {impersonating ? "Apertura..." : "Accedi come cliente"}
           </button>
           <a href={`/${tenant.slug}`} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] hover:bg-[#20ba5a] text-black px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-[0_0_15px_rgba(37,211,102,0.3)]">
             <ExternalLink size={16} /> Apri Sito
