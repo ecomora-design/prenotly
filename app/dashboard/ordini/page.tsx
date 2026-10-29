@@ -124,28 +124,68 @@ export default function OrdiniPage() {
       const safeDefaultCapacity = data?.defaultCapacity || 5;
 
       const today = new Date(selectedDate + "T12:00:00");
-      const [start, end] = ["12:00", "23:00"];
-      const [sh, sm] = start.split(":").map(Number);
-      const [eh, em] = end.split(":").map(Number);
+
+      // Determina il giorno della settimana
+      const dayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+      const dayOfWeek = dayKeys[today.getDay()];
+
+      // Estrai le fasce orarie per il giorno selezionato
+      const openingHours = data?.openingHours || null;
+      let dayRanges: string[] = [];
+      
+      if (openingHours && typeof openingHours === "object") {
+        const raw = openingHours[dayOfWeek];
+        if (raw && raw !== "chiuso") {
+          if (Array.isArray(raw)) {
+            dayRanges = raw;
+          } else if (typeof raw === "string") {
+            dayRanges = raw.split(",").map((s: string) => s.trim()).filter(Boolean);
+          }
+        }
+      }
+      
+      // Fallback: se non ci sono orari configurati, usa il default 12:00-23:00
+      if (dayRanges.length === 0 && !openingHours) {
+        dayRanges = ["12:00-23:00"];
+      }
 
       const generated: SlotData[] = [];
-      let cur = new Date(today); cur.setHours(sh, sm, 0, 0);
-      const endDate = new Date(today); endDate.setHours(eh, em, 0, 0);
-
-      while (cur < endDate) {
-        const slotStr = cur.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-        const override = safeOverrides.find((o: any) => o.slot === slotStr);
-        const webCount = safeWebCounts[slotStr] || 0;
-        const manualCount = override?.manual_orders_count || 0;
-        const capacity = override?.capacity_override || safeDefaultCapacity;
-        const total = webCount + manualCount;
-        generated.push({
-          slot: slotStr, web_count: webCount, manual_count: manualCount,
-          total, capacity, is_blocked: override?.is_blocked || false,
-          available: !override?.is_blocked && total < capacity,
-        });
-        cur = new Date(cur.getTime() + 30 * 60000);
+      
+      // Genera gli slot per ciascuna fascia oraria
+      for (const range of dayRanges) {
+        const parts = range.split("-").map((s: string) => s.trim());
+        if (parts.length !== 2) continue;
+        
+        const [start, end] = parts;
+        const [sh, sm] = start.split(":").map(Number);
+        const [eh, em] = end.split(":").map(Number);
+        if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) continue;
+        
+        let cur = new Date(today); cur.setHours(sh, sm, 0, 0);
+        const endDate = new Date(today); endDate.setHours(eh, em, 0, 0);
+        
+        while (cur < endDate) {
+          const slotStr = cur.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+          const override = safeOverrides.find((o: any) => o.slot === slotStr);
+          const webCount = safeWebCounts[slotStr] || 0;
+          const manualCount = override?.manual_orders_count || 0;
+          const capacity = override?.capacity_override || safeDefaultCapacity;
+          const total = webCount + manualCount;
+          
+          // Evita duplicati (se due fasce si sovrappongono)
+          if (!generated.find(g => g.slot === slotStr)) {
+            generated.push({
+              slot: slotStr, web_count: webCount, manual_count: manualCount,
+              total, capacity, is_blocked: override?.is_blocked || false,
+              available: !override?.is_blocked && total < capacity,
+            });
+          }
+          cur = new Date(cur.getTime() + 30 * 60000);
+        }
       }
+      
+      // Ordina per orario
+      generated.sort((a, b) => a.slot.localeCompare(b.slot));
       setSlots(generated);
     } catch (err) { console.error(err); }
     finally { setLoadingSlots(false); }
