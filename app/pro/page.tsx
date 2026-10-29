@@ -25,14 +25,14 @@ export default function ProPage() {
   ];
 
   const whoItsFor = [
-    "Studi medici e dentistici",
-    "Consulenti e avvocati",
-    "Psicologi e terapeuti",
-    "Fisioterapisti e osteopati",
-    "Servizi e parrucchieri",
-    "Nutrizionisti e coach",
-    "Personal trainer",
-    "Palestre e wellness",
+    "Consulenti e Avvocati",
+    "Dottori e Studi Medici",
+    "Centri Benessere e Spa",
+    "Psicologi e Terapeuti",
+    "Fisioterapisti",
+    "Parrucchieri ed Estetisti",
+    "Nutrizionisti e Coach",
+    "Palestre e Personal Trainer",
   ];
 
   return (
@@ -65,7 +65,7 @@ export default function ProPage() {
               </h1>
 
               <p className="text-base md:text-lg text-[#425466] leading-relaxed mb-8">
-                Per qualsiasi attività che lavora su appuntamento: studi, professionisti, servizi, palestre, consulenti. I clienti prenotano online, tu ricevi tutto in agenda.
+                Per consulenti, centri benessere, dottori, avvocati e tutti i professionisti che lavorano su appuntamento. I clienti prenotano online, tu ricevi tutto in agenda.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
