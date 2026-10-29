@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import AppButton from "@/components/AppButton";
 import ServiceForm from "./ServiceForm";
 import {
   ArrowLeft, ArrowRight, Code2, Layers, Zap, Brain,
@@ -19,7 +19,7 @@ export default function ServicePage() {
     { icon: Brain, title: "Analisi esigenze", text: "Ascoltiamo come lavori oggi e cosa ti serve davvero. Niente soluzioni preconfezionate." },
     { icon: Layers, title: "Progettazione UX/UI", text: "Disegniamo l'interfaccia su misura per te e per i tuoi clienti." },
     { icon: Code2, title: "Sviluppo custom", text: "Costruiamo solo le funzionalità che ti servono, senza fronzoli." },
-    { icon: Zap, title: "Integrazione WhatsApp", text: "Il tuo software parla con i clienti via WhatsApp automaticamente." },
+    { icon: Zap, title: "Integrazione App", text: "Il tuo software parla con i clienti via App automaticamente." },
     { icon: Globe, title: "Integrazione gestionale", text: "Colleghiamo il tuo software ai sistemi che già usi (CRM, magazzino, contabilità)." },
     { icon: Shield, title: "Supporto dedicato", text: "Un referente unico per te. Niente call center, niente ticket." },
   ];
@@ -215,7 +215,7 @@ export default function ServicePage() {
                 <span className="text-[#25D366]">parlarne prima?</span>
               </h2>
               <p className="text-white/70 text-base md:text-lg mb-8 max-w-lg mx-auto">
-                Scrivici su WhatsApp. Ti rispondiamo in giornata.
+                Scrivici su App. Ti rispondiamo in giornata.
               </p>
               <a
                 href="https://wa.me/message/LLEKTVFCRCPVB1"
@@ -232,7 +232,7 @@ export default function ServicePage() {
       </section>
 
       <Footer />
-      <WhatsAppButton />
+      <AppButton />
     </main>
   );
 }

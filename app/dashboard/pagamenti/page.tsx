@@ -102,7 +102,7 @@ export default function PagamentiPage() {
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-start gap-3">
           <Info className="text-blue-600 shrink-0 mt-0.5" size={18} />
           <p className="text-xs text-gray-600">
-            Vuoi attivare subito i pagamenti con carta? Scrivici su WhatsApp e ti
+            Vuoi attivare subito i pagamenti con carta? Scrivici su App e ti
             aiutiamo a configurarli in 5 minuti.
           </p>
         </div>
@@ -122,7 +122,7 @@ export default function PagamentiPage() {
           className="inline-flex items-center gap-2 bg-white text-waDark px-7 py-4 rounded-full font-bold transition active:scale-95"
         >
           <MessageCircle size={18} />
-          Scrivici su WhatsApp
+          Scrivici su App
           <ArrowRight size={16} />
         </a>
       </div>

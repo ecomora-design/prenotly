@@ -27,7 +27,7 @@ type Order = {
   notes: string | null;
   created_at: string;
   customer_id: string | null;
-  customers: { name: string | null; whatsapp_number: string | null } | null;
+  customers: { name: string | null; app_number: string | null } | null;
 };
 
 type SlotData = {
@@ -91,12 +91,12 @@ export default function OrdiniPage() {
 
     const { data: customersData } = await supabase
       .from("customers")
-      .select("id, name, whatsapp_number")
+      .select("id, name, app_number")
       .eq("tenant_id", link.tenant_id);
 
-    const customersMap: Record<string, { name: string; whatsapp_number: string | null }> = {};
+    const customersMap: Record<string, { name: string; app_number: string | null }> = {};
     (customersData || []).forEach(c => {
-      if (c.id) customersMap[c.id] = { name: c.name || "Cliente", whatsapp_number: c.whatsapp_number || null };
+      if (c.id) customersMap[c.id] = { name: c.name || "Cliente", app_number: c.app_number || null };
     });
 
     const enhancedOrders = rawOrders.map(o => {
@@ -190,7 +190,7 @@ export default function OrdiniPage() {
 
   const filtered = orders.filter(o => o.status === activeStatus);
 
-  const getWhatsAppMessage = (order: Order) => {
+  const getAppMessage = (order: Order) => {
     const name = order.customers?.name?.split(' ')[0] || 'cliente';
     if (order.status === 'preparing') return `Ciao ${name}, il tuo ordine ${order.order_code} è in preparazione! 🍕`;
     if (order.status === 'ready') return `Ciao ${name}, il tuo ordine ${order.order_code} è pronto! 🛍️`;
@@ -386,7 +386,7 @@ export default function OrdiniPage() {
                   <AnimatePresence>
                     {filtered.map((order) => {
                       const cfg = ORDER_STATUS[order.status as keyof typeof ORDER_STATUS] || ORDER_STATUS.pending;
-                      const customerPhone = order.customers?.whatsapp_number?.replace(/\D/g, "") || "";
+                      const customerPhone = order.customers?.app_number?.replace(/\D/g, "") || "";
                       const scheduledTime = order.scheduled_for ? order.scheduled_for.substring(11, 16) : null;
 
                       return (
@@ -480,10 +480,10 @@ export default function OrdiniPage() {
                               )}
                               {customerPhone && (
                                 <a
-                                  href={`https://wa.me/${customerPhone}?text=${encodeURIComponent(getWhatsAppMessage(order))}`}
+                                  href={`https://wa.me/${customerPhone}?text=${encodeURIComponent(getAppMessage(order))}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  title="Avvisa su WhatsApp"
+                                  title="Avvisa su App"
                                   className="text-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-xs font-bold px-3 py-2 rounded-lg transition inline-flex items-center gap-1.5"
                                 >
                                   <MessageCircle size={14} />

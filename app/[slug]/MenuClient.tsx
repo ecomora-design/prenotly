@@ -46,7 +46,7 @@ type Props = {
   tenantPhone: string | null;
   tenantDescription: string | null;
   openingHours: Record<string, string> | null;
-  whatsappNumber: string;
+  appNumber: string;
   services: Service[];
   brandColor?: string;
   logoUrl?: string | null;
@@ -68,8 +68,8 @@ const DAY_LABELS = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì",
 const DAY_SHORT = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
 const MONTHS = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
 
-// Validazione numero WhatsApp
-function isValidWhatsApp(phone: string | null | undefined): boolean {
+// Validazione numero App
+function isValidApp(phone: string | null | undefined): boolean {
   if (!phone) return false;
   const clean = phone.replace(/\D/g, "");
   return clean.length >= 10;
@@ -83,7 +83,7 @@ export default function MenuClient({
   tenantPhone,
   tenantDescription,
   openingHours,
-  whatsappNumber,
+  appNumber,
   services,
   brandColor = "#25D366",
   logoUrl,
@@ -410,7 +410,7 @@ export default function MenuClient({
     }
   };
 
-  const buildOrderWhatsAppUrl = () => {
+  const buildOrderAppUrl = () => {
     if (!lastOrderSnapshot) return "#";
     const lines: string[] = [];
     lines.push(`🍕 *Nuovo ordine - ${tenantName}*`);
@@ -437,8 +437,8 @@ export default function MenuClient({
     lines.push(`👤 ${lastOrderSnapshot.customerName}`);
     if (lastOrderSnapshot.notes) lines.push(`📝 Note: ${lastOrderSnapshot.notes}`);
 
-    if (!isValidWhatsApp(whatsappNumber)) return "#";
-    const phone = whatsappNumber.replace(/\s|\+|-/g, "");
+    if (!isValidApp(appNumber)) return "#";
+    const phone = appNumber.replace(/\s|\+|-/g, "");
     return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
   };
 
@@ -493,12 +493,12 @@ export default function MenuClient({
       lines.push(`📞 ${tableCustomerPhone}`);
       if (tableNotes) lines.push(`📝 Note: ${tableNotes}`);
 
-      if (!isValidWhatsApp(whatsappNumber)) {
-        setSubmitError("Il ristorante non ha ancora configurato WhatsApp. Riprova più tardi.");
+      if (!isValidApp(appNumber)) {
+        setSubmitError("Il ristorante non ha ancora configurato App. Riprova più tardi.");
         setSubmitting(false);
         return;
       }
-      const phone = whatsappNumber.replace(/\s|\+|-/g, "");
+      const phone = appNumber.replace(/\s|\+|-/g, "");
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
 
       setTableSuccess({ code, waUrl });
@@ -789,13 +789,13 @@ export default function MenuClient({
               </a>
             )}
             <a
-              href={`https://wa.me/${whatsappNumber.replace(/\s|\+|-/g, "")}?text=Ciao!%20Vorrei%20informazioni`}
+              href={`https://wa.me/${appNumber.replace(/\s|\+|-/g, "")}?text=Ciao!%20Vorrei%20informazioni`}
               target="_blank"
               rel="noopener noreferrer"
               className={`py-3.5 flex items-center justify-center gap-2 text-xs font-bold text-night active:bg-soft transition ${!tenantPhone ? "col-span-2" : ""}`}
             >
               <MessageCircle size={14} style={{ color: brandColor }} />
-              WhatsApp
+              App
             </a>
           </div>
         </motion.div>
@@ -1207,10 +1207,10 @@ export default function MenuClient({
 
               <div className="rounded-2xl p-4 mb-6 text-sm" style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}>
                 <p className="text-night font-semibold mb-1">📲 Ultimo passaggio</p>
-                <p className="text-gray-600 text-xs">Clicca il pulsante per inviare l&apos;ordine al ristorante su WhatsApp.</p>
+                <p className="text-gray-600 text-xs">Clicca il pulsante per inviare l&apos;ordine al ristorante su App.</p>
               </div>
 
-              <a href={buildOrderWhatsAppUrl()} target="_blank" rel="noopener noreferrer" className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3" style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}>
+              <a href={buildOrderAppUrl()} target="_blank" rel="noopener noreferrer" className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3" style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}>
                 <MessageCircle size={20} />
                 {t.sendWhatsapp}
               </a>
@@ -1529,12 +1529,12 @@ export default function MenuClient({
 
               <div className="rounded-2xl p-4 mb-6 text-sm" style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}>
                 <p className="text-night font-semibold mb-1">📲 Ultimo passaggio</p>
-                <p className="text-gray-600 text-xs">Clicca il pulsante per inviare la prenotazione al ristorante su WhatsApp.</p>
+                <p className="text-gray-600 text-xs">Clicca il pulsante per inviare la prenotazione al ristorante su App.</p>
               </div>
 
               <a href={tableSuccess.waUrl} target="_blank" rel="noopener noreferrer" className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3" style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}>
                 <MessageCircle size={20} />
-                Invia prenotazione su WhatsApp
+                Invia prenotazione su App
               </a>
 
               <button onClick={() => setTableSuccess(null)} className="w-full text-night py-3.5 rounded-2xl font-bold transition active:scale-95 bg-soft">
@@ -1611,7 +1611,7 @@ export default function MenuClient({
                   className="w-full bg-wa hover:bg-wa/90 text-white py-4 rounded-2xl font-bold transition active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                   <MessageCircle size={20} />
-                  Attiva su WhatsApp
+                  Attiva su App
                 </a>
               </div>
             </motion.div>

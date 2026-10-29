@@ -43,7 +43,7 @@ export default function ServiceForm() {
     setLoading(false);
 
     if (error) {
-      setError("Qualcosa è andato storto. Riprova o scrivici su WhatsApp.");
+      setError("Qualcosa è andato storto. Riprova o scrivici su App.");
       return;
     }
 
@@ -66,7 +66,7 @@ export default function ServiceForm() {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-wa hover:bg-waDark text-white px-6 py-3 rounded-full font-bold transition active:scale-95"
         >
-          Scrivici su WhatsApp
+          Scrivici su App
         </a>
       </div>
     );

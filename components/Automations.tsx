@@ -20,12 +20,12 @@ export default function Automations() {
     {
       icon: UserRound,
       title: "Ti passa la palla quando serve",
-      text: "Se il cliente fa una domanda fuori copione o vuole parlare con una persona, il sistema ti passa la conversazione in un secondo. Tu rispondi dal tuo WhatsApp. Lei tace."
+      text: "Se il cliente fa una domanda fuori copione o vuole parlare con una persona, il sistema ti passa la conversazione in un secondo. Tu rispondi dal tuo App. Lei tace."
     },
     {
       icon: MessageCircle,
-      title: "Sempre WhatsApp. Sempre.",
-      text: "I tuoi clienti non scaricano app, non creano account, non imparano nuovi strumenti. Usano WhatsApp, che hanno già aperto sul telefono adesso. Zero attrito, massima conversione."
+      title: "Sempre App. Sempre.",
+      text: "I tuoi clienti non scaricano app, non creano account, non imparano nuovi strumenti. Usano App, che hanno già aperto sul telefono adesso. Zero attrito, massima conversione."
     },
     {
       icon: Sparkles,
@@ -39,7 +39,7 @@ export default function Automations() {
       <div className="container-x">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <span className="inline-block bg-wa/10 text-waDark text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
-            La automazioni WhatsApp
+            La automazioni App
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-night">
             Il sistema che non prende mai ferie.

@@ -77,7 +77,7 @@ export default function DPAPage() {
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li><strong>Supabase Inc.</strong> — Hosting database e autenticazione (USA, con garanzie SCC)</li>
               <li><strong>Vercel Inc.</strong> — Hosting applicazione (USA, con garanzie SCC)</li>
-              <li><strong>Meta Platforms Ireland Ltd.</strong> — WhatsApp Business API (Irlanda/UE)</li>
+              <li><strong>Meta Platforms Ireland Ltd.</strong> — App Business API (Irlanda/UE)</li>
             </ul>
             <p className="mt-2">Il Responsabile si impegna a notificare al Titolare qualsiasi modifica prevista all'elenco dei sub-responsabili almeno 30 giorni prima, dando la possibilità di opporsi.</p>
           </div>

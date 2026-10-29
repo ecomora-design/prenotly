@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import AppButton from "@/components/AppButton";
 import {
   ArrowLeft, ArrowRight, Check, MessageCircle,
   Calendar, Clock, Bell, Users, BarChart3,
@@ -250,7 +250,7 @@ export default function ProPage() {
                 <span className="text-[#25D366]">Parliamone.</span>
               </h2>
               <p className="text-white/70 text-base md:text-lg mb-8 max-w-lg mx-auto">
-                Scrivici su WhatsApp. Ti rispondiamo in giornata.
+                Scrivici su App. Ti rispondiamo in giornata.
               </p>
               <a
                 href="https://wa.me/message/LLEKTVFCRCPVB1"
@@ -267,7 +267,7 @@ export default function ProPage() {
       </section>
 
       <Footer />
-      <WhatsAppButton />
+      <AppButton />
     </main>
   );
 }

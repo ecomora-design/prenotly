@@ -5,7 +5,7 @@ import HowItWorks from "@/components/HowItWorks";
 import FAQ from "@/components/FAQ";
 import ContactCTA from "@/components/ContactCTA";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import AppButton from "@/components/AppButton";
 
 export default function Home() {
   return (
@@ -17,7 +17,7 @@ export default function Home() {
       <FAQ />
       <ContactCTA />
       <Footer />
-      <WhatsAppButton />
+      <AppButton />
     </main>
   );
 }

@@ -17,11 +17,11 @@ export default function OnboardingPage() {
   const [businessName, setBusinessName] = useState("");
   const [slug, setSlug] = useState("");
   const [businessType, setBusinessType] = useState<"restaurant" | "services">("restaurant");
-  const [whatsapp, setWhatsapp] = useState("");
-const whatsappValid = useMemo(() => {
-  const clean = whatsapp.replace(/\s/g, "");
+  const [app, setWhatsapp] = useState("");
+const appValid = useMemo(() => {
+  const clean = app.replace(/\s/g, "");
   return /^\+\d{10,15}$/.test(clean);
-}, [whatsapp]);
+}, [app]);
   const [description, setDescription] = useState("");
 
   // Controlla se l'utente ha già un'azienda
@@ -94,7 +94,7 @@ const whatsappValid = useMemo(() => {
         business_name: businessName,
         business_type: businessType,
         description: description || null,
-        whatsapp_number: whatsapp.replace(/\s/g, ""),
+        app_number: app.replace(/\s/g, ""),
         is_active: true,
         plan_type: businessType === "restaurant" ? "food_menu" : "beauty",
       })
@@ -230,15 +230,15 @@ const whatsappValid = useMemo(() => {
             </div>
           </div>
 
-          {/* WhatsApp */}       
+          {/* App */}       
 <label className="block">
   <span className="text-sm font-semibold text-night mb-2 block">
-    Numero WhatsApp *
+    Numero App *
   </span>
   <div className="relative">
     <input
       type="tel"
-      value={whatsapp}
+      value={app}
       onChange={(e) => {
         let val = e.target.value.replace(/[^\d+ ]/g, "");
         if (val && !val.startsWith("+")) val = "+39 " + val;
@@ -247,27 +247,27 @@ const whatsappValid = useMemo(() => {
       placeholder="+39 333 1234567"
       required
       className={`w-full border-2 rounded-xl px-4 py-3 pr-12 focus:outline-none transition ${
-        whatsappValid
+        appValid
           ? "border-green-300 focus:border-green-500"
-          : whatsapp && whatsapp.length > 5
+          : app && app.length > 5
           ? "border-red-300 focus:border-red-500"
           : "border-gray-200 focus:border-wa"
       }`}
     />
-    {whatsappValid && (
+    {appValid && (
       <CheckCircle2
         className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"
         size={20}
       />
     )}
   </div>
-  {whatsapp && !whatsappValid && (
+  {app && !appValid && (
     <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
       <AlertCircle size={12} />
       Formato non valido. Usa: +39 333 1234567
     </p>
   )}
-  {whatsappValid && (
+  {appValid && (
     <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
       <CheckCircle2 size={12} />
       Numero valido
@@ -275,7 +275,7 @@ const whatsappValid = useMemo(() => {
   )}
   <p className="text-xs text-gray-500 mt-1.5">
     È il numero dove riceverai <strong>tutti</strong> gli ordini e le prenotazioni.
-    Assicurati che sia attivo su WhatsApp.
+    Assicurati che sia attivo su App.
   </p>
 </label>
 
@@ -295,7 +295,7 @@ const whatsappValid = useMemo(() => {
 
           <button
             type="submit"
-            disabled={loading || !businessName || !slug || !whatsapp}
+            disabled={loading || !businessName || !slug || !app}
             className="w-full bg-wa hover:bg-waDark disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3.5 rounded-full font-bold transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             {loading ? (

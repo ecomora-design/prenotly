@@ -49,7 +49,7 @@ export default function DisclaimerPage() {
 
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-night mb-3">4. Servizi di terze parti</h2>
-            <p>Il sito può integrare servizi di terze parti (WhatsApp, Google Calendar, Supabase, Vercel). Prenotly non è responsabile per il funzionamento, la disponibilità o le pratiche di tali servizi. L'uso di tali servizi è regolato dai termini e dalle informative dei rispettivi fornitori.</p>
+            <p>Il sito può integrare servizi di terze parti (App, Google Calendar, Supabase, Vercel). Prenotly non è responsabile per il funzionamento, la disponibilità o le pratiche di tali servizi. L'uso di tali servizi è regolato dai termini e dalle informative dei rispettivi fornitori.</p>
           </div>
 
           <div>

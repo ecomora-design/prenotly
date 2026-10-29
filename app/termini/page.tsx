@@ -37,7 +37,7 @@ export default function TerminiPage() {
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li>Creare e gestire un menu o un listino servizi digitale</li>
               <li>Ricevere ordini e prenotazioni online</li>
-              <li>Gestire ordini e prenotazioni tramite un'automazione integrata con WhatsApp</li>
+              <li>Gestire ordini e prenotazioni tramite un'automazione integrata con App</li>
               <li>Sincronizzare gli appuntamenti con Google Calendar</li>
               <li>Monitorare statistiche e dati della propria attività</li>
             </ul>
@@ -97,7 +97,7 @@ export default function TerminiPage() {
 
           <div className="bg-wa/5 border border-wa/20 rounded-2xl p-5 mt-8">
             <p className="text-sm text-night">
-              <strong>Domande?</strong> Scrivici a <a href="mailto:info@prenotly-italia.it" className="text-wa font-semibold hover:underline">info@prenotly-italia.it</a> o su WhatsApp al <a href="https://wa.me/message/LLEKTVFCRCPVB1" target="_blank" rel="noopener noreferrer" className="text-wa font-semibold hover:underline">+39 393 484 2118</a>.
+              <strong>Domande?</strong> Scrivici a <a href="mailto:info@prenotly-italia.it" className="text-wa font-semibold hover:underline">info@prenotly-italia.it</a> o su App al <a href="https://wa.me/message/LLEKTVFCRCPVB1" target="_blank" rel="noopener noreferrer" className="text-wa font-semibold hover:underline">+39 393 484 2118</a>.
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import AppButton from "@/components/AppButton";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
               <p className="font-semibold text-night">Prenotly (Titolare del Trattamento per i propri utenti)</p>
               <p>Partita IVA: 01800600882</p>
               <p>Email: info@prenotly-italia.it</p>
-              <p>WhatsApp: +39 393 484 2118</p>
+              <p>App: +39 393 484 2118</p>
             </div>
           </div>
 
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
             <p>Durante l'utilizzo del Servizio, possiamo raccogliere le seguenti categorie di dati personali:</p>
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li><strong>Dati identificativi</strong>: nome, cognome, ragione sociale dell'attività</li>
-              <li><strong>Dati di contatto</strong>: indirizzo email, numero di telefono, numero WhatsApp</li>
+              <li><strong>Dati di contatto</strong>: indirizzo email, numero di telefono, numero App</li>
               <li><strong>Dati fiscali</strong>: Partita IVA, codice fiscale (per la fatturazione)</li>
               <li><strong>Dati di utilizzo</strong>: prenotazioni, ordini, interazioni con il servizio</li>
               <li><strong>Dati tecnici</strong>: indirizzo IP, tipo di browser, dispositivo utilizzato</li>
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
             <p>I dati personali possono essere comunicati a:</p>
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li><strong>Fornitori di servizi tecnici</strong>: hosting, database, servizi cloud (es. Vercel, Supabase)</li>
-              <li><strong>Servizi di comunicazione</strong>: WhatsApp Business API (Meta) per l'invio di notifiche</li>
+              <li><strong>Servizi di comunicazione</strong>: App Business API (Meta) per l'invio di notifiche</li>
               <li><strong>Consulenti fiscali e contabili</strong>: per adempimenti di legge</li>
               <li><strong>Autorità pubbliche</strong>: quando richiesto dalla legge</li>
             </ul>
@@ -140,12 +140,12 @@ export default function PrivacyPage() {
           </div>
 
           <div className="bg-wa/5 border border-wa/20 rounded-2xl p-5 mt-8">
-            <p className="text-sm text-night"><strong>Hai domande sulla privacy?</strong> Scrivici a <a href="mailto:info@prenotly-italia.it" className="text-wa font-semibold hover:underline">info@prenotly-italia.it</a> oppure su WhatsApp al <a href="https://wa.me/message/LLEKTVFCRCPVB1" target="_blank" rel="noopener noreferrer" className="text-wa font-semibold hover:underline">+39 393 484 2118</a>.</p>
+            <p className="text-sm text-night"><strong>Hai domande sulla privacy?</strong> Scrivici a <a href="mailto:info@prenotly-italia.it" className="text-wa font-semibold hover:underline">info@prenotly-italia.it</a> oppure su App al <a href="https://wa.me/message/LLEKTVFCRCPVB1" target="_blank" rel="noopener noreferrer" className="text-wa font-semibold hover:underline">+39 393 484 2118</a>.</p>
           </div>
         </div>
       </section>
       <Footer />
-      <WhatsAppButton />
+      <AppButton />
     </main>
   );
 }

@@ -10,7 +10,7 @@ type Tenant = {
   id: string;
   slug: string;
   business_name: string;
-  whatsapp_number: string | null;
+  app_number: string | null;
   trial_ends_at: string | null;
   subscription_ends_at: string | null;
   subscription_status: string;
@@ -199,7 +199,7 @@ function Section({
             (new Date(endDate).getTime() - now) / (1000 * 60 * 60)
           );
           const daysLeft = Math.ceil(hoursLeft / 24);
-          const phone = (t.whatsapp_number || "").replace(/\D/g, "");
+          const phone = (t.app_number || "").replace(/\D/g, "");
 
           return (
             <div

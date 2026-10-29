@@ -12,7 +12,7 @@ export default function HowItWorks() {
       n: "02",
       icon: MessageCircle,
       title: "Ricevi la notifica",
-      text: "Dashboard in tempo reale, suono di avviso, riepilogo su WhatsApp. Gestisci tutto con un tap.",
+      text: "Dashboard in tempo reale, suono di avviso, riepilogo su App. Gestisci tutto con un tap.",
     },
     {
       n: "03",

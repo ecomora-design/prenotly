@@ -137,7 +137,7 @@ export default function SignupPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-white/70 text-lg leading-relaxed mb-10"
             >
-              Menu, ordini e prenotazioni automatiche su WhatsApp.
+              Menu, ordini e prenotazioni automatiche su App.
               Nessuna commissione. Nessuna app da scaricare.
             </motion.p>
 
@@ -156,7 +156,7 @@ export default function SignupPage() {
                 },
                 {
                   icon: Smartphone,
-                  title: "WhatsApp + Google Calendar",
+                  title: "App + Google Calendar",
                   desc: "Tutto integrato con gli strumenti che già usi.",
                 },
                 {
@@ -388,7 +388,7 @@ export default function SignupPage() {
               <div className="flex-1 h-px bg-night/10" />
             </div>
 
-            {/* Contatto WhatsApp */}
+            {/* Contatto App */}
             <a
               href="https://wa.me/message/LLEKTVFCRCPVB1"
               target="_blank"

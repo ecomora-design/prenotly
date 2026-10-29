@@ -6,10 +6,10 @@ export default function FAQ() {
   const faqs = [
     {
       q: "I miei clienti devono scaricare un'app?",
-      a: "No. Prenotano dal browser, ricevono conferma su WhatsApp. Nessuna app, nessuna registrazione.",
+      a: "No. Prenotano dal browser, ricevono conferma su App. Nessuna app, nessuna registrazione.",
     },
     {
-      q: "Serve un numero WhatsApp dedicato?",
+      q: "Serve un numero App dedicato?",
       a: "Puoi usare il tuo numero esistente oppure attivare un numero dedicato. Ti aiutiamo noi nella configurazione.",
     },
     {

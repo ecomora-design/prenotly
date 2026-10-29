@@ -24,8 +24,8 @@ export default function DashboardFlow() {
     },
     {
       icon: MessageCircle,
-      title: "Ricevi tutto su WhatsApp",
-      text: "Ogni ordine o appuntamento arriva sul tuo numero WhatsApp, già confermato dalil sistema automatica.",
+      title: "Ricevi tutto su App",
+      text: "Ogni ordine o appuntamento arriva sul tuo numero App, già confermato dalil sistema automatica.",
     },
     {
       icon: CreditCard,

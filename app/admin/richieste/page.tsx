@@ -231,7 +231,7 @@ export default function RichiestePage() {
                         className="text-wa hover:bg-wa/10 text-xs font-semibold px-3 py-2 rounded-full transition inline-flex items-center gap-1.5"
                       >
                         <MessageCircle size={14} />
-                        WhatsApp
+                        App
                       </a>
                     )}
                   </div>

@@ -33,7 +33,7 @@ export default function Footer() {
               Prenot<span className="text-waDark">ly</span>
             </a>
             <p className="text-night/60 text-sm leading-relaxed mb-4">
-              Prenotazioni e ordini su WhatsApp.<br />
+              Prenotazioni e ordini su App.<br />
               Senza telefonate.
             </p>
             <div className="flex flex-col gap-2 text-sm">

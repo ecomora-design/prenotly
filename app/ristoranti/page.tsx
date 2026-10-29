@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import AppButton from "@/components/AppButton";
 import {
   ArrowLeft, ArrowRight, Check, MessageCircle,
   ShoppingBag, Menu, Truck, Store, Bell, BarChart3,
@@ -38,8 +38,8 @@ export default function RistorantiPage() {
     },
     {
       icon: Bell,
-      title: "Automazioni WhatsApp",
-      text: "Ordini e prenotazioni arrivano sul tuo numero WhatsApp, già pronti.",
+      title: "Automazioni App",
+      text: "Ordini e prenotazioni arrivano sul tuo numero App, già pronti.",
     },
     {
       icon: BarChart3,
@@ -74,7 +74,7 @@ export default function RistorantiPage() {
               <h1 className="text-[34px] leading-[1.1] md:text-5xl md:leading-[1.1] font-bold text-night tracking-tight">
                 Il tuo menu online.
                 <br />
-                Gli ordini su WhatsApp.
+                Gli ordini su App.
               </h1>
 
               <p className="mt-5 text-base md:text-lg text-night/70 leading-relaxed">
@@ -205,7 +205,7 @@ export default function RistorantiPage() {
                 "Menu digitale illimitato",
                 "Ordini asporto e domicilio",
                 "Prenotazioni tavoli",
-                "Automazioni WhatsApp",
+                "Automazioni App",
                 "Dashboard completa",
                 "Zero commissioni",
                 "Supporto in italiano",
@@ -240,7 +240,7 @@ export default function RistorantiPage() {
             Hai domande?
           </h2>
           <p className="text-white/60 mb-8">
-            Scrivici su WhatsApp. Ti rispondiamo in giornata.
+            Scrivici su App. Ti rispondiamo in giornata.
           </p>
           <a
             href="https://wa.me/message/LLEKTVFCRCPVB1"
@@ -255,7 +255,7 @@ export default function RistorantiPage() {
       </section>
 
       <Footer />
-      <WhatsAppButton />
+      <AppButton />
     </main>
   );
 }

@@ -127,7 +127,7 @@ export default function ClienteDetailPage() {
     return <div className="flex items-center justify-center h-[70vh] bg-[#050505]"><Loader2 className="animate-spin text-[#25D366]" size={40} /></div>;
   }
 
-  const phone = (tenant.whatsapp_number || "").replace(/\D/g, "");
+  const phone = (tenant.app_number || "").replace(/\D/g, "");
   const statusConfig: any = {
     active: { label: "Attivo", color: "text-[#25D366]", bg: "bg-[#25D366]/10", border: "border-[#25D366]/30", icon: CheckCircle2 },
     trial: { label: "Demo", color: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/30", icon: Clock },

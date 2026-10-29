@@ -27,7 +27,7 @@ export default function StickyCTA() {
             <p className="text-[13px] font-bold text-night leading-tight">
               Demo gratuita 48 ore Demo 48 ore
             </p>
-            <p className="text-[11px] text-gray-500">Scrivici su WhatsApp</p>
+            <p className="text-[11px] text-gray-500">Scrivici su App</p>
           </div>
           <a
             href="https://wa.me/393934842118?text=Ciao%20Prenotly!%20Vorrei%20iniziare%20la%20prova%20gratuita"

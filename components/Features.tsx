@@ -3,9 +3,9 @@ import { Smartphone, MessageCircle, CalendarCheck, ShoppingBag, BellRing, UserRo
 export default function Features() {
   const features = [
     { icon: Smartphone, title: "Web app brandizzata", text: "Ogni attività ha la sua web app con logo, colori e nome. Il cliente entra da qualsiasi telefono, senza scaricare nulla." },
-    { icon: MessageCircle, title: "Automazioni WhatsApp", text: "Risponde in automatico 24/7, gestisce ordini e appuntamenti come farebbe una persona." },
+    { icon: MessageCircle, title: "Automazioni App", text: "Risponde in automatico 24/7, gestisce ordini e appuntamenti come farebbe una persona." },
     { icon: CalendarCheck, title: "Calendario intelligente", text: "Slot liberi in tempo reale. Quando un cliente prenota, l'orario si blocca subito." },
-    { icon: ShoppingBag, title: "Menu e ordini", text: "Menu digitale con prezzi, carrello e checkout. L'ordine arriva su WhatsApp già pronto." },
+    { icon: ShoppingBag, title: "Menu e ordini", text: "Menu digitale con prezzi, carrello e checkout. L'ordine arriva su App già pronto." },
     { icon: BellRing, title: "Conferme e promemoria", text: "Il cliente riceve conferma, promemoria e avviso quando l'ordine è pronto." },
     { icon: UserRound, title: "Passaggio a operatore", text: "Se la chat si complica, il sistema ti passa il controllo. Tu rispondi, il bot tace." },
     { icon: ChartBar, title: "Statistiche chiare", text: "Quante prenotazioni, ordini, clienti abituali. Tutto in una dashboard semplice." },
@@ -19,7 +19,7 @@ export default function Features() {
             Funzioni
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-night">Tutto quello che serve alla tua attività</h2>
-          <p className="text-gray-600 mt-4 text-lg">Web app, automazioni WhatsApp, calendario, ordini. Tutto in un unico sistema.</p>
+          <p className="text-gray-600 mt-4 text-lg">Web app, automazioni App, calendario, ordini. Tutto in un unico sistema.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((f) => (

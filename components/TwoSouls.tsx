@@ -23,7 +23,7 @@ export default function TwoSouls() {
       icon: Scissors,
       emoji: "💇",
       title: "Parrucchieri & Servizi",
-      text: "Calendario intelligente che mostra solo gli orari davvero liberi. Il cliente prenota in 3 tap, la automazioni WhatsApp conferma e sincronizza l'appuntamento con Google Calendar.",
+      text: "Calendario intelligente che mostra solo gli orari davvero liberi. Il cliente prenota in 3 tap, la automazioni App conferma e sincronizza l'appuntamento con Google Calendar.",
       features: [
         "Calendario con slot liberi in tempo reale",
         "Prenotazione in 3 tap dal telefono",

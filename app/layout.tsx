@@ -6,9 +6,9 @@ import CookieBanner from "@/components/CookieBanner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Prenotly — Prenotazioni e ordini su WhatsApp",
+  title: "Prenotly — Prenotazioni e ordini su App",
   description:
-    "Il software italiano per ristoranti, beauty e professionisti. Prenotazioni e ordini direttamente su WhatsApp.",
+    "Il software italiano per ristoranti, beauty e professionisti. Prenotazioni e ordini direttamente su App.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

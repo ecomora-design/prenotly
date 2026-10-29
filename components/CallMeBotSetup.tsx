@@ -13,7 +13,7 @@ export default function CallMeBotSetup() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [apiKey, setApiKey] = useState("");
-  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [appNumber, setWhatsappNumber] = useState("");
   const [saved, setSaved] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<"ok" | "ko" | null>(null);
@@ -27,7 +27,7 @@ export default function CallMeBotSetup() {
       const { data: link } = await supabase
         .from("tenant_users")
         .select(
-          "tenant_id, tenants(whatsapp_number, callmebot_api_key, whatsapp_notifications_enabled)"
+          "tenant_id, tenants(app_number, callmebot_api_key, app_notifications_enabled)"
         )
         .eq("user_id", user.id)
         .maybeSingle();
@@ -35,7 +35,7 @@ export default function CallMeBotSetup() {
       if (link?.tenants) {
         const t = link.tenants as any;
         setApiKey(t.callmebot_api_key || "");
-        setWhatsappNumber(t.whatsapp_number || "");
+        setWhatsappNumber(t.app_number || "");
       }
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export default function CallMeBotSetup() {
       .from("tenants")
       .update({
         callmebot_api_key: apiKey || null,
-        whatsapp_number: whatsappNumber,
+        app_number: appNumber,
       })
       .eq("id", link.tenant_id);
 
@@ -71,15 +71,15 @@ export default function CallMeBotSetup() {
   };
 
   const handleTest = async () => {
-    if (!apiKey || !whatsappNumber) return;
+    if (!apiKey || !appNumber) return;
     setTesting(true);
     setTestResult(null);
 
     try {
-      const res = await fetch("/api/whatsapp/test", {
+      const res = await fetch("/api/app/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: whatsappNumber, apiKey }),
+        body: JSON.stringify({ phone: appNumber, apiKey }),
       });
 
       const data = await res.json();
@@ -109,10 +109,10 @@ export default function CallMeBotSetup() {
         </div>
         <div className="flex-1">
           <h2 className="text-lg font-bold text-night mb-1">
-            Notifiche WhatsApp
+            Notifiche App
           </h2>
           <p className="text-xs text-gray-500">
-            Ricevi un messaggio WhatsApp automatico per ogni prenotazione
+            Ricevi un messaggio App automatico per ogni prenotazione
           </p>
         </div>
         {isConnected && (
@@ -149,7 +149,7 @@ export default function CallMeBotSetup() {
               🎯 3 semplici passaggi (2 minuti):
             </p>
             <div>
-              <p className="font-semibold mb-1">1. Salva questo contatto su WhatsApp:</p>
+              <p className="font-semibold mb-1">1. Salva questo contatto su App:</p>
               <p className="bg-white rounded-lg px-3 py-2 font-mono text-sm">
                 +34 644 51 95 23
               </p>
@@ -177,11 +177,11 @@ export default function CallMeBotSetup() {
       <div className="space-y-4">
         <label className="block">
           <span className="text-sm font-semibold text-night mb-2 block">
-            Numero WhatsApp (dove ricevere le notifiche) *
+            Numero App (dove ricevere le notifiche) *
           </span>
           <input
             type="tel"
-            value={whatsappNumber}
+            value={appNumber}
             onChange={(e) => setWhatsappNumber(e.target.value)}
             placeholder="+39 333 1234567"
             className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-wa focus:outline-none"
@@ -205,7 +205,7 @@ export default function CallMeBotSetup() {
       {testResult === "ok" && (
         <div className="bg-green-50 border border-green-100 text-green-700 rounded-xl px-4 py-3 text-sm mt-4 flex items-center gap-2">
           <CheckCircle2 size={16} />
-          Test riuscito! Controlla WhatsApp sul numero indicato.
+          Test riuscito! Controlla App sul numero indicato.
         </div>
       )}
 
@@ -219,7 +219,7 @@ export default function CallMeBotSetup() {
       <div className="flex gap-3 mt-5 flex-wrap">
         <button
           onClick={handleSave}
-          disabled={saving || !whatsappNumber || !apiKey}
+          disabled={saving || !appNumber || !apiKey}
           className="flex-1 bg-wa hover:bg-waDark disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3.5 rounded-full font-bold transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
         >
           {saving ? (
@@ -233,7 +233,7 @@ export default function CallMeBotSetup() {
 
         <button
           onClick={handleTest}
-          disabled={testing || !whatsappNumber || !apiKey}
+          disabled={testing || !appNumber || !apiKey}
           className="flex-1 border border-gray-200 hover:border-wa text-night py-3.5 rounded-full font-bold transition inline-flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {testing ? (
@@ -251,8 +251,8 @@ export default function CallMeBotSetup() {
           <div className="flex items-start gap-2 text-xs text-gray-600">
             <CheckCircle2 className="text-wa shrink-0 mt-0.5" size={14} />
             <span>
-              Quando un cliente prenota, ricevi un messaggio WhatsApp su{" "}
-              <strong className="text-night">{whatsappNumber}</strong> con tutti i dettagli.
+              Quando un cliente prenota, ricevi un messaggio App su{" "}
+              <strong className="text-night">{appNumber}</strong> con tutti i dettagli.
             </span>
           </div>
         </div>

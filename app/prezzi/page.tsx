@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import AppButton from "@/components/AppButton";
 import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, Check, X, MessageCircle, Sparkles,
@@ -126,7 +126,7 @@ export default function PrezziPage() {
     { icon: Clock, title: "Demo gratuita 48 ore", text: "Provi tutto gratis per 48 ore. Se ti piace attivi, altrimenti non paghi nulla." },
     { icon: Shield, title: "Disdici quando vuoi", text: "Nessun vincolo, nessuna penale. Se non fa per te, un click e sei fuori." },
     { icon: CreditCard, title: "Pagamento sicuro", text: "Carta o IBAN dalla dashboard. Fatturazione elettronica inclusa." },
-    { icon: Headphones, title: "Supporto in italiano", text: "Ti aiutiamo via WhatsApp, sempre. Anche quando configuri la prima volta." },
+    { icon: Headphones, title: "Supporto in italiano", text: "Ti aiutiamo via App, sempre. Anche quando configuri la prima volta." },
     { icon: TrendingUp, title: "Zero commissioni", text: "Nessuna commissione sulle tue prenotazioni o ordini. Paghi solo l'abbonamento." },
   ];
 
@@ -508,7 +508,7 @@ export default function PrezziPage() {
       </section>
 
       <Footer />
-      <WhatsAppButton />
+      <AppButton />
     </main>
   );
 }

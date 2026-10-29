@@ -96,7 +96,7 @@ export default function ManualOrderModal({ isOpen, onClose, tenantId, onSaved }:
             .from("customers")
             .select("id")
             .eq("tenant_id", tenantId)
-            .eq("whatsapp_number", phone)
+            .eq("app_number", phone)
             .maybeSingle();
 
           if (existing) {
@@ -106,7 +106,7 @@ export default function ManualOrderModal({ isOpen, onClose, tenantId, onSaved }:
             const { data: created } = await supabase.from("customers").insert({
               tenant_id: tenantId,
               name: form.customerName.trim(),
-              whatsapp_number: phone,
+              app_number: phone,
             }).select("id").single();
             customerId = created?.id || null;
           }
@@ -114,7 +114,7 @@ export default function ManualOrderModal({ isOpen, onClose, tenantId, onSaved }:
           const { data: created } = await supabase.from("customers").insert({
             tenant_id: tenantId,
             name: form.customerName.trim(),
-            whatsapp_number: "",
+            app_number: "",
           }).select("id").single();
           customerId = created?.id || null;
         }

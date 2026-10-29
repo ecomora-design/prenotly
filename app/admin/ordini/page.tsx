@@ -13,7 +13,7 @@ type Order = {
   status: string;
   created_at: string;
   tenants: { business_name: string; slug: string } | null;
-  customers: { name: string | null; whatsapp_number: string } | null;
+  customers: { name: string | null; app_number: string } | null;
 };
 
 export default function AdminOrdiniPage() {
@@ -26,7 +26,7 @@ export default function AdminOrdiniPage() {
   async function load() {
     const { data } = await supabase
       .from("orders")
-      .select("*, tenants(business_name, slug), customers(name, whatsapp_number)")
+      .select("*, tenants(business_name, slug), customers(name, app_number)")
       .order("created_at", { ascending: false })
       .limit(200);
     setOrders((data as unknown as Order[]) || []);
@@ -102,7 +102,7 @@ export default function AdminOrdiniPage() {
       ) : (
         <div className="space-y-2">
           {filtered.map((o) => {
-            const phone = (o.customers?.whatsapp_number || "").replace(/\D/g, "");
+            const phone = (o.customers?.app_number || "").replace(/\D/g, "");
             return (
               <div key={o.id} className="bg-white/5 rounded-2xl p-4 border border-white/10">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -138,7 +138,7 @@ export default function AdminOrdiniPage() {
                         className="text-wa text-xs font-semibold inline-flex items-center gap-1 mt-1"
                       >
                         <MessageCircle size={12} />
-                        WhatsApp
+                        App
                       </a>
                     )}
                   </div>
