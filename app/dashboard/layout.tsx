@@ -20,6 +20,7 @@ type Tenant = {
   business_name: string;
   business_type: string;
   product_type: string | null;
+  category: string | null;
   subscription_status: string | null;
   trial_ends_at: string | null;
   logo_url: string | null;
@@ -83,6 +84,12 @@ export default function DashboardLayout({
   useEffect(() => {
     if (!tenant?.id) return;
     
+    // Filtro locale: solo chi è food ascolta gli ordini
+    const isFoodLocal =
+      tenant.category === "ristoranti" ||
+      tenant.category === "pizzerie" ||
+      (!tenant.category && (tenant.product_type === "food" || tenant.business_type === "restaurant"));
+
     const channel = supabase
       .channel('custom-insert-channel')
       // Ascolta nuove PRENOTAZIONI
@@ -100,6 +107,7 @@ export default function DashboardLayout({
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenant.id}` },
         (payload) => {
+          if (!isFoodLocal) return;
           setRealtimeAlert({ type: "order", data: payload.new });
           playNotificationSound();
           setTimeout(() => setRealtimeAlert(null), 12000);
@@ -162,7 +170,11 @@ export default function DashboardLayout({
 
   if (!tenant) return null;
 
-  const isFood = tenant.product_type === "food" || tenant.business_type === "restaurant";
+  // Priorità assoluta alla categoria esplicita (impostata da admin)
+  const isFoodCategory = tenant.category === "ristoranti" || tenant.category === "pizzerie";
+  const isServiceCategory = tenant.category === "servizi" || tenant.category === "dentisti" || tenant.category === "parrucchieri";
+  // Fallback sui campi vecchi solo se la category non è impostata
+  const isFood = isFoodCategory || (!isServiceCategory && (tenant.product_type === "food" || tenant.business_type === "restaurant"));
   const isTrial = tenant.subscription_status === "trial";
   const isMenuOnly = !isTrial && tenant.plan_type === "food_menu";
   
@@ -273,7 +285,9 @@ export default function DashboardLayout({
               <p className="text-xs text-night/60 mt-1">
                 {realtimeAlert.type === "order" 
                   ? "Hai ricevuto un nuovo ordine di asporto/domicilio." 
-                  : "Un cliente ha appena prenotato un tavolo."}
+                  : (isFood 
+                    ? "Un cliente ha appena prenotato un tavolo." 
+                    : "Un cliente ha appena prenotato un appuntamento.")}
               </p>
               <a 
                 href={realtimeAlert.type === "order" ? "/dashboard/ordini" : "/dashboard/prenotazioni"} 

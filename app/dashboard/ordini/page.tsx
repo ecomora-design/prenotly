@@ -68,6 +68,8 @@ export default function OrdiniPage() {
   const [slots, setSlots] = useState<SlotData[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [savingSlot, setSavingSlot] = useState<string | null>(null);
+  const [defaultCapacity, setDefaultCapacity] = useState(5);
+  const [savingCapacity, setSavingCapacity] = useState(false);
 
   const loadOrders = useCallback(async (showSkeleton = false) => {
     if (showSkeleton) setLoading(true);
@@ -163,9 +165,10 @@ export default function OrdiniPage() {
   };
 
   const saveSlot = async (slot: SlotData, patch: Partial<SlotData>) => {
+    console.log("🔵 saveSlot chiamato:", slot.slot, patch);
     setSavingSlot(slot.slot);
     try {
-      await fetch("/api/orders/slots-manage", {
+      const res = await fetch("/api/orders/slots-manage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -176,8 +179,43 @@ export default function OrdiniPage() {
           capacity_override: patch.capacity ?? slot.capacity,
         }),
       });
+      console.log("🔵 POST response status:", res.status);
+      const responseBody = await res.json().catch(() => ({}));
+      console.log("🔵 POST response body:", responseBody);
+      if (!res.ok) {
+        alert("Errore salvataggio: " + (responseBody.error || `HTTP ${res.status}`));
+        return;
+      }
       await loadSlots();
+    } catch (e) {
+      alert("Errore di rete: " + (e instanceof Error ? e.message : "sconosciuto"));
     } finally { setSavingSlot(null); }
+  };
+
+  const saveDefaultCapacity = async (newCap: number) => {
+    if (newCap < 1 || newCap > 20) {
+      alert("La capacità deve essere tra 1 e 20");
+      return;
+    }
+    setSavingCapacity(true);
+    try {
+      const res = await fetch("/api/orders/default-capacity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ capacity: newCap }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert("Errore salvataggio: " + (err.error || `HTTP ${res.status}`));
+        return;
+      }
+      setDefaultCapacity(newCap);
+      await loadSlots();
+    } catch (e) {
+      alert("Errore di rete: " + (e instanceof Error ? e.message : "sconosciuto"));
+    } finally {
+      setSavingCapacity(false);
+    }
   };
 
   const counts = {
@@ -517,6 +555,8 @@ export default function OrdiniPage() {
       {/* ═══════════ TAB CAPACITY ═══════════ */}
       {tab === "capacity" && (
         <div className="px-4 sm:px-6 lg:px-8 space-y-4">
+          
+          {/* DATE PICKER + INFO */}
           <div className="bg-white rounded-2xl border border-night/[0.06] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="bg-cream p-2.5 rounded-xl">
@@ -530,10 +570,89 @@ export default function OrdiniPage() {
               />
             </div>
             <p className="text-sm text-night/60 flex-1">
-              Gestisci la disponibilità degli orari. Aggiungi ordini manuali per evitare sovraccarichi.
+              Gestisci la disponibilità degli orari e imposta quanti ordini ricevere per ogni fascia.
             </p>
           </div>
 
+          {/* KPI SUMMARY */}
+          {!loadingSlots && slots.length > 0 && (
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                {
+                  label: "Disponibili",
+                  value: slots.filter(s => !s.is_blocked && s.total < s.capacity).length,
+                  color: "#22C55E",
+                  icon: CheckCircle2,
+                },
+                {
+                  label: "Pieni",
+                  value: slots.filter(s => !s.is_blocked && s.total >= s.capacity).length,
+                  color: "#F59E0B",
+                  icon: AlertCircle,
+                },
+                {
+                  label: "Bloccati",
+                  value: slots.filter(s => s.is_blocked).length,
+                  color: "#EF4444",
+                  icon: Lock,
+                },
+              ].map((kpi, i) => (
+                <div key={i} className="bg-white rounded-2xl p-4 border border-night/[0.06] shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${kpi.color}15` }}>
+                      <kpi.icon size={16} style={{ color: kpi.color }} />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-night/40">{kpi.label}</p>
+                  </div>
+                  <p className="text-2xl font-black text-night tracking-tight leading-none">{kpi.value}</p>
+                  <p className="text-[11px] text-night/40 mt-1">slot</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* CAPACITA' PREDEFINITA */}
+          <div className="bg-white rounded-2xl border border-night/[0.06] p-5 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="bg-emerald-50 p-2.5 rounded-xl">
+                  <Settings size={22} className="text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-black text-night text-base">Capacità predefinita</h3>
+                  <p className="text-xs text-night/50 mt-0.5">
+                    Numero massimo di ordini per ogni fascia oraria (1-20)
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={defaultCapacity}
+                  onChange={(e) => setDefaultCapacity(Number(e.target.value))}
+                  className="bg-cream border border-transparent rounded-xl px-4 py-3 text-sm font-black text-center w-20 focus:bg-white focus:border-night/20 focus:outline-none transition"
+                />
+                <button
+                  onClick={() => saveDefaultCapacity(defaultCapacity)}
+                  disabled={savingCapacity}
+                  className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white px-5 py-3 rounded-xl text-sm font-black transition flex items-center gap-2 shadow-md active:scale-95"
+                >
+                  {savingCapacity ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                  Salva
+                </button>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-night/[0.04] flex items-start gap-2">
+              <AlertCircle size={14} className="text-night/30 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-night/40 leading-relaxed">
+                Puoi sempre sovrascrivere la capacità per un singolo slot con i controlli nella tabella sotto.
+              </p>
+            </div>
+          </div>
+
+          {/* TABELLA SLOT */}
           {loadingSlots ? (
             <div className="bg-white rounded-2xl border border-night/[0.06] p-12 flex justify-center">
               <Loader2 className="animate-spin text-night/30" size={32} />
@@ -546,7 +665,7 @@ export default function OrdiniPage() {
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-night/[0.06] overflow-hidden shadow-sm">
-              <div className="px-6 py-4 border-b border-night/[0.06] bg-cream/30 hidden lg:grid grid-cols-[100px_1fr_100px_100px_200px] gap-6 text-[10px] font-black text-night/40 uppercase tracking-widest">
+              <div className="px-6 py-4 border-b border-night/[0.06] bg-cream/30 hidden lg:grid grid-cols-[100px_1fr_90px_90px_200px] gap-6 text-[10px] font-black text-night/40 uppercase tracking-widest">
                 <span>Orario</span>
                 <span>Occupazione</span>
                 <span className="text-center">Web</span>
@@ -559,11 +678,12 @@ export default function OrdiniPage() {
                   const isFull = slot.total >= slot.capacity;
                   const percent = Math.min((slot.total / slot.capacity) * 100, 100);
                   const state = slot.is_blocked ? "blocked" : isFull ? "full" : "ok";
+                  const isSaving = savingSlot === slot.slot;
 
                   return (
                     <div
                       key={slot.slot}
-                      className={`grid grid-cols-1 lg:grid-cols-[100px_1fr_100px_100px_200px] gap-3 lg:gap-6 px-5 py-4 items-center transition ${
+                      className={`grid grid-cols-1 lg:grid-cols-[100px_1fr_90px_90px_200px] gap-3 lg:gap-6 px-5 py-4 items-center transition ${
                         state === "blocked" ? "bg-red-50/60" : state === "full" ? "bg-yellow-50/60" : ""
                       }`}
                     >
@@ -601,29 +721,29 @@ export default function OrdiniPage() {
                       <div className="flex items-center justify-end gap-2 mt-2 lg:mt-0 pt-3 lg:pt-0 border-t lg:border-0 border-night/[0.06]">
                         <button
                           onClick={() => saveSlot(slot, { manual_count: Math.max(0, slot.manual_count - 1) })}
-                          disabled={slot.manual_count === 0 || savingSlot === slot.slot}
+                          disabled={slot.manual_count === 0 || isSaving}
                           className="w-12 h-12 lg:w-9 lg:h-9 rounded-xl bg-cream hover:bg-night/10 disabled:opacity-30 flex items-center justify-center transition active:scale-95 font-bold"
                         >
                           <Minus size={18} className="lg:w-4 lg:h-4" />
                         </button>
                         <button
                           onClick={() => saveSlot(slot, { manual_count: slot.manual_count + 1 })}
-                          disabled={savingSlot === slot.slot}
-                          className="w-12 h-12 lg:w-9 lg:h-9 rounded-xl bg-cream hover:bg-night/10 flex items-center justify-center transition active:scale-95 font-bold"
+                          disabled={isSaving}
+                          className="w-12 h-12 lg:w-9 lg:h-9 rounded-xl bg-cream hover:bg-night/10 disabled:opacity-30 flex items-center justify-center transition active:scale-95 font-bold"
                         >
-                          <Plus size={18} className="lg:w-4 lg:h-4" />
+                          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={18} className="lg:w-4 lg:h-4" />}
                         </button>
                         <div className="w-px h-8 bg-night/10 mx-1"></div>
                         <button
                           onClick={() => saveSlot(slot, { is_blocked: !slot.is_blocked })}
-                          disabled={savingSlot === slot.slot}
+                          disabled={isSaving}
                           className={`w-12 h-12 lg:w-9 lg:h-9 rounded-xl flex items-center justify-center transition active:scale-95 ${
                             slot.is_blocked
-                              ? "bg-red-500 text-white hover:bg-red-600 shadow"
-                              : "bg-cream hover:bg-night/10 text-night/70"
+                              ? "bg-red-500 text-white hover:bg-red-600"
+                              : "bg-cream hover:bg-night/10"
                           }`}
                         >
-                          {slot.is_blocked ? <Unlock size={18} className="lg:w-4 lg:h-4" /> : <Lock size={18} className="lg:w-4 lg:h-4" />}
+                          {slot.is_blocked ? <Unlock size={16} /> : <Lock size={16} />}
                         </button>
                       </div>
                     </div>
@@ -635,9 +755,8 @@ export default function OrdiniPage() {
         </div>
       )}
 
-      {tenantIdForNotif && (
+      {showManualModal && (
         <ManualOrderModal
-          isOpen={showManualModal}
           onClose={() => setShowManualModal(false)}
           tenantId={tenantIdForNotif}
           onSaved={() => loadOrders(false)}

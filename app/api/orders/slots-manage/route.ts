@@ -13,15 +13,23 @@ export async function GET(req: Request) {
     const date = url.searchParams.get("date") || todayStr;
 
     const admin = createAdminClient();
-    const { data: link } = await admin
+    
+    const { data: link, error: linkErr } = await admin
       .from("tenant_users")
-      .select("tenant_id, tenants(opening_hours, max_orders_per_slot)")
+      .select("tenant_id")
       .eq("user_id", user.id)
       .maybeSingle();
+    if (linkErr) { console.error("GET tenant_users error:", linkErr); return NextResponse.json({ error: linkErr.message }, { status: 500 }); }
+    if (!link) return NextResponse.json({ error: "Tenant non trovato" }, { status: 404 });
 
-    if (!link?.tenants) return NextResponse.json({ error: "Tenant non trovato" }, { status: 404 });
+    const { data: tenant, error: tenantErr } = await admin
+      .from("tenants")
+      .select("opening_hours, max_orders_per_slot")
+      .eq("id", link.tenant_id)
+      .maybeSingle();
+    if (tenantErr) { console.error("GET tenants error:", tenantErr); return NextResponse.json({ error: tenantErr.message }, { status: 500 }); }
+    if (!tenant) return NextResponse.json({ error: "Tenant non trovato" }, { status: 404 });
 
-    const tenant = link.tenants as any;
     const defaultCapacity = tenant.max_orders_per_slot || 5;
 
     const dayStart = new Date(`${date}T00:00:00.000Z`).getTime();
@@ -76,9 +84,11 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    console.log("🟢 POST slots-manage | user:", user?.email || "NO USER");
     if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
     const body = await req.json();
+    console.log("🟢 POST body:", body);
     const { date, slot, manual_orders_count, is_blocked, capacity_override, notes } = body;
 
     if (!date || !slot) return NextResponse.json({ error: "Dati mancanti" }, { status: 400 });
@@ -92,6 +102,7 @@ export async function POST(req: Request) {
       .eq("user_id", user.id)
       .maybeSingle();
 
+    console.log("🟢 POST link tenant:", link);
     if (!link) return NextResponse.json({ error: "Tenant non trovato" }, { status: 404 });
 
     const { data: existing } = await admin
