@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import {
   Check, ArrowRight, Sparkles, HelpCircle,
   Calendar, Clock, Bell, Users, TrendingUp, BarChart3,
-  MousePointerClick, Zap, ChevronDown, Star
+  MousePointerClick, Zap, ChevronDown, Star, AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
@@ -59,7 +59,7 @@ export default async function CategoryPage({ params }: PageProps) {
                 <div className="w-1.5 h-1.5 rounded-full bg-[#25D366]" />
                 <span className="text-[11px] font-semibold text-[#0A2540]/70 uppercase tracking-wider">Soluzione per {category.name}</span>
               </div>
-              <h1 className="text-[40px] leading-[1.05] md:text-6xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.03em] mb-6">
+              <h1 className="text-[36px] leading-[1.05] md:text-5xl md:leading-[1.05] font-bold text-[#0A2540] tracking-[-0.03em] mb-6">
                 {category.heroTitle}
               </h1>
               <p className="text-base md:text-lg text-[#425466] leading-relaxed mb-8">
@@ -75,7 +75,7 @@ export default async function CategoryPage({ params }: PageProps) {
                 </Link>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-[#425466]/70">
-                {["Zero commissioni", "Setup in 10 minuti", "Disdici quando vuoi"].map((t) => (
+                {["Nessuna carta richiesta", "Attivo in 10 minuti", "Disdici quando vuoi"].map((t) => (
                   <span key={t} className="flex items-center gap-1.5 font-medium">
                     <Check size={14} className="text-[#22C55E]" strokeWidth={3} />
                     {t}
@@ -84,7 +84,7 @@ export default async function CategoryPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* MOCKUP CARD */}
+            {/* MOCKUP DINAMICO */}
             <div className="relative">
               <div className="absolute inset-0 bg-[#25D366]/10 blur-3xl rounded-full" />
               <div className="relative bg-white rounded-2xl shadow-2xl shadow-[#0A2540]/20 p-5 border border-[#E6EBF1] max-w-sm mx-auto">
@@ -94,32 +94,55 @@ export default async function CategoryPage({ params }: PageProps) {
                       {category.name.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-bold text-[#0A2540] text-sm">{category.name}</p>
-                      <p className="text-[11px] text-[#425466]/60">La tua attività</p>
+                      <p className="font-bold text-[#0A2540] text-sm">{category.mockup.title}</p>
+                      <p className="text-[11px] text-[#425466]/60">{category.name}</p>
                     </div>
                   </div>
                   <Star size={16} className="text-[#25D366] fill-[#25D366]" />
                 </div>
                 <div className="pt-4 space-y-2">
-                  {[
-                    { time: "09:00", name: "Mario Rossi", status: "Confermato" },
-                    { time: "11:30", name: "Giulia Bianchi", status: "Confermato" },
-                    { time: "15:00", name: "Luca Verdi", status: "In attesa" },
-                  ].map((apt, i) => (
+                  {category.mockup.items.map((apt, i) => (
                     <div key={i} className="flex items-center gap-3 p-3 bg-[#FAFBFC] rounded-xl border border-[#E6EBF1]">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#25D366]/15 to-[#128C7E]/15 text-[#0A2540] flex flex-col items-center justify-center">
+                      <div className="w-14 h-12 rounded-lg bg-gradient-to-br from-[#25D366]/15 to-[#128C7E]/15 text-[#0A2540] flex flex-col items-center justify-center">
                         <span className="text-[10px] font-bold">{apt.time}</span>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-[#0A2540]">{apt.name}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#0A2540] truncate">{apt.label}</p>
                         <p className="text-xs text-[#425466]/60">{apt.status}</p>
                       </div>
-                      <div className={'w-2 h-2 rounded-full ' + (apt.status === 'Confermato' ? 'bg-[#22C55E]' : 'bg-amber-400')} />
+                      <div className={'w-2 h-2 rounded-full shrink-0 ' + (apt.status === 'Confermato' ? 'bg-[#22C55E]' : 'bg-amber-400')} />
                     </div>
                   ))}
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* IL PROBLEMA */}
+      <section className="py-16 md:py-24 bg-[#0A2540] text-white">
+        <div className="container-x max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-5">
+              <AlertCircle size={12} className="text-[#25D366]" />
+              <span className="text-[11px] font-semibold text-white/80 uppercase tracking-wider">Il problema</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight mb-4">
+              Lo sai anche tu.<br />
+              <span className="text-[#25D366]">Il sistema attuale non funziona.</span>
+            </h2>
+            <p className="text-white/70 max-w-2xl mx-auto">
+              Se gestisci {category.name.toLowerCase()} e ti riconosci in questi problemi, allora sei nel posto giusto.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            {category.problems.map((problem, i) => (
+              <div key={i} className="flex items-start gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/[0.08] transition">
+                <div className="text-2xl shrink-0">{problem.split(' ')[0]}</div>
+                <p className="text-white/90 text-sm leading-relaxed">{problem.split(' ').slice(1).join(' ')}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -133,11 +156,11 @@ export default async function CategoryPage({ params }: PageProps) {
               <span className="text-[11px] font-semibold text-[#0A2540]/70 uppercase tracking-wider">Come funziona</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight leading-tight mb-4">
-              Tre passaggi.<br />
-              <span className="text-[#425466]">Zero complicazioni.</span>
+              La soluzione.<br />
+              <span className="text-[#425466]">In tre passaggi.</span>
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-5 relative">
+          <div className="grid md:grid-cols-3 gap-5">
             {category.howItWorks.map((step, i) => {
               const Icon = STEP_ICONS[i] || Zap
               return (
@@ -163,11 +186,11 @@ export default async function CategoryPage({ params }: PageProps) {
           <div className="text-center mb-14">
             <div className="inline-flex items-center gap-2 bg-white border border-[#E6EBF1] rounded-full px-4 py-1.5 mb-5 shadow-sm">
               <Sparkles size={12} className="text-[#25D366]" />
-              <span className="text-[11px] font-semibold text-[#0A2540]/70 uppercase tracking-wider">Funzionalità</span>
+              <span className="text-[11px] font-semibold text-[#0A2540]/70 uppercase tracking-wider">Cosa ottieni</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight leading-tight">
-              Tutto per gestire<br />
-              <span className="text-[#425466]">il tuo lavoro.</span>
+              Tutto quello<br />
+              <span className="text-[#425466]">che ti serve.</span>
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -191,8 +214,8 @@ export default async function CategoryPage({ params }: PageProps) {
         <div className="container-x max-w-md mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight leading-tight mb-4">
-              Il piano<br />
-              <span className="text-[#425466]">consigliato.</span>
+              Meno di 1€<br />
+              <span className="text-[#425466]">al giorno.</span>
             </h2>
             <p className="text-[#425466] mt-4">{category.recommendedPlan.description}</p>
           </div>
@@ -205,10 +228,15 @@ export default async function CategoryPage({ params }: PageProps) {
                   <Star size={10} className="fill-white" /> Consigliato
                 </span>
               </div>
-              <div className="flex items-baseline gap-1 mb-6 pb-6 border-b border-[#E6EBF1]">
+              <div className="flex items-baseline gap-1 mb-4 pb-4 border-b border-[#E6EBF1]">
                 <span className="text-xs font-semibold text-[#425466]">€</span>
                 <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{category.recommendedPlan.price}</span>
                 <span className="text-sm text-[#425466]/60 font-semibold">{category.recommendedPlan.period}</span>
+              </div>
+              <div className="bg-[#FFF8E1] border border-amber-200 rounded-xl p-3 mb-6">
+                <p className="text-xs text-amber-900 leading-relaxed">
+                  💡 <strong>Confronto onesto:</strong> {category.recommendedPlan.competitorNote}
+                </p>
               </div>
               <ul className="space-y-3 mb-8">
                 {category.recommendedPlan.features.map((f, i) => (
@@ -224,7 +252,7 @@ export default async function CategoryPage({ params }: PageProps) {
                 href="/signup"
                 className="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#0F766E] text-white py-4 rounded-full font-bold text-sm transition inline-flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/30 active:scale-[0.98]"
               >
-                Inizia 48 ore gratis
+                Prova 48 ore gratis
                 <ArrowRight size={15} />
               </Link>
               <p className="text-[10px] text-[#425466]/50 text-center mt-3">Nessuna carta richiesta · Disdici quando vuoi</p>
@@ -238,7 +266,7 @@ export default async function CategoryPage({ params }: PageProps) {
         <section className="py-16 md:py-24 bg-white">
           <div className="container-x max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-[#0A2540] mb-4">Attività che usano Prenotly</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#0A2540] mb-4">Chi ci ha già scelto</h2>
               <p className="text-[#425466]">Scopri chi ha già scelto la nostra soluzione per {category.name.toLowerCase()}.</p>
             </div>
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -277,9 +305,7 @@ export default async function CategoryPage({ params }: PageProps) {
                     <ChevronDown size={16} className="text-[#0A2540] transition-transform group-open:rotate-180" />
                   </div>
                 </summary>
-                <div className="px-5 pb-5 text-sm text-[#425466] leading-relaxed">
-                  {faq.a}
-                </div>
+                <div className="px-5 pb-5 text-sm text-[#425466] leading-relaxed">{faq.a}</div>
               </details>
             ))}
           </div>
@@ -293,11 +319,11 @@ export default async function CategoryPage({ params }: PageProps) {
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#25D366]/20 rounded-full blur-3xl pointer-events-none" />
             <div className="relative">
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-4">
-                Pronto a riempire<br />
-                <span className="text-[#25D366]">la tua agenda?</span>
+                Prova gratis.<br />
+                <span className="text-[#25D366]">Poi decidi tu.</span>
               </h2>
               <p className="text-white/70 text-base md:text-lg mb-8 max-w-lg mx-auto">
-                Prova Prenotly gratis per 48 ore. Nessuna carta richiesta, nessun vincolo.
+                48 ore di prova completa. Nessuna carta richiesta. Se non ti convince, un click e sei fuori.
               </p>
               <Link
                 href="/signup"
