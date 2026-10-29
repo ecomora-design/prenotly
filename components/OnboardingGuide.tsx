@@ -35,7 +35,7 @@ function getStepsFood(businessSlug: string) {
     {
       icon: MessageCircle,
       title: "Configura App",
-      text: "Nel campo 'Numero App' inserisci il numero con prefisso +39 dove vuoi ricevere gli ordini (es. +393331234567).",
+      text: "Nel campo 'Numero WhatsApp' inserisci il numero con prefisso +39 dove vuoi ricevere gli ordini (es. +393331234567).",
       cta: "Configura ora",
       link: "/dashboard/impostazioni",
       external: false,
@@ -88,7 +88,7 @@ function getStepsPro(businessSlug: string) {
     {
       icon: MessageCircle,
       title: "Configura App",
-      text: "Nel campo 'Numero App' inserisci il numero con prefisso +39 dove vuoi ricevere le prenotazioni (es. +393331234567).",
+      text: "Nel campo 'Numero WhatsApp' inserisci il numero con prefisso +39 dove vuoi ricevere le prenotazioni (es. +393331234567).",
       cta: "Configura ora",
       link: "/dashboard/impostazioni",
       external: false,

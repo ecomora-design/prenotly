@@ -36,6 +36,15 @@ export default function ClienteDetailPage() {
     enable_table_bookings: false,
   });
 
+  const [savingInfo, setSavingInfo] = useState(false);
+  const [infoForm, setInfoForm] = useState({
+    business_name: "",
+    whatsapp_number: "",
+    slug: "",
+    category: "",
+    description: "",
+  });
+
   useEffect(() => {
     async function load() {
       const { data: t } = await supabase.from("tenants").select("*").eq("slug", slug).single();
@@ -48,6 +57,14 @@ export default function ClienteDetailPage() {
         trial_ends_at: t.trial_ends_at ? new Date(t.trial_ends_at).toISOString().slice(0, 16) : "",
         subscription_ends_at: t.subscription_ends_at ? new Date(t.subscription_ends_at).toISOString().slice(0, 16) : "",
         enable_table_bookings: t.enable_table_bookings === true,
+      });
+
+      setInfoForm({
+        business_name: t.business_name || "",
+        whatsapp_number: t.whatsapp_number || "",
+        slug: t.slug || "",
+        category: t.category || "",
+        description: t.description || "",
       });
 
       const [orders, bookings, customers, services] = await Promise.all([
@@ -106,6 +123,21 @@ export default function ClienteDetailPage() {
       enable_table_bookings: true,
     }).eq("id", tenant.id);
     window.location.reload();
+  };
+
+  const handleSaveInfo = async () => {
+    if (!confirm("Salvare i dati anagrafici? Se hai cambiato lo slug, i link esistenti non funzioneranno piu.")) return;
+    setSavingInfo(true);
+    const { error } = await supabase.from("tenants").update({
+      business_name: infoForm.business_name,
+      whatsapp_number: infoForm.whatsapp_number,
+      slug: infoForm.slug,
+      category: infoForm.category,
+      description: infoForm.description,
+    }).eq("id", tenant.id);
+    setSavingInfo(false);
+    if (error) alert("Errore: " + error.message);
+    else window.location.reload();
   };
 
   const handleDelete = async () => {
@@ -246,6 +278,80 @@ export default function ClienteDetailPage() {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* DATI ANAGRAFICI */}
+          <div className="bg-[#0A0A0A] border border-white/[0.06] rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-sm font-bold flex items-center gap-2">
+                  <Users size={16} className="text-[#25D366]" /> Dati Anagrafici
+                </h3>
+                <p className="text-[10px] text-white/40 mt-1">Modifica i dati del cliente senza accedere al suo account</p>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Nome Attivita</label>
+                <input
+                  type="text"
+                  value={infoForm.business_name}
+                  onChange={(e) => setInfoForm({...infoForm, business_name: e.target.value})}
+                  className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Numero WhatsApp</label>
+                <input
+                  type="tel"
+                  value={infoForm.whatsapp_number}
+                  onChange={(e) => setInfoForm({...infoForm, whatsapp_number: e.target.value})}
+                  placeholder="+39..."
+                  className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Slug URL (attenzione!)</label>
+                <input
+                  type="text"
+                  value={infoForm.slug}
+                  onChange={(e) => setInfoForm({...infoForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")})}
+                  className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-sm font-mono focus:border-[#25D366] outline-none transition"
+                />
+                <p className="text-[10px] text-yellow-400/70 mt-1">Cambiare lo slug rompe i link esistenti</p>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Categoria</label>
+                <select
+                  value={infoForm.category}
+                  onChange={(e) => setInfoForm({...infoForm, category: e.target.value})}
+                  className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] outline-none transition"
+                >
+                  <option value="">Non assegnata</option>
+                  <option value="ristoranti">Ristoranti</option>
+                  <option value="pizzerie">Pizzerie e Paninerie</option>
+                  <option value="servizi">Servizi e Professionisti</option>
+                  <option value="dentisti">Studi Dentistici</option>
+                  <option value="parrucchieri">Parrucchieri e Saloni</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Descrizione (per SEO)</label>
+                <textarea
+                  value={infoForm.description}
+                  onChange={(e) => setInfoForm({...infoForm, description: e.target.value})}
+                  rows={3}
+                  className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] outline-none transition resize-none"
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleSaveInfo}
+              disabled={savingInfo}
+              className="mt-4 w-full bg-[#25D366] hover:bg-[#20ba5a] text-black py-3 rounded-xl font-black text-sm transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,211,102,0.2)]"
+            >
+              {savingInfo ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />} SALVA DATI ANAGRAFICI
+            </button>
           </div>
         </div>
 

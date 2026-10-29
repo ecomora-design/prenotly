@@ -177,7 +177,7 @@ export default function CallMeBotSetup() {
       <div className="space-y-4">
         <label className="block">
           <span className="text-sm font-semibold text-night mb-2 block">
-            Numero App (dove ricevere le notifiche) *
+            Numero WhatsApp (dove ricevere le notifiche) *
           </span>
           <input
             type="tel"

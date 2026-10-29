@@ -476,7 +476,7 @@ export default function ImpostazioniPage() {
 
           <label className="block mt-4">
             <span className="text-sm font-semibold text-night mb-2 flex items-center gap-2">
-              <MessageCircle size={14} /> Numero App *
+              <MessageCircle size={14} /> Numero WhatsApp *
             </span>
             <input
               type="tel"

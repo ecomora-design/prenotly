@@ -233,7 +233,7 @@ const appValid = useMemo(() => {
           {/* App */}       
 <label className="block">
   <span className="text-sm font-semibold text-night mb-2 block">
-    Numero App *
+    Numero WhatsApp *
   </span>
   <div className="relative">
     <input
