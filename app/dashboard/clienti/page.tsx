@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, MessageCircle, Search, Users } from "lucide-react";
+import { Loader2, MessageCircle, Search, Users, ChevronRight } from "lucide-react";
 
 type Customer = {
   id: string;
@@ -100,7 +100,11 @@ export default function ClientiPage() {
           {filtered.map((c) => {
             const phone = c.whatsapp_number.replace(/\D/g, "");
             return (
-              <div key={c.id} className="bg-white rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
+              <div
+                key={c.id}
+                onClick={() => router.push(`/dashboard/clienti/${c.id}`)}
+                className="bg-white rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm hover:shadow-md hover:bg-gray-50/50 transition cursor-pointer"
+              >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-11 h-11 rounded-full bg-wa/10 flex items-center justify-center text-waDark font-bold shrink-0">
                     {(c.name || "?").charAt(0).toUpperCase()}
@@ -114,6 +118,7 @@ export default function ClientiPage() {
                 </div>
                 <a
                   href={`https://wa.me/${phone}`}
+                  onClick={(e) => e.stopPropagation()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-wa/10 hover:bg-wa/20 flex items-center justify-center text-waDark transition shrink-0"
@@ -121,6 +126,7 @@ export default function ClientiPage() {
                 >
                   <MessageCircle size={18} />
                 </a>
+                <ChevronRight size={18} className="text-gray-300 shrink-0" />
               </div>
             );
           })}
