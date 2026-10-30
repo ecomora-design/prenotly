@@ -23,6 +23,7 @@ type Props = {
   tenantPhone: string | null;
   tenantDescription: string | null;
   whatsappNumber: string;
+  webDiscountPercent?: number;
   services: Service[];
   openingHours: Record<string, string> | null;
   brandColor: string;
@@ -37,7 +38,8 @@ const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 export default function BookingClient({
   tenantName, tenantAddress, tenantPhone, tenantDescription,
-  whatsappNumber, services, openingHours, brandColor, logoUrl, slug
+  whatsappNumber,
+  webDiscountPercent = 0, services, openingHours, brandColor, logoUrl, slug
 }: Props) {
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -117,7 +119,9 @@ export default function BookingClient({
           customerPhone,
           serviceId: selectedService.id,
           serviceName: selectedService.name,
-          price: selectedService.price,
+          price: webDiscountPercent > 0 
+            ? Math.round(selectedService.price * (1 - webDiscountPercent / 100) * 100) / 100 
+            : selectedService.price,
           durationMinutes: selectedService.duration_minutes || 30,
           scheduledAt,
           bookingType: "appointment",
@@ -468,7 +472,15 @@ export default function BookingClient({
                   </div>
                   <div className="flex justify-between items-center pt-3 border-t border-dashed border-night/10">
                     <span className="text-xs text-night/50 font-semibold">Totale</span>
-                    <span className="text-lg font-black text-night">€{Number(selectedService.price).toFixed(2)}</span>
+                    {webDiscountPercent > 0 ? (
+                      <div className="text-right">
+                        <div className="text-xs text-night/40 line-through">€{Number(selectedService.price).toFixed(2)}</div>
+                        <span className="text-lg font-black text-emerald-600">€{(Number(selectedService.price) * (1 - webDiscountPercent / 100)).toFixed(2)}</span>
+                        <div className="text-[10px] text-emerald-600 font-bold">-{webDiscountPercent}%</div>
+                      </div>
+                    ) : (
+                      <span className="text-lg font-black text-night">€{Number(selectedService.price).toFixed(2)}</span>
+                    )}
                   </div>
                 </div>
               </div>

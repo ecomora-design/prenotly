@@ -167,6 +167,7 @@ export default async function TenantPage({ params }: Props) {
           hasTakeaway={tenant.has_takeaway ?? true}
           deliveryFee={Number(tenant.delivery_fee) || 0}
           minOrderDelivery={Number(tenant.min_order_delivery) || 0}
+          webDiscountPercent={tenant.web_discount_enabled ? (tenant.web_discount_percent || 0) : 0}
           tableSlots={tenant.booking_slots || tenant.table_slots}
         />
         <InstallBanner />
