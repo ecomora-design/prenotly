@@ -18,9 +18,10 @@ type Tenant = {
   plan_type: string | null;
   product_type: string | null;
   business_type: string;
+  category: string | null;
 };
 
-const PLANS = {
+const FOOD_PLANS = {
   food_menu: {
     id: "food_menu", name: "Menu Digitale", subtitle: "Solo visualizzazione",
     icon: Utensils, color: "#64748B", price: "9,99", interval: "/mese",
@@ -38,6 +39,22 @@ const PLANS = {
     icon: Crown, color: "#8B5CF6", badge: "TUTTO INCLUSO", price: "99,99", interval: "/mese",
     features: ["✨ Tutto di Food + Ordini", "💳 Pagamenti in-app (Stripe)", "📱 Ordini diretti da QR Code", "🧾 Fatturazione automatica", "🗄️ Database e report su misura", "🔒 Sicurezza avanzata"],
     upgradeNote: "Software interno per comande e cucina",
+  },
+};
+
+const SERVICE_PLANS = {
+  food_standard: {
+    id: "food_standard", name: "Prenotly Pro", subtitle: "Agenda intelligente",
+    icon: Calendar, color: "#8B5CF6", badge: "CONSIGLIATO", price: "29,99", interval: "/mese",
+    features: [
+      "📅 Agenda intelligente con slot in tempo reale",
+      "🔗 Sincronizzazione con Google Calendar",
+      "🔔 Promemoria anti no-show",
+      "👥 Multi-operatore (gestisci il tuo team)",
+      "💳 Pagamenti in-app opzionali (Stripe)",
+      "📊 Statistiche su appuntamenti e incassi",
+    ],
+    upgradeNote: "Zero commissioni sulle prenotazioni",
   },
 };
 
@@ -102,6 +119,14 @@ function AbbonamentoContent() {
   if (loading || !tenant) {
     return <div className="flex items-center justify-center h-[70vh]"><Loader2 className="animate-spin text-[#25D366]" size={32} /></div>;
   }
+
+  // Scegli i piani in base alla categoria del tenant
+  const isFoodTenant = 
+    tenant.category === "ristoranti" || 
+    tenant.category === "pizzerie" ||
+    (!tenant.category && (tenant.product_type === "food" || tenant.business_type === "restaurant"));
+
+  const PLANS = isFoodTenant ? FOOD_PLANS : SERVICE_PLANS;
 
   const isActive = tenant.subscription_status === "active";
   const trialHoursLeft = tenant.trial_ends_at
