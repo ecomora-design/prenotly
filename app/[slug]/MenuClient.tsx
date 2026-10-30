@@ -61,6 +61,7 @@ type Props = {
   hasTakeaway?: boolean;
   deliveryFee?: number;
   minOrderDelivery?: number;
+  webDiscountPercent?: number;
 };
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -97,6 +98,7 @@ export default function MenuClient({
   hasTakeaway = true,
   deliveryFee = 0,
   minOrderDelivery = 0,
+  webDiscountPercent = 0,
 }: Props) {
   const [tab, setTab] = useState<"menu" | "info">("menu");
   const [selectedCategory, setSelectedCategory] = useState<string>("tutto");
@@ -342,7 +344,10 @@ export default function MenuClient({
   const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0);
   const cartSubtotal = cartItems.reduce((sum, i) => sum + i.qty * Number(i.service.price), 0);
   const deliveryCost = orderType === "delivery" ? deliveryFee : 0;
-  const cartTotal = cartSubtotal + deliveryCost;
+  const webDiscountEnabled = webDiscountPercent > 0;
+  const webDiscountAmount = webDiscountEnabled ? (cartSubtotal * webDiscountPercent / 100) : 0;
+  const cartTotalBeforeDiscount = cartSubtotal + deliveryCost;
+  const cartTotal = cartTotalBeforeDiscount - webDiscountAmount;
 
   const sendOrder = async () => {
     setSubmitting(true);
@@ -958,6 +963,17 @@ export default function MenuClient({
               </div>
 
               <div className="p-5">
+                {webDiscountEnabled && cartCount > 0 && (
+                  <div className="bg-gradient-to-r from-emerald-500 to-green-500 rounded-2xl p-4 mb-4 flex items-center gap-3 shadow-lg shadow-emerald-500/20">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <span className="text-xl">🎁</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-black text-sm">Risparmia il {webDiscountPercent}%!</p>
+                      <p className="text-white/80 text-xs mt-0.5">Sconto applicato automaticamente al totale</p>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-3 mb-6">
                   {cartItems.map((item) => (
                     <div key={item.service.id} className="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm">
@@ -996,9 +1012,22 @@ export default function MenuClient({
                       Ordine minimo: €{minOrderDelivery.toFixed(2)}
                     </div>
                   )}
+                  {webDiscountEnabled && (
+                    <div className="flex justify-between items-center text-sm bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl px-3 py-2.5 -mx-1 border border-emerald-100">
+                      <span className="text-emerald-700 font-semibold flex items-center gap-1.5">
+                        🎁 Sconto web ({webDiscountPercent}%)
+                      </span>
+                      <span className="font-black text-emerald-700">-€{webDiscountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="font-bold text-night">{t.total}</span>
-                    <span className="font-bold text-night text-2xl">€{cartTotal.toFixed(2)}</span>
+                    <div className="text-right">
+                      {webDiscountEnabled && (
+                        <div className="text-xs text-gray-400 line-through">€{cartTotalBeforeDiscount.toFixed(2)}</div>
+                      )}
+                      <span className="font-bold text-night text-2xl">€{cartTotal.toFixed(2)}</span>
+                    </div>
                   </div>
                 </div>
 
