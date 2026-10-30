@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Utensils, ShoppingBag, Calendar,
   CreditCard, QrCode, Settings, LogOut, Menu, X, Loader2,
-  ExternalLink, Users, ChevronRight, Sparkles, Bell, LayoutGrid, BarChart3
+  ExternalLink, Users, ChevronRight, Sparkles, Bell, LayoutGrid, BarChart3, TrendingDown
 } from "lucide-react";
 
 type Tenant = {
@@ -220,6 +220,7 @@ export default function DashboardLayout({
         ] : []),
         ...(isFood ? [{ href: "/dashboard/tavoli", label: "Gestione Tavoli", icon: LayoutGrid }] : []),
         { href: "/dashboard/report", label: "Report Incassi", icon: BarChart3 },
+        ...(tenant.plan_type === "food_premium" ? [{ href: "/dashboard/spese", label: "Spese", icon: TrendingDown }] : []),
         { href: "/dashboard/servizi", label: isFood ? "Menu" : "Servizi", icon: Utensils },
       ],
     },
