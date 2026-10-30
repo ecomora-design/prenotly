@@ -32,8 +32,27 @@ function LoginForm() {
       return;
     }
 
-    const next = searchParams.get("next") || "/dashboard";
-    router.push(next);
+    const next = searchParams.get("next");
+
+    // Controlla se l'utente è uno staff (operatore)
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { data: staffRow } = await supabase
+        .from("staff")
+        .select("id")
+        .eq("user_id", currentUser.id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (staffRow) {
+        // È un operatore → dashboard staff
+        router.push("/staff/dashboard");
+        router.refresh();
+        return;
+      }
+    }
+
+    router.push(next || "/dashboard");
     router.refresh();
   };
 

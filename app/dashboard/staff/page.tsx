@@ -7,7 +7,7 @@ import { planHasFeature } from "@/lib/planFeatures";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Plus, Trash2, X, Save, Pencil, Crown, Lock, UserCircle2, CheckCircle2, Circle } from "lucide-react";
 
-type Staff = { id: string; name: string; role: string | null; color: string; is_active: boolean; sort_order: number; };
+type Staff = { id: string; name: string; role: string | null; color: string; is_active: boolean; sort_order: number; email: string | null; user_id: string | null; };
 const PALETTE = ["#25D366","#3B82F6","#8B5CF6","#EC4899","#F97316","#EAB308","#14B8A6","#EF4444","#6366F1","#10B981"];
 
 export default function StaffPage() {
@@ -20,7 +20,7 @@ export default function StaffPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: "", role: "", color: "#25D366" });
+  const [form, setForm] = useState({ name: "", role: "", color: "#25D366", email: "", password: "" });
   const hasStaff = planHasFeature(planType, "staff");
 
   async function load() {
@@ -38,22 +38,48 @@ export default function StaffPage() {
   }
   useEffect(() => { load(); }, []);
 
-  function openNew() { setEditingId(null); setForm({ name: "", role: "", color: "#25D366" }); setShowModal(true); }
-  function openEdit(s: Staff) { setEditingId(s.id); setForm({ name: s.name, role: s.role || "", color: s.color }); setShowModal(true); }
+  function openNew() { setEditingId(null); setForm({ name: "", role: "", color: "#25D366", email: "", password: "" }); setShowModal(true); }
+  function openEdit(s: Staff) { setEditingId(s.id); setForm({ name: s.name, role: s.role || "", color: s.color, email: s.email || "", password: "" }); setShowModal(true); }
 
   async function handleSave() {
     if (!form.name.trim()) { alert("Inserisci un nome"); return; }
     if (!tenantId) return;
     setSaving(true);
-    let error;
+
     if (editingId) {
-      ({ error } = await supabase.from("staff").update({ name: form.name.trim(), role: form.role.trim() || null, color: form.color }).eq("id", editingId));
-    } else {
-      const max = staff.length > 0 ? Math.max(...staff.map(s => s.sort_order)) : 0;
-      ({ error } = await supabase.from("staff").insert({ tenant_id: tenantId, name: form.name.trim(), role: form.role.trim() || null, color: form.color, sort_order: max + 1 }));
+      const { error } = await supabase.from("staff").update({ name: form.name.trim(), role: form.role.trim() || null, color: form.color }).eq("id", editingId);
+      setSaving(false);
+      if (error) { alert("Errore: " + error.message); return; }
+      setShowModal(false);
+      load();
+      return;
     }
+
+    if (!form.email?.trim() || !form.password?.trim()) {
+      alert("Email e password obbligatorie per un nuovo operatore");
+      setSaving(false);
+      return;
+    }
+    if (form.password.length < 6) {
+      alert("Password almeno 6 caratteri");
+      setSaving(false);
+      return;
+    }
+
+    const res = await fetch("/api/dashboard/staff/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: form.name.trim(),
+        role: form.role.trim() || null,
+        color: form.color,
+        email: form.email.trim(),
+        password: form.password,
+      }),
+    });
+    const data = await res.json();
     setSaving(false);
-    if (error) { alert("Errore: " + error.message); return; }
+    if (!res.ok) { alert("Errore: " + (data.error || "Sconosciuto")); return; }
     setShowModal(false);
     load();
   }
@@ -132,6 +158,20 @@ export default function StaffPage() {
               <div className="space-y-4">
                 <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Nome *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Es. Mario" className="w-full bg-soft border border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-wa focus:outline-none" /></div>
                 <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Ruolo</label><input type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Es. Parrucchiere" className="w-full bg-soft border border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-wa focus:outline-none" /></div>
+
+                {!editingId && (
+                  <>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Email *</label>
+                      <input type="email" value={form.email || ""} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="operatore@email.com" className="w-full bg-soft border border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-wa focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Password *</label>
+                      <input type="text" value={form.password || ""} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 caratteri" className="w-full bg-soft border border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-wa focus:outline-none" />
+                      <p className="text-[10px] text-amber-600 mt-1">Comunica questa password all&apos;operatore. Non sarà visibile dopo la creazione.</p>
+                    </div>
+                  </>
+                )}
                 <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Colore</label><div className="flex flex-wrap gap-2">{PALETTE.map(c => (<button key={c} type="button" onClick={() => setForm({ ...form, color: c })} className={`w-9 h-9 rounded-full ${form.color === c ? "ring-2 ring-offset-2 ring-night" : ""}`} style={{ backgroundColor: c }} />))}</div></div>
               </div>
               <div className="flex gap-2 mt-6">

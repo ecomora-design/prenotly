@@ -14,7 +14,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const protectedPaths = ['/dashboard', '/onboarding']
+  const protectedPaths = ['/dashboard', '/staff', '/onboarding']
   const authPaths = ['/login', '/signup']
 
   const isProtected = protectedPaths.some((p) => path.startsWith(p))
