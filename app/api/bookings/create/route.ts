@@ -86,23 +86,34 @@ export async function POST(req: Request) {
       const dayEnd = new Date(requestedStart);
       dayEnd.setHours(23, 59, 59, 999);
 
+      // Solo appuntamenti (esclude i tavoli)
       const { data: existingBookings } = await supabase
         .from("bookings")
         .select("scheduled_at, duration_minutes, status")
         .eq("tenant_id", tenant.id)
+        .eq("booking_type", "appointment")
         .gte("scheduled_at", dayStart.toISOString())
         .lte("scheduled_at", dayEnd.toISOString())
         .neq("status", "cancelled");
 
-      const hasConflict = (existingBookings || []).some((b) => {
+      // Conta quante prenotazioni si sovrappongono all'orario richiesto
+      const overlappingCount = (existingBookings || []).filter((b) => {
         const bStart = new Date(b.scheduled_at).getTime();
         const bEnd = bStart + (b.duration_minutes || 30) * 60000;
         return requestedStart.getTime() < bEnd && requestedEnd.getTime() > bStart;
-      });
+      }).length;
 
-      if (hasConflict) {
+      // Capacità = numero di operatori attivi (o 1 di default)
+      const { data: activeStaff } = await supabase
+        .from("staff")
+        .select("id")
+        .eq("tenant_id", tenant.id)
+        .eq("is_active", true);
+      const capacity = (activeStaff && activeStaff.length > 0) ? activeStaff.length : 1;
+
+      if (overlappingCount >= capacity) {
         return NextResponse.json(
-          { error: "slot_taken", message: "Questo orario è appena stato prenotato. Scegline un altro." },
+          { error: "slot_taken", message: "Tutti gli operatori sono occupati in questo orario. Scegli un altro orario." },
           { status: 409 }
         );
       }

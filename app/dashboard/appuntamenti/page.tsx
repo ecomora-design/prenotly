@@ -20,7 +20,16 @@ type Appointment = {
   status: string;
   notes: string | null;
   duration_minutes: number | null;
+  staff_id: string | null;
   customers: { name: string | null; whatsapp_number: string | null } | null;
+  staff: { name: string; color: string } | null;
+};
+
+type StaffMember = {
+  id: string;
+  name: string;
+  color: string;
+  is_active: boolean;
 };
 
 const STATUS_CONFIG = {
@@ -43,16 +52,19 @@ export default function AppuntamentiPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tenantId, setTenantId] = useState<string>("");
   const [showManualModal, setShowManualModal] = useState(false);
+  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [staffFilter, setStaffFilter] = useState<string>("all");
 
   const dateStrip = useMemo(() => {
     const days = [];
+    // Rigenera 14 giorni intorno alla data selezionata
     for (let i = -2; i < 12; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
+      const d = new Date(selectedDate);
+      d.setDate(selectedDate.getDate() + i);
       days.push(d);
     }
     return days;
-  }, []);
+  }, [selectedDate]);
 
   const load = useCallback(async (showSkeleton = false) => {
     if (showSkeleton) setLoading(true);
@@ -72,25 +84,32 @@ export default function AppuntamentiPage() {
 
     const { data } = await supabase
       .from("bookings")
-      .select("id, booking_code, scheduled_at, status, notes, duration_minutes, customer_id")
+      .select("id, booking_code, scheduled_at, status, notes, duration_minutes, customer_id, staff_id")
       .eq("tenant_id", link.tenant_id)
       .eq("booking_type", "appointment")
       .order("scheduled_at", { ascending: true });
 
     const rawAppointments = data || [];
 
-    const { data: customers } = await supabase
-      .from("customers")
-      .select("id, name, whatsapp_number")
-      .eq("tenant_id", link.tenant_id);
+    const [customersRes, staffRes] = await Promise.all([
+      supabase.from("customers").select("id, name, whatsapp_number").eq("tenant_id", link.tenant_id),
+      supabase.from("staff").select("id, name, color, is_active").eq("tenant_id", link.tenant_id),
+    ]);
 
     const custMap: Record<string, { name: string | null; whatsapp_number: string | null }> = {};
-    (customers || []).forEach((c: any) => { custMap[c.id] = { name: c.name, whatsapp_number: c.whatsapp_number }; });
+    (customersRes.data || []).forEach((c: any) => { custMap[c.id] = { name: c.name, whatsapp_number: c.whatsapp_number }; });
+
+    const staffData = (staffRes.data || []) as StaffMember[];
+    setStaffList(staffData);
+
+    const staffMap: Record<string, { name: string; color: string }> = {};
+    staffData.forEach(s => { staffMap[s.id] = { name: s.name, color: s.color }; });
 
     setAppointments(
       rawAppointments.map((a: any) => ({
         ...a,
         customers: custMap[a.customer_id] || null,
+        staff: a.staff_id ? (staffMap[a.staff_id] || null) : null,
       }))
     );
     setLoading(false);
@@ -105,9 +124,17 @@ export default function AppuntamentiPage() {
   };
 
   const selectedDateStr = selectedDate.toISOString().split("T")[0];
-  const dailyAppointments = appointments.filter(
-    (a) => a.scheduled_at.split("T")[0] === selectedDateStr
-  );
+  const dailyAppointments = appointments.filter((a) => {
+    if (a.scheduled_at.split("T")[0] !== selectedDateStr) return false;
+    if (staffFilter !== "all") {
+      if (staffFilter === "none") {
+        if (a.staff_id !== null) return false;
+      } else {
+        if (a.staff_id !== staffFilter) return false;
+      }
+    }
+    return true;
+  });
 
   const groupedByTime = dailyAppointments.reduce((acc: Record<string, Appointment[]>, a) => {
     const time = new Date(a.scheduled_at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome" });
@@ -202,6 +229,35 @@ export default function AppuntamentiPage() {
       {/* DATE PICKER */}
       <div className="px-4 sm:px-6 lg:px-8 mb-6">
         <div className="bg-white rounded-3xl p-3 border border-night/[0.06] shadow-sm">
+          {/* Header: oggi + date picker */}
+          <div className="flex items-center justify-between gap-2 mb-2 px-1">
+            <button
+              onClick={() => setSelectedDate(new Date())}
+              className={`px-3 py-1.5 rounded-full text-xs font-black transition ${
+                selectedDate.toDateString() === new Date().toDateString()
+                  ? "bg-night text-white"
+                  : "bg-cream text-night/60 hover:bg-cream/70"
+              }`}
+            >
+              Oggi
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-night/40 uppercase tracking-widest">
+                Vai a
+              </span>
+              <input
+                type="date"
+                value={selectedDate.toISOString().split("T")[0]}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const [y, m, d] = e.target.value.split("-").map(Number);
+                    setSelectedDate(new Date(y, m - 1, d));
+                  }
+                }}
+                className="bg-cream border border-night/[0.06] rounded-lg px-2.5 py-1.5 text-xs font-bold text-night focus:outline-none focus:border-night/20"
+              />
+            </div>
+          </div>
           <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar snap-x px-1">
             {dateStrip.map((d) => {
               const isSelected = d.toDateString() === selectedDate.toDateString();
@@ -227,6 +283,52 @@ export default function AppuntamentiPage() {
           </div>
         </div>
       </div>
+
+      {/* FILTRO OPERATORI */}
+      {staffList.length > 0 && (
+        <div className="px-4 sm:px-6 lg:px-8 mb-4">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-1 px-1 hide-scrollbar">
+            <button
+              onClick={() => setStaffFilter("all")}
+              className={`px-4 py-2 rounded-full text-xs font-black whitespace-nowrap transition shrink-0 ${
+                staffFilter === "all"
+                  ? "bg-night text-white shadow-md"
+                  : "bg-white text-night/60 hover:bg-cream border border-night/[0.06]"
+              }`}
+            >
+              Tutti
+            </button>
+            {staffList.filter(s => s.is_active).map(s => (
+              <button
+                key={s.id}
+                onClick={() => setStaffFilter(s.id)}
+                className={`px-4 py-2 rounded-full text-xs font-black whitespace-nowrap transition shrink-0 flex items-center gap-2 ${
+                  staffFilter === s.id
+                    ? "text-white shadow-md"
+                    : "bg-white text-night/70 hover:bg-cream border border-night/[0.06]"
+                }`}
+                style={staffFilter === s.id ? { backgroundColor: s.color } : {}}
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: s.color }}
+                />
+                {s.name}
+              </button>
+            ))}
+            <button
+              onClick={() => setStaffFilter("none")}
+              className={`px-4 py-2 rounded-full text-xs font-black whitespace-nowrap transition shrink-0 ${
+                staffFilter === "none"
+                  ? "bg-night text-white shadow-md"
+                  : "bg-white text-night/60 hover:bg-cream border border-night/[0.06]"
+              }`}
+            >
+              Senza operatore
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* TIMELINE */}
       <div className="px-4 sm:px-6 lg:px-8">
@@ -279,8 +381,8 @@ export default function AppuntamentiPage() {
 
                           <div className="flex items-center justify-between p-4 border-b border-night/[0.04]">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: config.accent + "15" }}>
-                                <Scissors size={20} style={{ color: config.accent }} />
+                              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: (appointment.staff?.color || config.accent) + "15" }}>
+                                <Scissors size={20} style={{ color: appointment.staff?.color || config.accent }} />
                               </div>
                               <div className="min-w-0">
                                 <h4 className="font-black text-night text-base leading-tight truncate">
@@ -293,6 +395,14 @@ export default function AppuntamentiPage() {
                                   {appointment.duration_minutes && (
                                     <span className="text-[10px] font-bold text-night/50 bg-cream px-2 py-0.5 rounded flex items-center gap-1">
                                       <Timer size={10} /> {appointment.duration_minutes} min
+                                    </span>
+                                  )}
+                                  {appointment.staff && (
+                                    <span
+                                      className="text-[10px] font-black text-white px-2 py-0.5 rounded inline-flex items-center gap-1"
+                                      style={{ backgroundColor: appointment.staff.color }}
+                                    >
+                                      <User size={10} /> {appointment.staff.name}
                                     </span>
                                   )}
                                 </div>
@@ -350,6 +460,7 @@ export default function AppuntamentiPage() {
       <AnimatePresence>
         {showManualModal && (
           <ManualAppointmentModal
+            staffList={staffList}
             tenantId={tenantId}
             onClose={() => setShowManualModal(false)}
             onSaved={() => load(false)}
@@ -362,7 +473,7 @@ export default function AppuntamentiPage() {
 }
 
 // ── MODALE APPUNTAMENTO MANUALE ──
-function ManualAppointmentModal({ tenantId, onClose, onSaved, selectedDate }: { tenantId: string; onClose: () => void; onSaved: () => void; selectedDate: Date }) {
+function ManualAppointmentModal({ tenantId, onClose, onSaved, selectedDate, staffList }: { tenantId: string; onClose: () => void; onSaved: () => void; selectedDate: Date; staffList: StaffMember[] }) {
   const supabase = createClient();
   const [saving, setSaving] = useState(false);
   const [services, setServices] = useState<any[]>([]);
@@ -375,6 +486,7 @@ function ManualAppointmentModal({ tenantId, onClose, onSaved, selectedDate }: { 
     time: "10:00",
     notes: "",
     status: "confirmed",
+    staffId: "",
   });
 
   useEffect(() => {
@@ -436,6 +548,7 @@ function ManualAppointmentModal({ tenantId, onClose, onSaved, selectedDate }: { 
         scheduled_at: scheduledAt,
         duration_minutes: form.duration,
         service_id: form.serviceId || null,
+        staff_id: form.staffId || null,
         status: form.status,
         notes: form.notes || null,
       });
@@ -513,6 +626,22 @@ function ManualAppointmentModal({ tenantId, onClose, onSaved, selectedDate }: { 
                 ))}
               </select>
             </div>
+
+            {staffList.length > 0 && (
+              <div>
+                <p className="text-[10px] font-black text-night/40 uppercase tracking-widest mb-2">Operatore (opzionale)</p>
+                <select
+                  value={form.staffId}
+                  onChange={(e) => setForm({ ...form, staffId: e.target.value })}
+                  className="w-full bg-[#FAFAFA] border border-night/[0.08] rounded-xl px-4 py-3 text-sm font-bold focus:border-night/30 focus:outline-none"
+                >
+                  <option value="">Nessun operatore</option>
+                  {staffList.filter(s => s.is_active).map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>

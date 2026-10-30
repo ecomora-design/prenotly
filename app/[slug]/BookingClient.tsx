@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock, Phone, MessageCircle, ChevronRight,
@@ -45,6 +45,8 @@ export default function BookingClient({
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [occupiedSlots, setOccupiedSlots] = useState<Record<string, number>>({});
+  const [capacity, setCapacity] = useState<number>(1);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [notes, setNotes] = useState("");
@@ -87,6 +89,25 @@ export default function BookingClient({
     });
     return slots;
   }, [selectedService, selectedDate, openingHours]);
+
+  const isSlotFull = (time: string) => (occupiedSlots[time] || 0) >= capacity;
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    const dateStr = new Date(selectedDate).toISOString().split("T")[0];
+    fetch(`/api/bookings/slots-availability?slug=${encodeURIComponent(slug)}&date=${dateStr}`)
+      .then(r => r.json())
+      .then(data => {
+        setOccupiedSlots(data.occupied || {});
+        setCapacity(data.capacity || 1);
+        // Se lo slot selezionato è diventato pieno, deseleziona
+        setSelectedTime(prev => {
+          if (prev && (data.occupied?.[prev] || 0) >= (data.capacity || 1)) return null;
+          return prev;
+        });
+      })
+      .catch(() => {});
+  }, [selectedDate, slug]);
 
   const groupedSlots = useMemo(() => {
     const groups = [
@@ -402,16 +423,21 @@ export default function BookingClient({
                         <div className="grid grid-cols-4 gap-2">
                           {group.slots.map((time) => {
                             const isSelected = selectedTime === time;
+                            const isFull = isSlotFull(time);
                             return (
                               <button
                                 key={time}
-                                onClick={() => setSelectedTime(time)}
+                                onClick={() => !isFull && setSelectedTime(time)}
+                                disabled={isFull}
                                 className={`py-2.5 rounded-xl text-sm font-bold transition-all border-2 ${
-                                  isSelected 
-                                    ? "text-white shadow-md border-transparent" 
-                                    : "bg-white border-night/[0.06] text-night hover:border-night/20"
+                                  isFull
+                                    ? "bg-night/5 border-night/[0.06] text-night/25 cursor-not-allowed line-through"
+                                    : isSelected 
+                                      ? "text-white shadow-md border-transparent" 
+                                      : "bg-white border-night/[0.06] text-night hover:border-night/20"
                                 }`}
-                                style={isSelected ? { backgroundColor: brandColor } : undefined}
+                                style={isSelected && !isFull ? { backgroundColor: brandColor } : undefined}
+                                title={isFull ? "Orario non disponibile" : undefined}
                               >
                                 {time}
                               </button>
