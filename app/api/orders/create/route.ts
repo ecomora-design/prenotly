@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const supabase = createAdminClient();
-    const { data: tenant } = await supabase.from("tenants").select("id").eq("slug", slug).single();
+    const { data: tenant } = await supabase.from("tenants").select("id, web_discount_enabled, web_discount_percent, delivery_fee").eq("slug", slug).single();
     if (!tenant) return NextResponse.json({ error: "Attività non trovata" }, { status: 404 });
 
     const phone = customerPhone.trim();
@@ -53,12 +53,20 @@ export async function POST(req: Request) {
     // 2. Salviamo l'ordine collegato al cliente
     const orderCode = "OR-" + Math.random().toString(36).substring(2, 8).toUpperCase();
     
+    // Ricalcolo server-side: ignora il total dal client (anti-manomissione)
+    const serverSubtotal = items.reduce((sum: number, i: Item) => sum + (Number(i.price) * Number(i.qty)), 0);
+    const serverDelivery = orderType === "delivery" ? (Number((tenant as any).delivery_fee) || 0) : 0;
+    const serverDiscount = ((tenant as any).web_discount_enabled && (tenant as any).web_discount_percent > 0)
+      ? Math.round(serverSubtotal * (tenant as any).web_discount_percent) / 100
+      : 0;
+    const serverTotal = Math.max(0, serverSubtotal + serverDelivery - serverDiscount);
+
     const { data: order, error: orderError } = await supabase.from("orders").insert({
         tenant_id: tenant.id,
         customer_id: customerId,
         order_code: orderCode,
         items: items.map((i: Item) => ({ service_id: i.serviceId, name: i.name, price: i.price, qty: i.qty })),
-        total: Number(total) || 0,
+        total: serverTotal,
         order_type: orderType === "delivery" ? "delivery" : "takeaway",
         delivery_address: deliveryAddress || null,
         scheduled_for: scheduledFor || null,

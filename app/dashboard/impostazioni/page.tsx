@@ -7,6 +7,7 @@ import UploadImage from "@/components/UploadImage";
 import GoogleCalendarConnect from "@/components/GoogleCalendarConnect";
 import { motion } from "framer-motion";
 import {
+  Gift,
   Loader2, Save, CheckCircle2, Clock, MapPin, Phone, Truck, CalendarClock, X, Plus,
   Store, Image as ImageIcon, Palette, Globe, FileText,
   MessageCircle, AlertCircle, Sparkles, ExternalLink
@@ -28,6 +29,8 @@ type Tenant = {
   cover_image_url: string | null;
   booking_slots: string[] | null;
   has_delivery: boolean | null;
+  web_discount_enabled: boolean | null;
+  web_discount_percent: number | null;
   has_takeaway: boolean | null;
   delivery_fee: number | null;
   min_order_delivery: number | null;
@@ -86,6 +89,8 @@ export default function ImpostazioniPage() {
     opening_hours: {} as Record<string, string>,
     booking_slots: ["19:30", "20:00", "20:30", "21:00", "21:30"] as string[],
     has_delivery: true,
+    web_discount_enabled: false,
+    web_discount_percent: 0,
     has_takeaway: true,
     delivery_fee: 0,
     min_order_delivery: 0,
@@ -120,6 +125,8 @@ export default function ImpostazioniPage() {
         cover_image_url: t.cover_image_url || "",
         booking_slots: t.booking_slots || ["19:30", "20:00", "20:30", "21:00", "21:30"],
         has_delivery: t.has_delivery ?? true,
+        web_discount_enabled: t.web_discount_enabled ?? false,
+        web_discount_percent: t.web_discount_percent || 0,
         has_takeaway: t.has_takeaway ?? true,
         delivery_fee: t.delivery_fee || 0,
         min_order_delivery: t.min_order_delivery || 0,
@@ -202,6 +209,8 @@ export default function ImpostazioniPage() {
         cover_image_url: form.cover_image_url || null,
         booking_slots: form.booking_slots,
         has_delivery: form.has_delivery,
+        web_discount_enabled: form.web_discount_enabled,
+        web_discount_percent: form.web_discount_enabled ? (Number(form.web_discount_percent) || 0) : 0,
         has_takeaway: form.has_takeaway,
         delivery_fee: Number(form.delivery_fee) || 0,
         min_order_delivery: Number(form.min_order_delivery) || 0,
@@ -553,6 +562,44 @@ export default function ImpostazioniPage() {
             )}
           </Section>
         )}
+
+        {/* SCONTO PRENOTAZIONE WEB */}
+        <Section
+          icon={Gift}
+          title="Sconto prenotazione web"
+          subtitle="Incentiva i clienti a prenotare dalla web app"
+        >
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-cream mb-4">
+            <div>
+              <p className="font-semibold text-night text-sm">Attiva sconto</p>
+              <p className="text-xs text-night/50 mt-1">Banner + sconto su carrello o prenotazione</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, web_discount_enabled: !form.web_discount_enabled })}
+              className={`w-12 h-6 rounded-full transition relative shrink-0 ${form.web_discount_enabled ? "bg-wa" : "bg-gray-300"}`}
+            >
+              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${form.web_discount_enabled ? "left-6" : "left-0.5"}`} />
+            </button>
+          </div>
+          {form.web_discount_enabled && (
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100">
+              <label className="block">
+                <span className="text-sm font-semibold text-night mb-2 block">Percentuale sconto (1-30%)</span>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number" min={1} max={30}
+                    value={form.web_discount_percent}
+                    onChange={(e) => setForm({ ...form, web_discount_percent: Number(e.target.value) })}
+                    className="w-24 bg-white border border-emerald-200 rounded-xl px-4 py-3 text-lg font-black text-center focus:border-wa focus:outline-none transition"
+                  />
+                  <span className="text-2xl font-black text-night/40">%</span>
+                </div>
+              </label>
+              <p className="text-xs text-emerald-700 mt-3">💡 I clienti vedranno: <strong>Risparmia il {form.web_discount_percent || 0}%</strong></p>
+            </div>
+          )}
+        </Section>
 
         {/* TURNI PRENOTAZIONE */}
         {tenant.business_type === "restaurant" && (

@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     const { data: tenant } = await supabase
       .from("tenants")
-      .select("id, business_name, has_table_booking, enable_table_bookings, google_refresh_token, google_calendar_id")
+      .select("id, business_name, has_table_booking, enable_table_bookings, google_refresh_token, google_calendar_id, web_discount_enabled, web_discount_percent")
       .eq("slug", slug)
       .single();
 
@@ -160,6 +160,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Ricalcolo server-side del prezzo (anti-manomissione)
+    let serverPrice: number | null = null;
+    if (bookingType !== "table") {
+      let originalPrice = Number(price) || 0;
+      if (serviceId) {
+        const { data: svc } = await supabase
+          .from("services")
+          .select("price")
+          .eq("id", serviceId)
+          .eq("tenant_id", tenant.id)
+          .maybeSingle();
+        if (svc) originalPrice = Number(svc.price) || 0;
+      }
+      serverPrice = ((tenant as any).web_discount_enabled && (tenant as any).web_discount_percent > 0)
+        ? Math.round(originalPrice * (1 - (tenant as any).web_discount_percent / 100) * 100) / 100
+        : originalPrice;
+    }
+
     // Google Calendar (solo appuntamenti)
     if (tenant.google_refresh_token && bookingType !== "table") {
       try {
@@ -174,7 +192,7 @@ export async function POST(req: Request) {
             `👤 ${customerName}`,
             `📞 ${customerPhone}`,
             `✂️ ${serviceName || ""}`,
-            price ? `💶 €${price}` : "",
+            serverPrice !== null ? `💶 €${serverPrice.toFixed(2)}` : "",
             `🔖 ${bookingCode}`,
           ].filter(Boolean).join("\n"),
           start: { dateTime: start.toISOString(), timeZone: "Europe/Rome" },
