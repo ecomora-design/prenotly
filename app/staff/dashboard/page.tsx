@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import StatsCards from "./StatsCards";
 import {
   Loader2, Calendar, Clock, CheckCircle2, XCircle, LogOut,
   User, RefreshCw, MessageCircle, Timer, ArrowRight, Scissors
@@ -194,6 +195,9 @@ export default function StaffDashboardPage() {
             })}
           </div>
         </div>
+
+        {/* STATS */}
+        <StatsCards />
 
         {/* REFRESH */}
         <div className="flex justify-end mb-3">
