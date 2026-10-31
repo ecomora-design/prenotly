@@ -12,12 +12,12 @@ export default function ContactCTA() {
         <motion.div
           animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 right-0 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-[#25D366]/30 rounded-full blur-2xl md:blur-3xl"
+          className="hidden md:block absolute top-0 right-0 md:w-[500px] md:h-[500px] bg-[#25D366]/25 rounded-full blur-2xl"
         />
         <motion.div
           animate={{ scale: [1, 1.15, 1], x: [0, 20, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-0 left-0 w-[250px] h-[250px] md:w-[400px] md:h-[400px] bg-[#25D366]/20 rounded-full blur-2xl md:blur-3xl"
+          className="hidden md:block absolute bottom-0 left-0 md:w-[400px] md:h-[400px] bg-[#25D366]/15 rounded-full blur-2xl"
         />
         {/* Grana */}
         <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay" style={{

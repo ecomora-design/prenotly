@@ -19,7 +19,7 @@ export default function Comparison() {
     <section className="py-14 md:py-28 bg-white">
       <div className="container-x">
         <div className="max-w-3xl mx-auto text-center mb-10 md:mb-14">
-          <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 text-xs md:text-sm font-semibold px-3.5 py-1.5 rounded-full mb-4">
+          <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 text-xs md:text-sm font-semibold px-3.5 py-1.5 rounded-full mb-4">
             <TrendingDown size={14} />
             La differenza è netta
           </div>
@@ -68,7 +68,7 @@ export default function Comparison() {
             ))}
           </div>
 
-          <p className="text-[11px] text-gray-500 text-center mt-4">
+          <p className="text-[11px] text-gray-600 text-center mt-4">
             * Staff illimitato incluso nel piano Servizi Premium / Premium Pro (99,99 €/mese). Sugli altri piani è disponibile come upgrade.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function Comparison() {
                     <X size={11} className="text-red-400" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-0.5">Loro</p>
+                    <p className="text-[9px] font-black text-gray-600 uppercase tracking-wider mb-0.5">Loro</p>
                     <p className="text-xs text-gray-500 leading-tight">
                       {row.competitor || "Non disponibile"}
                     </p>
@@ -95,7 +95,7 @@ export default function Comparison() {
                     <Check size={11} className="text-[#128C7E]" strokeWidth={3} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[9px] font-black text-[#128C7E] uppercase tracking-wider mb-0.5">Prenotly</p>
+                    <p className="text-[9px] font-black text-[#0F766E] uppercase tracking-wider mb-0.5">Prenotly</p>
                     <p className={`text-xs leading-tight ${row.highlight ? "font-bold text-night" : "text-night/80"}`}>
                       {row.prenotly}
                     </p>
@@ -104,7 +104,7 @@ export default function Comparison() {
               </div>
             </div>
           ))}
-          <p className="text-[10px] text-gray-500 text-center pt-2 px-2">
+          <p className="text-[10px] text-gray-600 text-center pt-2 px-2">
             * Staff illimitato incluso nel piano Servizi Premium / Premium Pro (99,99 €/mese).
           </p>
         </div>

@@ -113,9 +113,9 @@ export default function PricingHome() {
                     <span className="text-sm text-gray-500 font-semibold">/mese</span>
                   </div>
                   {plan.microcopy && (
-                    <p className="text-[11px] text-[#128C7E] font-semibold mt-2">☕ {plan.microcopy}</p>
+                    <p className="text-[11px] text-[#0F766E] font-semibold mt-2">☕ {plan.microcopy}</p>
                   )}
-                  <p className="text-[10px] text-gray-400 mt-1">+ IVA · disdici quando vuoi</p>
+                  <p className="text-[10px] text-gray-500 mt-1">+ IVA · disdici quando vuoi</p>
                 </div>
 
                 <ul className="space-y-2.5 mb-6 flex-1">
@@ -147,7 +147,7 @@ export default function PricingHome() {
 
         {/* Link ai dettagli */}
         <div className="text-center mt-8 md:mt-10">
-          <Link href="/prezzi" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#128C7E] hover:text-[#0F766E] transition">
+          <Link href="/prezzi" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0F766E] hover:text-[#0A2540] transition">
             Vedi tutti i piani e i dettagli
             <ArrowRight size={14} />
           </Link>
