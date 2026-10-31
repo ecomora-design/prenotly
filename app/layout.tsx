@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 
 import CookieBanner from "@/components/CookieBanner";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata = {
   metadataBase: new URL("https://www.prenotly-italia.it"),
@@ -38,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="it" className={inter.className} data-scroll-behavior="smooth">
+    <html lang="it" className={`${inter.variable} ${inter.className}`} data-scroll-behavior="smooth">
       <body>
         {children}
         <CookieBanner />

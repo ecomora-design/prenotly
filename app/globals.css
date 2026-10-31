@@ -1,24 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #25D366;
-  --color-brand-dark: #128C7E;
-  --color-navy: #0A2540;
-  --color-emerald: #22C55E;
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-}
-
-
-
-
-@import "tailwindcss";
-
-@theme {
+  /* Palette principale */
   --color-wa: #25D366;
   --color-waDark: #128C7E;
   --color-night: #0F172A;
   --color-soft: #F8FAFC;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --color-cream: #FAF8F5;
+
+  /* Alias per compatibilità (componenti che usano brand/navy/emerald) */
+  --color-brand: #25D366;
+  --color-brand-dark: #128C7E;
+  --color-navy: #0A2540;
+  --color-emerald: #22C55E;
+
+  /* Font: usa il font self-hosted da next/font in layout.tsx */
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
 html {
@@ -31,7 +28,7 @@ body {
   background-color: #ffffff;
   color: #0F172A;
   -webkit-font-smoothing: antialiased;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-sans);
   overflow-x: hidden;
 }
 
@@ -127,7 +124,3 @@ button, a {
 .delay-300 { animation-delay: 0.3s; }
 .delay-400 { animation-delay: 0.4s; }
 .delay-500 { animation-delay: 0.5s; }
-
-@theme {
-  --color-cream: #FAF8F5;
-}
