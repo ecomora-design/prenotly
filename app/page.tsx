@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Problem from "@/components/Problem";
 import Comparison from "@/components/Comparison";
+import NumbersSection from "@/components/NumbersSection";
 import PricingHome from "@/components/PricingHome";
 import ThreeSoftware from "@/components/ThreeSoftware";
 import Features from "@/components/Features";
@@ -36,6 +37,7 @@ export default function Home() {
       <Hero />
       <Problem />
       <Comparison />
+      <NumbersSection />
       <ThreeSoftware />
       <Features />
       <HowItWorks />
