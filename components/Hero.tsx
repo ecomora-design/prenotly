@@ -46,7 +46,7 @@ export default function Hero() {
                 <Star key={i} size={11} className="fill-[#25D366] text-[#25D366]" />
               ))}
             </div>
-            <span className="text-[11px] font-semibold text-[#0A2540]/60">
+            <span className="text-[11px] font-semibold text-[#0A2540]/85">
               4.9/5 · 130+ attività in Italia
             </span>
           </div>
@@ -97,7 +97,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="mt-8 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-[13px] text-[#425466]/70"
+          className="mt-8 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-[13px] text-[#425466]/90"
         >
           {[
             "Nessuna carta di credito",
@@ -154,7 +154,7 @@ export default function Hero() {
                     transition={{ delay: 0.9 + i * 0.1 }}
                     className="bg-[#FAFBFC] rounded-lg p-3 border border-[#E6EBF1]"
                   >
-                    <p className="text-[9px] md:text-[10px] font-semibold text-[#425466]/60 uppercase tracking-wider mb-1">
+                    <p className="text-[9px] md:text-[10px] font-semibold text-[#425466]/80 uppercase tracking-wider mb-1">
                       {kpi.label}
                     </p>
                     <div className="flex items-end justify-between">
@@ -173,7 +173,7 @@ export default function Hero() {
                   <p className="text-xs font-semibold text-[#0A2540]">Andamento ordini</p>
                   <div className="flex gap-1 text-[9px] font-semibold">
                     <span className="px-2 py-0.5 bg-white rounded text-[#128C7E] border border-[#E6EBF1]">7gg</span>
-                    <span className="px-2 py-0.5 text-[#425466]/50">30gg</span>
+                    <span className="px-2 py-0.5 text-[#425466]/80">30gg</span>
                   </div>
                 </div>
                 <div className="flex items-end gap-1.5 h-20 md:h-24">
@@ -213,7 +213,7 @@ export default function Hero() {
                       </div>
                       <div>
                         <p className="text-[11px] font-semibold text-[#0A2540]">{o.name}</p>
-                        <p className="text-[9px] text-[#425466]/60">{o.type}</p>
+                        <p className="text-[9px] text-[#425466]/80">{o.type}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -242,7 +242,7 @@ export default function Hero() {
               <Check size={14} className="text-[#22C55E]" strokeWidth={3} />
             </div>
             <div>
-              <p className="text-[9px] font-semibold text-[#425466]/60">Prenotazione</p>
+              <p className="text-[9px] font-semibold text-[#425466]/80">Prenotazione</p>
               <p className="text-[11px] font-bold text-[#0A2540]">Tavolo 4 confermato</p>
             </div>
           </motion.div>
@@ -257,7 +257,7 @@ export default function Hero() {
               <Shield size={14} className="text-[#128C7E]" />
             </div>
             <div>
-              <p className="text-[9px] font-semibold text-[#425466]/60">Sicurezza</p>
+              <p className="text-[9px] font-semibold text-[#425466]/80">Sicurezza</p>
               <p className="text-[11px] font-bold text-[#0A2540]">SSL + Backup attivo</p>
             </div>
           </motion.div>
@@ -270,7 +270,7 @@ export default function Hero() {
           transition={{ delay: 2.2 }}
           className="mt-16 md:mt-20 text-center"
         >
-          <p className="text-[11px] font-semibold text-[#425466]/40 uppercase tracking-widest mb-6">
+          <p className="text-[11px] font-semibold text-[#425466]/70 uppercase tracking-widest mb-6">
             Scelto da ristoranti e professionisti
           </p>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 opacity-50">

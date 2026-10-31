@@ -58,12 +58,12 @@ export default function FAQ() {
                 className="w-full text-left p-4 sm:p-5 md:p-6 font-display text-base sm:text-lg text-night flex justify-between items-center gap-3"
               >
                 <span>{f.q}</span>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all ${open === i ? "bg-night text-wa" : "bg-[#FAFAF7] text-night/40"}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all ${open === i ? "bg-night text-wa" : "bg-[#FAFAF7] text-night/70"}`}>
                   {open === i ? <Minus size={14} /> : <Plus size={14} />}
                 </div>
               </button>
               {open === i && (
-                <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 text-sm text-night/60 leading-relaxed">
+                <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 text-sm text-night/80 leading-relaxed">
                   {f.a}
                 </div>
               )}

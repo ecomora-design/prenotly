@@ -93,7 +93,7 @@ export default function HowItWorks() {
                 <p className="text-3xl md:text-4xl font-display text-night tracking-tight mb-2">
                   {r.n}
                 </p>
-                <p className="text-[11px] font-black text-night/40 uppercase tracking-widest mb-2">
+                <p className="text-[11px] font-black text-night/60 uppercase tracking-widest mb-2">
                   {r.label}
                 </p>
                 <p className="text-xs text-night/55 leading-relaxed">
