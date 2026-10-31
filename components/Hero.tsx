@@ -61,17 +61,12 @@ export default function Hero() {
         </motion.div>
 
         {/* TITOLO */}
-        <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center text-[44px] leading-[1.05] sm:text-6xl md:text-7xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.04em] max-w-5xl mx-auto"
-        >
+        <h1 className="text-center text-[44px] leading-[1.05] sm:text-6xl md:text-7xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.04em] max-w-5xl mx-auto">
           Prenotazioni e ordini.<br />
           <span className="bg-gradient-to-r from-[#0F766E] via-[#25D366] to-[#128C7E] bg-clip-text text-transparent">
             Zero commissioni. Da 9,99 €/mese.
           </span>
-        </motion.h1>
+        </h1>
 
         {/* SOTTOTITOLO */}
         <motion.p
