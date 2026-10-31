@@ -21,7 +21,7 @@ type StaffInfo = {
   role: string | null;
   color: string;
   tenant_id: string;
-  tenants: { business_name: string; slug: string; brand_color: string | null; plan_type: string | null } | null;
+  tenants: { business_name: string; slug: string; brand_color: string | null; plan_type: string | null; category: string | null; product_type: string | null; business_type: string | null } | null;
 };
 
 type Appointment = {
@@ -55,6 +55,24 @@ export default function StaffDashboardPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [mainTab, setMainTab] = useState<"appointments" | "tables" | "orders">("appointments");
+
+  // Determina se l'attività è food (ristorante/pizzeria) o service (estetista/parrucchiere)
+  const isFood = !!(
+    staffInfo?.tenants &&
+    (
+      staffInfo.tenants.category === "ristoranti" ||
+      staffInfo.tenants.category === "pizzerie" ||
+      staffInfo.tenants.product_type === "food" ||
+      staffInfo.tenants.business_type === "restaurant"
+    )
+  );
+
+  // Imposta il tab di default in base al tipo di attività
+  useEffect(() => {
+    if (staffInfo) {
+      setMainTab(isFood ? "tables" : "appointments");
+    }
+  }, [staffInfo, isFood]);
   const [weekAppointments, setWeekAppointments] = useState<Appointment[]>([]);
   const [weekStart, setWeekStart] = useState<Date>(() => {
     // Lunedì della settimana corrente (in timezone Europe/Rome)
@@ -74,7 +92,7 @@ export default function StaffDashboardPage() {
 
       const { data: s } = await supabase
         .from("staff")
-        .select("id, name, role, color, tenant_id, tenants(business_name, slug, brand_color, plan_type)")
+        .select("id, name, role, color, tenant_id, tenants(business_name, slug, brand_color, plan_type, category, product_type, business_type)")
         .eq("user_id", user.id)
         .eq("is_active", true)
         .maybeSingle();
@@ -259,14 +277,20 @@ export default function StaffDashboardPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 pt-6">
-        {/* TABS PRINCIPALI */}
-        <div className="mb-5 grid grid-cols-3 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
-          <button onClick={() => setMainTab("appointments")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "appointments" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Appuntamenti</button>
-          <button onClick={() => setMainTab("tables")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "tables" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Tavoli</button>
-          <button onClick={() => setMainTab("orders")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "orders" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ordini</button>
+        {/* TABS PRINCIPALI (condizionali per tipo attività) */}
+        <div className={`mb-5 grid ${isFood ? "grid-cols-2" : "grid-cols-1"} gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm`}>
+          {!isFood && (
+            <button onClick={() => setMainTab("appointments")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "appointments" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Appuntamenti</button>
+          )}
+          {isFood && (
+            <>
+              <button onClick={() => setMainTab("tables")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "tables" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Tavoli</button>
+              <button onClick={() => setMainTab("orders")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "orders" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ordini</button>
+            </>
+          )}
         </div>
 
-        <div className={mainTab === "appointments" ? "block" : "hidden"}>
+        <div className={!isFood && mainTab === "appointments" ? "block" : "hidden"}>
         <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-night mb-1">I tuoi appuntamenti</h1>
@@ -438,11 +462,11 @@ export default function StaffDashboardPage() {
         )}
         </div>
 
-        <div className={mainTab === "tables" ? "block" : "hidden"}>
+        <div className={isFood && mainTab === "tables" ? "block" : "hidden"}>
           <TablesView tenantId={staffInfo.tenant_id} />
         </div>
 
-        <div className={mainTab === "orders" ? "block" : "hidden"}>
+        <div className={isFood && mainTab === "orders" ? "block" : "hidden"}>
           <OrdersView tenantId={staffInfo.tenant_id} />
         </div>
       </div>

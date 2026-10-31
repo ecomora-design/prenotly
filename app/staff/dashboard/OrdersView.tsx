@@ -139,7 +139,7 @@ export default function OrdersView({ tenantId }: Props) {
                         <ShoppingBag size={18} style={{ color: config.accent }} />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-night text-sm truncate">{o.customers?.name || "Cliente"} · €{Number(o.total).toFixed(2)}</p>
+                        <p className="font-bold text-night text-sm truncate">{o.customers?.name || "Cliente"}</p>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase" style={{ backgroundColor: config.bg, color: config.text }}>{config.label}</span>
                           <span className="text-[10px] font-bold text-night/60 flex items-center gap-0.5"><TypeIcon size={10} /> {o.order_type === "delivery" ? "Domicilio" : "Asporto"}</span>
