@@ -78,7 +78,7 @@ export default function ThreeSoftware() {
             Il software giusto<br />
             <span className="italic">per la tua attività.</span>
           </h2>
-          <p className="text-night/70 text-base md:text-lg leading-relaxed">
+          <p className="text-[#0F172A] text-base md:text-lg leading-relaxed">
             Tre soluzioni distinte, progettate per farti risparmiare tempo e offrire un'esperienza memorabile ai tuoi clienti.
           </p>
         </div>
@@ -105,7 +105,7 @@ export default function ThreeSoftware() {
                     <Icon size={26} style={{ color: p.color }} strokeWidth={2} />
                   </div>
                   <span
-                    className="inline-block text-[10px] font-black uppercase tracking-[0.2em] text-night/70 mb-2"
+                    className="inline-block text-[10px] font-black uppercase tracking-[0.2em] text-[#0F172A] mb-2"
                     style={{ color: p.dark ? p.color : p.color }}
                   >
                     Prenotly {p.label}
@@ -121,7 +121,7 @@ export default function ThreeSoftware() {
 
                 <p
                   className={`text-sm leading-relaxed mb-6 ${
-                    p.dark ? "text-white/60" : "text-night/70"
+                    p.dark ? "text-white/60" : "text-[#0F172A]"
                   }`}
                 >
                   {p.description}
@@ -138,7 +138,7 @@ export default function ThreeSoftware() {
                       >
                         <Check size={10} style={{ color: p.color }} strokeWidth={3} />
                       </div>
-                      <span className={p.dark ? "text-white/85" : "text-night/70"}>
+                      <span className={p.dark ? "text-white/85" : "text-[#0F172A]"}>
                         {f}
                       </span>
                     </li>
@@ -175,7 +175,7 @@ export default function ThreeSoftware() {
                     <div className="flex items-baseline gap-1">
                       <span
                         className={`text-xs ${
-                          p.dark ? "text-white/70" : "text-night/70"
+                          p.dark ? "text-white/70" : "text-[#0F172A]"
                         }`}
                       >
                         da
@@ -189,7 +189,7 @@ export default function ThreeSoftware() {
                       </span>
                       <span
                         className={`text-xs font-bold ${
-                          p.dark ? "text-white/70" : "text-night/70"
+                          p.dark ? "text-white/70" : "text-[#0F172A]"
                         }`}
                       >
                         {p.period}

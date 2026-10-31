@@ -54,7 +54,7 @@ export default function HowItWorks() {
                   <div className="w-14 h-14 rounded-2xl bg-night flex items-center justify-center transition-transform group-hover:scale-110">
                     <s.icon size={24} className="text-wa" strokeWidth={2} />
                   </div>
-                  <span className="text-4xl sm:text-5xl font-display text-[#94A3B8]">
+                  <span className="text-4xl sm:text-5xl font-display text-[#64748B]">
                     {s.n}
                   </span>
                 </div>

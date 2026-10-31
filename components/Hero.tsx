@@ -273,9 +273,9 @@ export default function Hero() {
           <p className="text-[11px] font-semibold text-[#425466]/85 uppercase tracking-widest mb-6">
             Scelto da ristoranti e professionisti
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 opacity-50">
+          <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4">
             {["Pizzeria Da Michele", "Barberia Milano", "Estetica Bella", "Trattoria Toscana", "Sushi Zen", "Salone Sofia"].map((name) => (
-              <span key={name} className="font-semibold text-[#0F172A] text-sm md:text-base">
+              <span key={name} className="font-semibold text-[#334155] text-sm md:text-base">
                 {name}
               </span>
             ))}
