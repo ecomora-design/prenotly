@@ -9,6 +9,7 @@ import StatsCards from "./StatsCards";
 import WeekView from "./WeekView";
 import TablesView from "./TablesView";
 import OrdersView from "./OrdersView";
+import TimeOffView from "./TimeOffView";
 import { planHasFeature } from "@/lib/planFeatures";
 import {
   Loader2, Calendar, Clock, CheckCircle2, XCircle, LogOut, Lock, Crown,
@@ -54,7 +55,7 @@ export default function StaffDashboardPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
-  const [mainTab, setMainTab] = useState<"appointments" | "tables" | "orders">("appointments");
+  const [mainTab, setMainTab] = useState<"appointments" | "tables" | "orders" | "timeoff">("appointments");
 
   // Determina se l'attività è food (ristorante/pizzeria) o service (estetista/parrucchiere)
   const isFood = !!(
