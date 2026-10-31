@@ -54,9 +54,9 @@ export default function Hero() {
 
         {/* TITOLO */}
         <h1 className="text-center text-[44px] leading-[1.05] sm:text-6xl md:text-7xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.03em] max-w-5xl mx-auto">
-          Prenotazioni, ordini e clienti.<br />
+          Prenotazioni e ordini.<br />
           <span className="bg-gradient-to-r from-[#128C7E] via-[#25D366] to-[#0F766E] bg-clip-text text-transparent">
-            Senza complicazioni.
+            Zero commissioni. Da 9,99 €/mese.
           </span>
         </h1>
 
@@ -67,7 +67,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-7 text-lg md:text-xl text-[#425466] leading-relaxed max-w-2xl mx-auto text-center"
         >
-          Il gestionale italiano che unisce prenotazioni, ordini e clienti in un&apos;unica piattaforma. Affidabile, veloce, sicuro.
+          Il gestionale italiano che unisce prenotazioni, ordini e clienti in un&apos;unica piattaforma. <strong>Niente commissioni sui tuoi incassi.</strong> Inizia gratis — 7 giorni.
         </motion.p>
 
         {/* CTA */}
@@ -110,6 +110,16 @@ export default function Hero() {
             </span>
           ))}
         </motion.div>
+
+        {/* MICRO SOCIAL PROOF */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-6 text-center text-[12px] text-gray-600"
+        >
+          Già scelto da <strong className="text-night">Pizzeria Da Michele</strong>, <strong className="text-night">Estetica Bella</strong>, <strong className="text-night">Salone Sofia</strong> e altre 127 attività
+        </motion.p>
 
         {/* MOCKUP PRODOTTO */}
         <motion.div
