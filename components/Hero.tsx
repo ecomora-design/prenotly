@@ -97,7 +97,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="mt-8 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-[13px] text-[#425466]/90"
+          className="mt-8 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-[13px] text-[#334155]"
         >
           {[
             "Nessuna carta di credito",
@@ -275,7 +275,7 @@ export default function Hero() {
           </p>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 opacity-50">
             {["Pizzeria Da Michele", "Barberia Milano", "Estetica Bella", "Trattoria Toscana", "Sushi Zen", "Salone Sofia"].map((name) => (
-              <span key={name} className="font-semibold text-[#0A2540] text-sm md:text-base">
+              <span key={name} className="font-semibold text-[#0F172A] text-sm md:text-base">
                 {name}
               </span>
             ))}

@@ -13,7 +13,7 @@ export default function Features() {
     <section id="funzioni" className="py-14 md:py-28 bg-white">
       <div className="container-x">
         <div className="max-w-2xl mx-auto text-center mb-10 md:mb-16">
-          <span className="inline-block bg-wa/15 text-waDark brightness-90 text-xs md:text-sm font-semibold px-3.5 py-1.5 rounded-full mb-4">
+          <span className="inline-block bg-[#25D366]/15 text-[#0F766E] text-xs md:text-sm font-semibold px-3.5 py-1.5 rounded-full mb-4">
             Funzioni
           </span>
           <h2 className="text-[26px] leading-tight sm:text-3xl md:text-4xl font-bold text-night">
