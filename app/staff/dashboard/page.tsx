@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import StatsCards from "./StatsCards";
 import WeekView from "./WeekView";
+import TablesView from "./TablesView";
+import OrdersView from "./OrdersView";
 import { planHasFeature } from "@/lib/planFeatures";
 import {
   Loader2, Calendar, Clock, CheckCircle2, XCircle, LogOut, Lock, Crown,
@@ -52,6 +54,7 @@ export default function StaffDashboardPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  const [mainTab, setMainTab] = useState<"appointments" | "tables" | "orders">("appointments");
   const [weekAppointments, setWeekAppointments] = useState<Appointment[]>([]);
   const [weekStart, setWeekStart] = useState<Date>(() => {
     // Lunedì della settimana corrente (in timezone Europe/Rome)
@@ -256,6 +259,14 @@ export default function StaffDashboardPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 pt-6">
+        {/* TABS PRINCIPALI */}
+        <div className="mb-5 grid grid-cols-3 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+          <button onClick={() => setMainTab("appointments")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "appointments" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Appuntamenti</button>
+          <button onClick={() => setMainTab("tables")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "tables" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Tavoli</button>
+          <button onClick={() => setMainTab("orders")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "orders" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ordini</button>
+        </div>
+
+        <div className={mainTab === "appointments" ? "block" : "hidden"}>
         <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-night mb-1">I tuoi appuntamenti</h1>
@@ -425,6 +436,15 @@ export default function StaffDashboardPage() {
             }}
           />
         )}
+        </div>
+
+        <div className={mainTab === "tables" ? "block" : "hidden"}>
+          <TablesView tenantId={staffInfo.tenant_id} />
+        </div>
+
+        <div className={mainTab === "orders" ? "block" : "hidden"}>
+          <OrdersView tenantId={staffInfo.tenant_id} />
+        </div>
       </div>
     </div>
   );
