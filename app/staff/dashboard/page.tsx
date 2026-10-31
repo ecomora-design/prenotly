@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import StatsCards from "./StatsCards";
+import WeekView from "./WeekView";
 import { planHasFeature } from "@/lib/planFeatures";
 import {
   Loader2, Calendar, Clock, CheckCircle2, XCircle, LogOut, Lock, Crown,
@@ -50,6 +51,18 @@ export default function StaffDashboardPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  const [weekAppointments, setWeekAppointments] = useState<Appointment[]>([]);
+  const [weekStart, setWeekStart] = useState<Date>(() => {
+    // Lunedì della settimana corrente (in timezone Europe/Rome)
+    const now = new Date();
+    const day = now.getDay(); // 0=dom, 1=lun, ..., 6=sab
+    const diff = day === 0 ? -6 : 1 - day; // se domenica, torna al lunedì precedente
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+  });
 
   useEffect(() => {
     async function init() {
@@ -114,11 +127,60 @@ export default function StaffDashboardPage() {
     setRefreshing(false);
   }
 
+  async function loadWeekAppointments() {
+    if (!staffInfo) return;
+    setRefreshing(true);
+
+    // Lunedì e domenica della settimana selezionata (timezone Europe/Rome)
+    const monday = new Date(weekStart);
+    const sunday = new Date(weekStart);
+    sunday.setDate(sunday.getDate() + 6);
+    const mondayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(monday);
+    const sundayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(sunday);
+    const weekStartISO = new Date(mondayStr + "T00:00:00").toISOString();
+    const weekEndISO = new Date(sundayStr + "T23:59:59").toISOString();
+
+    const { data, error: bookingsError } = await supabase
+      .from("bookings")
+      .select("id, booking_code, scheduled_at, status, notes, duration_minutes, customer_id")
+      .eq("tenant_id", staffInfo.tenant_id)
+      .eq("staff_id", staffInfo.id)
+      .eq("booking_type", "appointment")
+      .gte("scheduled_at", weekStartISO)
+      .lte("scheduled_at", weekEndISO)
+      .order("scheduled_at", { ascending: true });
+
+    if (bookingsError) {
+      console.error("week bookings load error:", bookingsError);
+      setRefreshing(false);
+      return;
+    }
+
+    // Carica clienti
+    const ids = (data || []).map((b: any) => b.customer_id).filter(Boolean);
+    let custMap: Record<string, { name: string | null; whatsapp_number: string | null }> = {};
+    if (ids.length > 0) {
+      const { data: customers } = await supabase.from("customers").select("id, name, whatsapp_number").in("id", ids);
+      (customers || []).forEach((c: any) => { custMap[c.id] = { name: c.name, whatsapp_number: c.whatsapp_number }; });
+    }
+
+    setWeekAppointments(((data || []) as any[]).map(a => ({
+      ...a,
+      customers: a.customer_id ? (custMap[a.customer_id] || null) : null,
+    })));
+    setRefreshing(false);
+  }
+
   useEffect(() => { if (staffInfo) loadAppointments(); }, [staffInfo, selectedDate]);
+  useEffect(() => { if (staffInfo && viewMode === "week") loadWeekAppointments(); }, [staffInfo, weekStart, viewMode]);
 
   async function updateStatus(id: string, status: string) {
     await supabase.from("bookings").update({ status }).eq("id", id);
-    loadAppointments();
+    if (viewMode === "week") {
+      loadWeekAppointments();
+    } else {
+      loadAppointments();
+    }
   }
 
   async function handleLogout() {
@@ -194,11 +256,34 @@ export default function StaffDashboardPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 pt-6">
-        <div className="mb-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-night mb-1">I tuoi appuntamenti</h1>
-          <p className="text-sm text-gray-500">Visualizza e gestisci la tua agenda</p>
+        <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-night mb-1">I tuoi appuntamenti</h1>
+            <p className="text-sm text-gray-500">Visualizza e gestisci la tua agenda</p>
+          </div>
+          {/* TOGGLE VISTA */}
+          <div className="inline-flex bg-white border border-night/[0.08] rounded-full p-1 shadow-sm">
+            <button
+              onClick={() => setViewMode("day")}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${
+                viewMode === "day" ? "bg-night text-white" : "text-night/60 hover:text-night"
+              }`}
+            >
+              Giorno
+            </button>
+            <button
+              onClick={() => setViewMode("week")}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${
+                viewMode === "week" ? "bg-night text-white" : "text-night/60 hover:text-night"
+              }`}
+            >
+              Settimana
+            </button>
+          </div>
         </div>
 
+        {viewMode === "day" && (
+        <>
         {/* DATE STRIP */}
         <div className="bg-white rounded-2xl p-3 border border-night/[0.06] shadow-sm mb-6">
           <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
@@ -314,6 +399,31 @@ export default function StaffDashboardPage() {
               </div>
             ))}
           </div>
+        )}
+        </>
+        )}
+
+        {viewMode === "week" && (
+          <WeekView
+            staffInfo={staffInfo}
+            weekStart={weekStart}
+            appointments={weekAppointments}
+            onPrev={() => {
+              const prev = new Date(weekStart);
+              prev.setDate(prev.getDate() - 7);
+              setWeekStart(prev);
+            }}
+            onNext={() => {
+              const next = new Date(weekStart);
+              next.setDate(next.getDate() + 7);
+              setWeekStart(next);
+            }}
+            onUpdateStatus={updateStatus}
+            onDayClick={(d) => {
+              setSelectedDate(d);
+              setViewMode("day");
+            }}
+          />
         )}
       </div>
     </div>
