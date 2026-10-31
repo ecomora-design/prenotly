@@ -16,13 +16,7 @@ export default function NumbersSection() {
       {/* Sfondo: gradiente verde tenue in alto */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#25D366]/[0.12] to-transparent rounded-full blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: "radial-gradient(#FFFFFF 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
+
       </div>
 
       <div className="container-x relative">
@@ -47,7 +41,7 @@ export default function NumbersSection() {
               transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="text-center"
             >
-              <p className="text-4xl md:text-6xl font-black bg-gradient-to-br from-[#25D366] to-[#0F766E] bg-clip-text text-transparent tracking-tight leading-none mb-2">
+              <p className="text-4xl md:text-6xl font-black text-[#25D366] tracking-tight leading-none mb-2">
                 {s.value}
               </p>
               <p className="text-sm md:text-base font-bold text-white mb-0.5">{s.label}</p>
