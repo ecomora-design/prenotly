@@ -25,8 +25,8 @@ export default function Features() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-6">
           {features.map((f) => (
-            <div key={f.title} className="p-4 md:p-6 rounded-2xl border border-gray-100 hover:border-wa/40 hover:shadow-lg transition bg-white">
-              <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-wa/10 flex items-center justify-center mb-3 md:mb-4">
+            <div key={f.title} className="group p-4 md:p-6 rounded-2xl border border-gray-100 bg-white transition-all duration-300 active:scale-[0.98] md:hover:-translate-y-1 md:hover:border-[#25D366]/40 md:hover:shadow-xl md:hover:shadow-[#25D366]/10">
+              <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-wa/10 flex items-center justify-center mb-3 md:mb-4 transition-all duration-300 group-hover:scale-110 group-hover:bg-wa/20">
                 <f.icon className="text-waDark" size={20} />
               </div>
               <h3 className="font-bold text-night text-sm md:text-base mb-1.5 md:mb-2">{f.title}</h3>

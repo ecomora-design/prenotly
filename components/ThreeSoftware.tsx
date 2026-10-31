@@ -90,10 +90,10 @@ export default function ThreeSoftware() {
             return (
               <div
                 key={p.id}
-                className={`group relative rounded-[28px] md:rounded-[32px] p-6 md:p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${
+                className={`group relative rounded-[28px] md:rounded-[32px] p-6 md:p-8 flex flex-col transition-all duration-300 active:scale-[0.98] md:hover:-translate-y-2 ${
                   p.dark
-                    ? "bg-night text-white shadow-2xl shadow-night/20"
-                    : "bg-white text-night border border-night/[0.06] shadow-sm hover:shadow-xl"
+                    ? "bg-gradient-to-br from-night to-[#0A2540] text-white shadow-2xl shadow-night/30 hover:shadow-[#8B5CF6]/20"
+                    : "bg-white text-night border border-night/[0.06] shadow-sm hover:shadow-2xl hover:shadow-[#25D366]/10"
                 }`}
               >
                 {/* Icona */}

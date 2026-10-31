@@ -39,10 +39,10 @@ export default function Problem() {
           {items.map((item) => (
             <div
               key={item.title}
-              className="p-5 md:p-8 rounded-2xl border border-gray-100 hover:border-red-200 hover:shadow-lg transition bg-white"
+              className="group p-5 md:p-8 rounded-2xl border border-gray-100 bg-white transition-all duration-300 active:scale-[0.98] md:hover:-translate-y-1 md:hover:border-red-200 md:hover:shadow-xl md:hover:shadow-red-100/50"
             >
               <div className="flex items-center gap-3 mb-3 md:block">
-                <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center shrink-0 md:mb-5">
+                <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center shrink-0 md:mb-5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <item.icon className="text-red-500" size={22} />
                 </div>
                 <h3 className="text-base md:text-xl font-bold text-night md:mb-3">

@@ -37,15 +37,15 @@ export default function Comparison() {
         <div className="hidden md:block max-w-4xl mx-auto">
           <div className="rounded-3xl overflow-hidden border border-gray-200 bg-white shadow-sm">
             {/* Header */}
-            <div className="grid grid-cols-3 bg-[#FAFBFC] border-b border-gray-200">
-              <div className="p-4 md:p-5 text-xs font-black uppercase tracking-wider text-gray-500">Caratteristica</div>
-              <div className="p-4 md:p-5 text-xs font-black uppercase tracking-wider text-gray-500 text-center border-l border-gray-200">TheFork / Treatwell</div>
-              <div className="p-4 md:p-5 text-xs font-black uppercase tracking-wider text-[#128C7E] text-center border-l border-gray-200 bg-[#25D366]/5">Prenotly</div>
+            <div className="grid grid-cols-3 bg-night border-b border-white/10">
+              <div className="p-4 md:p-5 text-xs font-black uppercase tracking-wider text-white/70">Caratteristica</div>
+              <div className="p-4 md:p-5 text-xs font-black uppercase tracking-wider text-white/50 text-center border-l border-white/10">TheFork / Treatwell</div>
+              <div className="p-4 md:p-5 text-xs font-black uppercase tracking-wider text-[#25D366] text-center border-l border-white/10 bg-[#25D366]/10">Prenotly</div>
             </div>
 
             {/* Rows */}
             {rows.map((row, i) => (
-              <div key={row.feature} className={`grid grid-cols-3 border-b border-gray-100 last:border-b-0 ${i % 2 === 0 ? "bg-white" : "bg-[#FAFBFC]/50"}`}>
+              <div key={row.feature} className={`grid grid-cols-3 border-b border-gray-100 last:border-b-0 transition-colors duration-200 hover:bg-[#25D366]/[0.03] ${i % 2 === 0 ? "bg-white" : "bg-[#FAFBFC]/50"}`}>
                 <div className="p-4 md:p-5 text-sm font-medium text-night">{row.feature}</div>
                 <div className="p-4 md:p-5 text-sm text-center border-l border-gray-100 flex items-center justify-center gap-2 text-gray-500">
                   {row.competitor ? (
@@ -60,7 +60,7 @@ export default function Comparison() {
                     </>
                   )}
                 </div>
-                <div className={`p-4 md:p-5 text-sm text-center border-l border-gray-100 flex items-center justify-center gap-2 bg-[#25D366]/5 ${row.highlight ? "font-bold text-[#128C7E]" : "font-medium text-night"}`}>
+                <div className={`p-4 md:p-5 text-sm text-center border-l border-[#25D366]/20 flex items-center justify-center gap-2 bg-[#25D366]/[0.06] ${row.highlight ? "font-bold text-[#0F766E]" : "font-medium text-night"}`}>
                   <Check size={14} className="text-[#25D366] shrink-0" strokeWidth={3} />
                   <span>{row.prenotly}</span>
                 </div>
