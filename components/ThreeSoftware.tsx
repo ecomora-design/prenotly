@@ -106,7 +106,7 @@ export default function ThreeSoftware() {
                   </div>
                   <span
                     className="inline-block text-[10px] font-black uppercase tracking-[0.2em]  mb-2"
-                    style={{ color: p.dark ? "#FFFFFF" : p.color }}
+                    style={{ color: p.dark ? "#FFFFFF" : (p.color === "#25D366" ? "#0F766E" : p.color === "#8B5CF6" ? "#6D28D9" : p.color === "#3B82F6" ? "#1E40AF" : p.color) }}
                   >
                     Prenotly {p.label}
                   </span>
