@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ShoppingBag, Clock, Store, Truck, ChefHat, Package, CheckCircle2, RefreshCw } from "lucide-react";
+import { ShoppingBag, Clock, Store, Truck, ChefHat, Package, CheckCircle2, RefreshCw, Plus } from "lucide-react";
+import ManualOrderModal from "@/components/ManualOrderModal";
 
 type Order = {
   id: string;
@@ -41,6 +42,7 @@ export default function OrdersView({ tenantId }: Props) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState("active");
+  const [showModal, setShowModal] = useState(false);
 
   async function load() {
     setRefreshing(true);
@@ -89,14 +91,19 @@ export default function OrdersView({ tenantId }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <div>
+      <div className="flex items-center justify-between mb-3 gap-2">
+        <div className="min-w-0">
           <h2 className="text-lg font-bold text-night">Ordini · Oggi</h2>
           <p className="text-xs text-night/50">{filtered.length} ordin{filtered.length === 1 ? "e" : "i"}</p>
         </div>
-        <button onClick={load} disabled={refreshing} className="inline-flex items-center gap-1.5 text-xs font-bold text-night/60 hover:text-night transition">
-          <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} /> Aggiorna
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={load} disabled={refreshing} className="p-2 text-night/60 hover:text-night transition rounded-lg hover:bg-white" aria-label="Aggiorna">
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+          </button>
+          <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-1 bg-night hover:bg-night/90 text-white px-3 py-2 rounded-full text-xs font-bold transition active:scale-95">
+            <Plus size={14} /> Nuovo
+          </button>
+        </div>
       </div>
 
       {/* Filter tabs */}
@@ -165,6 +172,13 @@ export default function OrdersView({ tenantId }: Props) {
           })}
         </div>
       )}
+
+      <ManualOrderModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        tenantId={tenantId}
+        onSaved={load}
+      />
     </div>
   );
 }

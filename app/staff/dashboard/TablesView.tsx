@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Calendar, Users, Clock, CheckCircle2, XCircle, RefreshCw, MapPin } from "lucide-react";
+import { Calendar, Users, Clock, CheckCircle2, XCircle, RefreshCw, MapPin, Plus } from "lucide-react";
+import ManualTableModal from "./ManualTableModal";
 
 type TableBooking = {
   id: string;
@@ -29,6 +30,7 @@ export default function TablesView({ tenantId }: Props) {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<TableBooking[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   async function load() {
     setRefreshing(true);
@@ -84,14 +86,19 @@ export default function TablesView({ tenantId }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div>
+      <div className="flex items-center justify-between mb-4 gap-2">
+        <div className="min-w-0">
           <h2 className="text-lg font-bold text-night">Prenotazioni tavoli · Oggi</h2>
           <p className="text-xs text-night/50">{bookings.length} prenotazion{bookings.length === 1 ? "e" : "i"}</p>
         </div>
-        <button onClick={load} disabled={refreshing} className="inline-flex items-center gap-1.5 text-xs font-bold text-night/60 hover:text-night transition">
-          <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} /> Aggiorna
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={load} disabled={refreshing} className="p-2 text-night/60 hover:text-night transition rounded-lg hover:bg-white" aria-label="Aggiorna">
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+          </button>
+          <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-1 bg-night hover:bg-night/90 text-white px-3 py-2 rounded-full text-xs font-bold transition active:scale-95">
+            <Plus size={14} /> Nuovo
+          </button>
+        </div>
       </div>
 
       {bookings.length === 0 ? (
@@ -151,6 +158,13 @@ export default function TablesView({ tenantId }: Props) {
           })}
         </div>
       )}
+
+      <ManualTableModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        tenantId={tenantId}
+        onSaved={load}
+      />
     </div>
   );
 }
