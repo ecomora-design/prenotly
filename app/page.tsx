@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Problem from "@/components/Problem";
+import Comparison from "@/components/Comparison";
 import ThreeSoftware from "@/components/ThreeSoftware";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
@@ -33,6 +34,7 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Problem />
+      <Comparison />
       <ThreeSoftware />
       <Features />
       <HowItWorks />
