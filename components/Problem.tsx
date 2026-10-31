@@ -23,7 +23,7 @@ export default function Problem() {
     <section className="py-14 md:py-28 bg-white">
       <div className="container-x">
         <div className="max-w-3xl mx-auto text-center mb-10 md:mb-14">
-          <span className="inline-block bg-red-50 text-red-500 text-xs md:text-sm font-semibold px-3.5 py-1.5 rounded-full mb-4">
+          <span className="inline-block bg-red-50 text-red-700 text-xs md:text-sm font-semibold px-3.5 py-1.5 rounded-full mb-4">
             Il problema
           </span>
           <h2 className="text-[26px] leading-tight sm:text-3xl md:text-4xl font-bold text-night">

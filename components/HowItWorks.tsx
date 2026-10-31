@@ -35,7 +35,7 @@ export default function HowItWorks() {
       <section className="py-16 md:py-28 bg-[#FAFAF7]">
         <div className="container-x">
           <div className="text-center max-w-2xl mx-auto mb-14 md:mb-20">
-            <p className="text-[10px] font-black text-waDark uppercase tracking-[0.25em] mb-4">
+            <p className="text-[10px] font-black text-waDark uppercase brightness-90 tracking-[0.25em] mb-4">
               Come funziona
             </p>
             <h2 className="text-3xl sm:text-4xl md:text-6xl font-display text-night tracking-tight leading-[1.05]">
@@ -54,14 +54,14 @@ export default function HowItWorks() {
                   <div className="w-14 h-14 rounded-2xl bg-night flex items-center justify-center transition-transform group-hover:scale-110">
                     <s.icon size={24} className="text-wa" strokeWidth={2} />
                   </div>
-                  <span className="text-4xl sm:text-5xl font-display text-night/10">
+                  <span className="text-4xl sm:text-5xl font-display text-night/20">
                     {s.n}
                   </span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-display text-night mb-3 leading-tight">
                   {s.title}
                 </h3>
-                <p className="text-sm text-night/55 leading-relaxed">{s.text}</p>
+                <p className="text-sm text-night/80 leading-relaxed">{s.text}</p>
               </div>
             ))}
           </div>
@@ -72,7 +72,7 @@ export default function HowItWorks() {
       <section className="py-16 md:py-28 bg-white">
         <div className="container-x">
           <div className="text-center max-w-2xl mx-auto mb-14 md:mb-20">
-            <p className="text-[10px] font-black text-waDark uppercase tracking-[0.25em] mb-4">
+            <p className="text-[10px] font-black text-waDark uppercase brightness-90 tracking-[0.25em] mb-4">
               Perché Prenotly
             </p>
             <h2 className="text-4xl md:text-6xl font-display text-night tracking-tight leading-[1.05]">
@@ -96,7 +96,7 @@ export default function HowItWorks() {
                 <p className="text-[11px] font-black text-night/75 uppercase tracking-widest mb-2">
                   {r.label}
                 </p>
-                <p className="text-xs text-night/55 leading-relaxed">
+                <p className="text-xs text-night/80 leading-relaxed">
                   {r.text}
                 </p>
               </div>

@@ -46,7 +46,7 @@ export default function Hero() {
                 <Star key={i} size={11} className="fill-[#25D366] text-[#25D366]" />
               ))}
             </div>
-            <span className="text-[11px] font-semibold text-[#0A2540]/85">
+            <span className="text-[11px] font-semibold text-[#0A2540]">
               4.9/5 · 130+ attività in Italia
             </span>
           </div>

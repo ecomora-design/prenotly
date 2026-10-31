@@ -105,7 +105,7 @@ export default function ThreeSoftware() {
                     <Icon size={26} style={{ color: p.color }} strokeWidth={2} />
                   </div>
                   <span
-                    className="inline-block text-[10px] font-black uppercase tracking-[0.2em] mb-2"
+                    className="inline-block text-[10px] font-black uppercase tracking-[0.2em] text-night/70 mb-2"
                     style={{ color: p.dark ? p.color : p.color }}
                   >
                     Prenotly {p.label}
@@ -175,7 +175,7 @@ export default function ThreeSoftware() {
                     <div className="flex items-baseline gap-1">
                       <span
                         className={`text-xs ${
-                          p.dark ? "text-white/40" : "text-night/70"
+                          p.dark ? "text-white/70" : "text-night/70"
                         }`}
                       >
                         da
@@ -189,7 +189,7 @@ export default function ThreeSoftware() {
                       </span>
                       <span
                         className={`text-xs font-bold ${
-                          p.dark ? "text-white/40" : "text-night/70"
+                          p.dark ? "text-white/70" : "text-night/70"
                         }`}
                       >
                         {p.period}
