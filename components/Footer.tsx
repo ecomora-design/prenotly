@@ -58,7 +58,7 @@ export default function Footer() {
 
           {cols.map((c) => (
             <div key={c.title}>
-              <h4 className="font-semibold text-night mb-3 text-sm">{c.title}</h4>
+              <h3 className="font-semibold text-night mb-3 text-sm">{c.title}</h3>
               <ul className="space-y-2 text-sm text-night/60">
                 {c.links.map((l) => (
                   <li key={l.label}>
@@ -72,7 +72,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-10 pt-6 border-t border-night/10 text-sm text-night/50 flex flex-col md:flex-row justify-between gap-3">
+        <div className="mt-10 pt-6 border-t border-night/10 text-sm text-night/70 flex flex-col md:flex-row justify-between gap-3">
           <p>
             © {new Date().getFullYear()} Prenotly · P.IVA 01800600882 · prenotly-italia.it
           </p>

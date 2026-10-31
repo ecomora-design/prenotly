@@ -47,7 +47,7 @@ export default function ContactCTA() {
             </a>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-[#0F1B2D]/50">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-[#0F1B2D]/70">
             {[
               "Nessuna carta richiesta",
               "Setup in 10 minuti",
