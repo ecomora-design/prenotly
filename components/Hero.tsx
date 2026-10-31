@@ -6,20 +6,28 @@ import Link from "next/link";
 export default function Hero() {
   return (
     <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 bg-white overflow-hidden">
-      {/* GRADIENT RADIAL SOTTILE */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-[#25D366]/[0.1] to-transparent rounded-full blur-3xl" />
-        <div className="absolute top-40 right-0 w-[400px] h-[400px] bg-[#25D366]/[0.08] rounded-full blur-3xl" />
+      {/* MESH GRADIENT + PATTERN */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[700px] bg-gradient-to-b from-[#25D366]/[0.15] via-[#25D366]/[0.05] to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#128C7E]/[0.12] to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-[#25D366]/[0.08] to-transparent rounded-full blur-3xl" />
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: "radial-gradient(#0F172A 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
+        />
       </div>
 
       <div className="container-x relative">
         
         {/* BADGE TRUST */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center justify-center gap-3 mb-8"
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="flex items-center justify-center gap-3 mb-8 backdrop-blur-sm bg-white/40 rounded-full px-4 py-2 w-fit mx-auto border border-white/60 shadow-sm"
         >
           <div className="flex -space-x-2">
             {[
@@ -53,18 +61,23 @@ export default function Hero() {
         </motion.div>
 
         {/* TITOLO */}
-        <h1 className="text-center text-[44px] leading-[1.05] sm:text-6xl md:text-7xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.03em] max-w-5xl mx-auto">
+        <motion.h1
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center text-[44px] leading-[1.05] sm:text-6xl md:text-7xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.04em] max-w-5xl mx-auto"
+        >
           Prenotazioni e ordini.<br />
-          <span className="bg-gradient-to-r from-[#128C7E] via-[#25D366] to-[#0F766E] bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#0F766E] via-[#25D366] to-[#128C7E] bg-clip-text text-transparent">
             Zero commissioni. Da 9,99 €/mese.
           </span>
-        </h1>
+        </motion.h1>
 
         {/* SOTTOTITOLO */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="mt-7 text-lg md:text-xl text-[#425466] leading-relaxed max-w-2xl mx-auto text-center"
         >
           Il gestionale italiano che unisce prenotazioni, ordini e clienti in un&apos;unica piattaforma. <strong>Niente commissioni sui tuoi incassi.</strong> Inizia gratis — 7 giorni.
@@ -74,12 +87,12 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.9, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="mt-10 flex flex-col sm:flex-row gap-3 justify-center"
         >
           <Link
             href="/signup"
-            className="group relative bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#0F766E] text-white px-8 py-4 rounded-full font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-[#128C7E]/30 hover:shadow-xl hover:shadow-[#128C7E]/40 active:scale-[0.98]"
+            className="group relative bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#0F766E] text-white px-8 py-4 rounded-full font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-xl shadow-[#25D366]/40 hover:shadow-2xl hover:shadow-[#25D366]/50 hover:scale-[1.02] active:scale-[0.98]"
           >
             Prova gratis 7 giorni
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
