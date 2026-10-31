@@ -22,7 +22,7 @@ export default function FAQ() {
     },
     {
       q: "Se non mi trovo bene?",
-      a: "Provi 48 ore gratis. Se attivi e poi cambi idea, puoi disdire quando vuoi senza penali.",
+      a: "Provi 7 giorni gratis. Se attivi e poi cambi idea, puoi disdire quando vuoi senza penali.",
     },
     {
       q: "Ci sono costi nascosti?",

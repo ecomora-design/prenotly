@@ -3,7 +3,7 @@ export const CATEGORIES = [
     slug: 'ristoranti',
     name: 'Ristoranti',
     seoTitle: 'Software di Prenotazione per Ristoranti | Prenotly',
-    seoDescription: 'Il software che riempie i tavoli del tuo ristorante: prenotazioni online, promemoria anti no-show, menu digitale. Prova gratis 48 ore.',
+    seoDescription: 'Il software che riempie i tavoli del tuo ristorante: prenotazioni online, promemoria anti no-show, menu digitale. Prova gratis 7 giorni.',
     heroTitle: 'Il tuo ristorante merita una sala piena. Senza telefonate.',
     heroSubtitle: 'Prenotazioni online, promemoria anti no-show, gestione tavoli e turni. Tutto in un unico posto, a un prezzo che nessun competitor può offrirti.',
     problems: [
@@ -41,7 +41,7 @@ export const CATEGORIES = [
     faqs: [
       { q: "Quanto costa davvero, considerando tutto?", a: "29,99€/mese, tutto incluso. Niente costi nascosti, niente commissioni. Meno di 1€ al giorno." },
       { q: "I miei clienti devono scaricare un'app?", a: 'No, prenotano dal browser in 30 secondi. Zero attrito.' },
-      { q: "Posso provarlo prima di pagare?", a: 'Sì, 48 ore gratuite senza carta di credito. Se non ti convince, disdici con un click.' }
+      { q: "Posso provarlo prima di pagare?", a: 'Sì, 7 giorni gratis senza carta di credito. Se non ti convince, disdici con un click.' }
     ],
     mockup: {
       title: 'Prenotazioni di oggi',
@@ -56,7 +56,7 @@ export const CATEGORIES = [
     slug: 'pizzerie',
     name: 'Pizzerie e Paninerie',
     seoTitle: 'Gestionale per Pizzerie e Paninerie: Prenotazioni e Asporto | Prenotly',
-    seoDescription: "Il software per pizzerie e paninerie: gestisci prenotazioni tavoli e ordini d'asporto in un unico posto. Prova gratis 48 ore.",
+    seoDescription: "Il software per pizzerie e paninerie: gestisci prenotazioni tavoli e ordini d'asporto in un unico posto. Prova gratis 7 giorni.",
     heroTitle: 'Più pizze, meno caos. Anche con le paninerie.',
     heroSubtitle: "Prenotazioni tavoli e ordini d'asporto in un unico sistema. La comanda arriva direttamente in cucina. Tu pensi solo a cucinare.",
     problems: [
@@ -162,7 +162,7 @@ export const CATEGORIES = [
     slug: 'dentisti',
     name: 'Studi Dentistici',
     seoTitle: 'Software di Prenotazione per Studi Dentistici | Prenotly',
-    seoDescription: 'Il gestionale per studi dentistici: agenda medica, promemoria per i pazienti, gestione urgenze. Prova gratis 48 ore.',
+    seoDescription: 'Il gestionale per studi dentistici: agenda medica, promemoria per i pazienti, gestione urgenze. Prova gratis 7 giorni.',
     heroTitle: 'Meno telefonate, più pazienti in poltrona.',
     heroSubtitle: 'Il software che aiuta il tuo studio dentistico a gestire le visite, ridurre le assenze e organizzare agenda e urgenze in automatico. A 1/3 del prezzo dei competitor.',
     problems: [
@@ -215,7 +215,7 @@ export const CATEGORIES = [
     slug: 'parrucchieri',
     name: 'Parrucchieri e Saloni di Bellezza',
     seoTitle: 'Gestionale per Parrucchieri e Saloni di Bellezza | Prenotly',
-    seoDescription: 'Il software per parrucchieri, estetisti e saloni di bellezza. Gestisci servizi, operatori e agenda in un unico posto. Prova gratis 48 ore.',
+    seoDescription: 'Il software per parrucchieri, estetisti e saloni di bellezza. Gestisci servizi, operatori e agenda in un unico posto. Prova gratis 7 giorni.',
     heroTitle: 'Ogni taglio, colore e trattamento al suo posto.',
     heroSubtitle: 'Gestisci la tua agenda di parrucchiere, estetista o salone di bellezza senza stress. Servizi, durate e operatori sempre sotto controllo. A 1/3 del prezzo dei competitor.',
     problems: [

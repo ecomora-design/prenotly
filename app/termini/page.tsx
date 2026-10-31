@@ -52,7 +52,7 @@ export default function TerminiPage() {
 
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-night mb-3">4. Piani e Pagamenti</h2>
-            <p>Il Servizio è offerto tramite un periodo di prova gratuita di 48 ore. Al termine del periodo di prova, l'accesso alle funzionalità della Piattaforma e la pubblicazione della web app dell'attività sono subordinati al pagamento di un abbonamento annuale di <strong>€359,88 + IVA</strong>.</p>
+            <p>Il Servizio è offerto tramite un periodo di prova gratuita di 7 giorni. Al termine del periodo di prova, l'accesso alle funzionalità della Piattaforma e la pubblicazione della web app dell'attività sono subordinati al pagamento di un abbonamento annuale di <strong>€359,88 + IVA</strong>.</p>
             <p className="mt-2">Il pagamento è annuale e anticipato. In caso di mancato pagamento, l'account e la web app pubblica verranno sospesi fino alla regolarizzazione.</p>
           </div>
 

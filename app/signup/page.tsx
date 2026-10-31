@@ -117,7 +117,7 @@ export default function SignupPage() {
             >
               <Sparkles size={14} />
               <span className="text-xs font-bold uppercase tracking-wider">
-                Prova gratuita 48 ore
+                Prova gratuita 7 giorni
               </span>
             </motion.div>
 
@@ -222,7 +222,7 @@ export default function SignupPage() {
                 La tua web app in 10 minuti
               </h1>
               <p className="text-night/60 text-sm">
-                Prova gratuita 48 ore. Nessuna carta richiesta.
+                Prova gratuita 7 giorni. Nessuna carta richiesta.
               </p>
             </div>
 
@@ -375,7 +375,7 @@ export default function SignupPage() {
               </button>
 
               <p className="text-xs text-night/50 text-center">
-                Prova gratuita 48 ore · Nessuna carta richiesta
+                Prova gratuita 7 giorni · Nessuna carta richiesta
               </p>
             </form>
 

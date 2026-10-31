@@ -88,7 +88,7 @@ export default function RistorantiPage() {
                   href="/signup"
                   className="bg-night hover:bg-night/90 text-white px-6 py-3.5 rounded-full font-semibold text-[15px] transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
-                  Prova 48 ore gratis
+                  Prova 7 giorni gratis
                   <ArrowRight size={18} />
                 </Link>
                 <a
@@ -222,7 +222,7 @@ export default function RistorantiPage() {
                 href="/signup"
                 className="w-full bg-night hover:bg-night/90 text-white py-4 rounded-full font-semibold text-[15px] transition inline-flex items-center justify-center gap-2 active:scale-[0.98]"
               >
-                Inizia 48 ore gratis
+                Inizia 7 giorni gratis
                 <ArrowRight size={18} />
               </Link>
               <p className="text-xs text-night/50 text-center">

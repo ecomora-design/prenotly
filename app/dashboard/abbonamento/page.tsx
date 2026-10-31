@@ -160,7 +160,7 @@ function AbbonamentoContent() {
             {isActive ? "Gestisci il tuo piano." : "Scegli il tuo piano."}
           </h1>
           <p className="text-[#425466] text-base md:text-lg max-w-xl mx-auto">
-            {isActive ? "Il tuo abbonamento è attivo." : "Demo gratuita 48 ore. Nessuna carta richiesta."}
+            {isActive ? "Il tuo abbonamento è attivo." : "Prova gratuita 7 giorni. Nessuna carta richiesta."}
           </p>
         </div>
       </div>
@@ -258,7 +258,7 @@ function AbbonamentoContent() {
                     {checkoutLoading === plan.id ? <><Loader2 className="animate-spin" size={15} /> Caricamento...</> : <><CreditCard size={15} /> Attiva ora</>}
                   </button>
                 )}
-                <p className="text-[10px] text-[#425466]/50 text-center mt-3">✓ Demo gratuita 48 ore inclusa</p>
+                <p className="text-[10px] text-[#425466]/50 text-center mt-3">✓ Prova gratuita 7 giorni inclusa</p>
               </div>
             );
           })}

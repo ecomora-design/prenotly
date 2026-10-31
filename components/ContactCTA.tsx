@@ -13,7 +13,7 @@ export default function ContactCTA() {
         <div className="text-center max-w-5xl mx-auto">
           
           <p className="text-[10px] font-black text-waDark uppercase tracking-[0.3em] mb-6">
-            Prova gratuita · 48 ore
+            Prova gratuita · 7 giorni
           </p>
           
           <h2 

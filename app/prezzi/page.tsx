@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Prezzi — Prenotly Menu, Food, Premium, Servizi e Service",
+  title: "Prezzi — Prenotly Menu, Food, Premium, Servizi, Servizi Premium e Service",
   description:
-    "Prenotly Menu da €9,99/mese, Food da €29,99/mese, Premium Pro da €99,99/mese. Servizi €29,99/mese. Service su preventivo. Demo gratuita 48 ore.",
+    "Prenotly Menu da €9,99/mese, Food da €29,99/mese, Premium Pro da €99,99/mese. Servizi da €29,99/mese, Servizi Premium €99,99/mese. Service su preventivo. Prova gratuita 7 giorni.",
 };
 
 export default function PrezziPage() {
@@ -96,10 +96,29 @@ export default function PrezziPage() {
         "Prenotazioni con slot in tempo reale",
         "Sync Google Calendar",
         "Promemoria anti no-show",
-        "Multi-operatore",
       ],
       cta: "Attiva Servizi",
       link: "/signup?plan=servizi",
+    },
+    {
+      id: "services_premium",
+      icon: Crown,
+      name: "Servizi Premium",
+      subtitle: "Tutto + staff + pagamenti",
+      description: "La soluzione completa per studi e saloni che gestiscono un team e vogliono incassare online.",
+      price: "99,99",
+      color: "#8B5CF6",
+      features: [
+        "✨ Tutto di Prenotly Servizi",
+        "👥 Staff illimitato (gestione team)",
+        "📊 Statistiche avanzate per operatore",
+        "💳 Pagamenti in-app (Stripe)",
+        "🧾 Fatturazione automatica",
+        "🔒 Sicurezza avanzata",
+      ],
+      badge: "TUTTO INCLUSO",
+      cta: "Attiva Servizi Premium",
+      link: "/signup?plan=services_premium",
     },
     {
       id: "service",
@@ -123,7 +142,7 @@ export default function PrezziPage() {
 
   const reasons = [
     { icon: Zap, title: "Attivo in 10 minuti", text: "Registrati, configuri e la tua web app è subito online. Nessuna installazione." },
-    { icon: Clock, title: "Demo gratuita 48 ore", text: "Provi tutto gratis per 48 ore. Se ti piace attivi, altrimenti non paghi nulla." },
+    { icon: Clock, title: "Prova gratuita 7 giorni", text: "Provi tutto gratis per 7 giorni. Se ti piace attivi, altrimenti non paghi nulla." },
     { icon: Shield, title: "Disdici quando vuoi", text: "Nessun vincolo, nessuna penale. Se non fa per te, un click e sei fuori." },
     { icon: CreditCard, title: "Pagamento sicuro", text: "Carta o IBAN dalla dashboard. Fatturazione elettronica inclusa." },
     { icon: Headphones, title: "Supporto in italiano", text: "Ti aiutiamo via App, sempre. Anche quando configuri la prima volta." },
@@ -157,7 +176,7 @@ export default function PrezziPage() {
             </span>
           </h1>
           <p className="text-[#425466] text-base md:text-xl leading-relaxed max-w-2xl mx-auto">
-            Scegli il piano adatto a te: dal menu base a <strong className="text-[#0A2540]">9,99 €/mese</strong> fino al software completo con pagamenti e QR. <strong className="text-[#0A2540]">Demo 48 ore gratis</strong>, nessuna carta richiesta.
+            Scegli il piano adatto a te: dal menu base a <strong className="text-[#0A2540]">9,99 €/mese</strong> fino al software completo con pagamenti e QR. <strong className="text-[#0A2540]">Prova 7 giorni gratis</strong>, nessuna carta richiesta.
           </p>
         </div>
       </section>
@@ -245,7 +264,7 @@ export default function PrezziPage() {
                     <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
                   </Link>
 
-                  <p className="text-[10px] text-[#425466]/50 text-center mt-3">✓ Demo gratuita 48 ore inclusa</p>
+                  <p className="text-[10px] text-[#425466]/50 text-center mt-3">✓ Prova gratuita 7 giorni inclusa</p>
                 </div>
               );
             })}
@@ -259,16 +278,23 @@ export default function PrezziPage() {
           <div className="text-center max-w-2xl mx-auto mb-12">
             <p className="text-[10px] font-black text-[#8B5CF6] uppercase tracking-[0.3em] mb-3">Per altri settori</p>
             <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight">
-              Servizi e <span className="text-[#3B82F6]">Service</span>.
+              Servizi, <span className="text-[#8B5CF6]">Premium</span> e <span className="text-[#3B82F6]">Service</span>.
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto">
             {otherPlans.map((plan) => {
               const Icon = plan.icon;
               const isExternal = plan.link.startsWith("http");
               return (
-                <div key={plan.id} className="relative flex flex-col bg-white rounded-3xl p-7 md:p-8 border border-[#E6EBF1] hover:border-[#0A2540]/20 hover:shadow-lg transition-all">
+                <div key={plan.id} className={"relative flex flex-col bg-white rounded-3xl p-7 md:p-8 transition-all " + ((plan as any).badge ? "border-2 border-[#8B5CF6]/30 shadow-2xl shadow-[#8B5CF6]/10" : "border border-[#E6EBF1] hover:border-[#0A2540]/20 hover:shadow-lg")}>
+                  {(plan as any).badge && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="inline-flex items-center gap-1 bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] text-white text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full shadow-lg">
+                        <Star size={10} fill="white" /> {(plan as any).badge}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: plan.color + "15" }}>
                       <Icon size={22} style={{ color: plan.color }} strokeWidth={2} />
@@ -437,12 +463,12 @@ export default function PrezziPage() {
             ))}
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] tracking-tight leading-tight mb-4">
-            Provalo 48 ore gratis.<br />
+            Provalo 7 giorni gratis.<br />
             <span className="text-[#425466]">Poi decidi.</span>
           </h2>
           <p className="text-[#425466] text-base md:text-lg mb-8 max-w-lg mx-auto">
             Nessuna carta di credito richiesta per iniziare.<br className="hidden md:block" />
-            Se in 48 ore capisci che non fa per te, non paghi nulla.
+            Se in 7 giorni capisci che non fa per te, non paghi nulla.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
@@ -482,7 +508,7 @@ export default function PrezziPage() {
                 <span className="text-[#25D366]">la tua attività?</span>
               </h2>
               <p className="text-white/70 text-base md:text-lg mb-8 max-w-lg mx-auto">
-                Attiva la demo gratuita 48 ore. Nessuna carta, nessun vincolo.
+                Attiva la prova gratuita 7 giorni. Nessuna carta, nessun vincolo.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link

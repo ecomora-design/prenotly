@@ -70,7 +70,7 @@ export default async function CategoryPage({ params }: PageProps) {
                   href="/signup"
                   className="group bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#0F766E] text-white px-7 py-4 rounded-full font-bold text-sm transition-all shadow-lg shadow-[#25D366]/30 inline-flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
-                  Prova 48 ore gratis
+                  Prova 7 giorni gratis
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
@@ -252,7 +252,7 @@ export default async function CategoryPage({ params }: PageProps) {
                 href="/signup"
                 className="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#0F766E] text-white py-4 rounded-full font-bold text-sm transition inline-flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/30 active:scale-[0.98]"
               >
-                Prova 48 ore gratis
+                Prova 7 giorni gratis
                 <ArrowRight size={15} />
               </Link>
               <p className="text-[10px] text-[#425466]/50 text-center mt-3">Nessuna carta richiesta · Disdici quando vuoi</p>
@@ -323,7 +323,7 @@ export default async function CategoryPage({ params }: PageProps) {
                 <span className="text-[#25D366]">Poi decidi tu.</span>
               </h2>
               <p className="text-white/70 text-base md:text-lg mb-8 max-w-lg mx-auto">
-                48 ore di prova completa. Nessuna carta richiesta. Se non ti convince, un click e sei fuori.
+                7 giorni di prova completa. Nessuna carta richiesta. Se non ti convince, un click e sei fuori.
               </p>
               <Link
                 href="/signup"

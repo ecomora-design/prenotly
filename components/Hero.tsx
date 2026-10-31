@@ -37,7 +37,7 @@ export default function Hero() {
               </div>
             ))}
             <div className="w-7 h-7 rounded-full border-2 border-white bg-white flex items-center justify-center text-[#0A2540] text-[9px] font-black shadow-sm">
-              +116
+              +126
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -47,7 +47,7 @@ export default function Hero() {
               ))}
             </div>
             <span className="text-[11px] font-semibold text-[#0A2540]/60">
-              4.9/5 · 120 attività italiane
+              4.9/5 · 130+ attività in Italia
             </span>
           </div>
         </motion.div>
@@ -81,7 +81,7 @@ export default function Hero() {
             href="/signup"
             className="group relative bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#0F766E] text-white px-8 py-4 rounded-full font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-[#128C7E]/30 hover:shadow-xl hover:shadow-[#128C7E]/40 active:scale-[0.98]"
           >
-            Inizia gratis — 48 ore
+            Prova gratis 7 giorni
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
