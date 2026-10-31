@@ -6,8 +6,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import StatsCards from "./StatsCards";
+import { planHasFeature } from "@/lib/planFeatures";
 import {
-  Loader2, Calendar, Clock, CheckCircle2, XCircle, LogOut,
+  Loader2, Calendar, Clock, CheckCircle2, XCircle, LogOut, Lock, Crown,
   User, RefreshCw, MessageCircle, Timer, ArrowRight, Scissors
 } from "lucide-react";
 
@@ -17,7 +18,7 @@ type StaffInfo = {
   role: string | null;
   color: string;
   tenant_id: string;
-  tenants: { business_name: string; slug: string; brand_color: string | null } | null;
+  tenants: { business_name: string; slug: string; brand_color: string | null; plan_type: string | null } | null;
 };
 
 type Appointment = {
@@ -57,7 +58,7 @@ export default function StaffDashboardPage() {
 
       const { data: s } = await supabase
         .from("staff")
-        .select("id, name, role, color, tenant_id, tenants(business_name, slug, brand_color)")
+        .select("id, name, role, color, tenant_id, tenants(business_name, slug, brand_color, plan_type)")
         .eq("user_id", user.id)
         .eq("is_active", true)
         .maybeSingle();
@@ -145,6 +146,32 @@ export default function StaffDashboardPage() {
     return acc;
   }, {});
   const sortedTimes = Object.keys(groupedByTime).sort();
+
+  // CONTROLLO PIANO PREMIUM
+  const isPremium = planHasFeature(staffInfo.tenants?.plan_type, "staff");
+  
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm text-center max-w-md w-full border border-night/[0.06]">
+          <div className="w-20 h-20 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-5">
+            <Lock size={36} className="text-amber-500" />
+          </div>
+          <div className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider mb-3">
+            <Crown size={11} /> Funzione Premium
+          </div>
+          <h1 className="text-2xl font-bold text-night mb-3">Area Staff Bloccata</h1>
+          <p className="text-gray-500 text-sm mb-6">
+            L&apos;area operatore è disponibile solo per gli account con piano <strong>Premium Pro (99,99 €/mese)</strong>.
+            Chiedi al titolare dell&apos;attività di effettuare l&apos;upgrade.
+          </p>
+          <button onClick={handleLogout} className="w-full bg-night hover:bg-night/90 text-white py-3 rounded-full font-bold text-sm transition">
+            Torna al Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pb-20">

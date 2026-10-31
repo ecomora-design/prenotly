@@ -65,8 +65,25 @@ export const PLANS = {
       "Prenotazioni in tempo reale",
       "Sync Google Calendar",
       "Promemoria anti no-show",
-      "Multi-operatore",
       "Zero commissioni",
+    ],
+  },
+  services_premium: {
+    id: "services_premium",
+    name: "Servizi Premium",
+    subtitle: "Tutto + staff illimitato + pagamenti",
+    yearly: 1199.88,
+    monthly: 99.99,
+    color: "#8B5CF6",
+    icon: "crown",
+    badge: "TUTTO INCLUSO",
+    features: [
+      "✨ Tutto di Pro (agenda, sync Google)",
+      "👥 Staff illimitato (gestione team)",
+      "📊 Statistiche avanzate per operatore",
+      "💳 Pagamenti in-app (Stripe)",
+      "🧾 Fatturazione automatica",
+      "🔒 Sicurezza avanzata",
     ],
   },
   service: {
@@ -92,6 +109,7 @@ export function getPlanFromTenant(tenant: any) {
   if (tenant.plan_type === "food_standard") return PLANS.food_standard;
   if (tenant.plan_type === "food_premium") return PLANS.food_premium;
   if (tenant.plan_type === "beauty") return PLANS.beauty;
+  if (tenant.plan_type === "services_premium") return PLANS.services_premium;
   if (tenant.plan_type === "service") return PLANS.service;
   return PLANS.food_menu;
 }

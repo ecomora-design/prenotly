@@ -9,6 +9,7 @@ const PRICE_MAP: Record<string, string> = {
   "food_menu": process.env.STRIPE_PRICE_FOOD_MENU!,
   "food_standard": process.env.STRIPE_PRICE_FOOD_STANDARD!,
   "food_premium": process.env.STRIPE_PRICE_FOOD_PREMIUM!,
+  "services_premium": process.env.STRIPE_PRICE_SERVICES_PREMIUM!,
 };
 
 export async function POST(req: Request) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { planHasFeature } from "@/lib/planFeatures";
 
 export async function POST(req: Request) {
   try {
@@ -11,10 +12,15 @@ export async function POST(req: Request) {
     const admin = createAdminClient();
     const { data: link } = await admin
       .from("tenant_users")
-      .select("tenant_id")
+      .select("tenant_id, tenants(plan_type)")
       .eq("user_id", user.id)
       .maybeSingle();
     if (!link) return NextResponse.json({ error: "Non sei un titolare" }, { status: 403 });
+
+    const planType = (link.tenants as any)?.plan_type;
+    if (!planHasFeature(planType, "staff")) {
+      return NextResponse.json({ error: "Il tuo piano non include la gestione staff. Passa a Premium Pro (99,99 €/mese)." }, { status: 403 });
+    }
 
     const body = await req.json();
     const { name, role, color, email, password } = body;

@@ -56,6 +56,19 @@ const SERVICE_PLANS = {
     ],
     upgradeNote: "Zero commissioni sulle prenotazioni",
   },
+  services_premium: {
+    id: "services_premium", name: "Servizi Premium", subtitle: "Tutto + staff + pagamenti",
+    icon: Crown, color: "#8B5CF6", badge: "TUTTO INCLUSO", price: "99,99", interval: "/mese",
+    features: [
+      "✨ Tutto di Prenotly Pro",
+      "👥 Staff illimitato (gestione team)",
+      "📊 Statistiche avanzate per operatore",
+      "💳 Pagamenti in-app (Stripe)",
+      "🧾 Fatturazione automatica",
+      "🔒 Sicurezza avanzata",
+    ],
+    upgradeNote: "Staff abilitato solo con questo piano",
+  },
 };
 
 function AbbonamentoContent() {
