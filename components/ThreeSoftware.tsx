@@ -71,14 +71,14 @@ export default function ThreeSoftware() {
       <div className="container-x">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-14 md:mb-20">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-night/[0.08] text-night/60 text-[10px] font-black uppercase tracking-widest mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-night/[0.08] text-night/75 text-[10px] font-black uppercase tracking-widest mb-5">
             <Sparkles size={12} /> Tre prodotti, un'unica filosofia
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-display text-night tracking-tight leading-[1.05] mb-4">
             Il software giusto<br />
             <span className="italic">per la tua attività.</span>
           </h2>
-          <p className="text-night/50 text-base md:text-lg leading-relaxed">
+          <p className="text-night/70 text-base md:text-lg leading-relaxed">
             Tre soluzioni distinte, progettate per farti risparmiare tempo e offrire un'esperienza memorabile ai tuoi clienti.
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function ThreeSoftware() {
 
                 <p
                   className={`text-sm leading-relaxed mb-6 ${
-                    p.dark ? "text-white/60" : "text-night/50"
+                    p.dark ? "text-white/60" : "text-night/70"
                   }`}
                 >
                   {p.description}
@@ -149,7 +149,7 @@ export default function ThreeSoftware() {
                 {"note" in p && p.note && (
                   <div
                     className={`mb-6 px-3 py-2 rounded-xl text-[11px] font-bold flex items-center gap-1.5 ${
-                      p.dark ? "bg-white/5 text-white/70" : "bg-night/5 text-night/60"
+                      p.dark ? "bg-white/5 text-white/70" : "bg-night/5 text-night/75"
                     }`}
                   >
                     <Sparkles size={11} style={{ color: p.color }} />
@@ -175,7 +175,7 @@ export default function ThreeSoftware() {
                     <div className="flex items-baseline gap-1">
                       <span
                         className={`text-xs ${
-                          p.dark ? "text-white/40" : "text-night/40"
+                          p.dark ? "text-white/40" : "text-night/70"
                         }`}
                       >
                         da
@@ -189,7 +189,7 @@ export default function ThreeSoftware() {
                       </span>
                       <span
                         className={`text-xs font-bold ${
-                          p.dark ? "text-white/40" : "text-night/40"
+                          p.dark ? "text-white/40" : "text-night/70"
                         }`}
                       >
                         {p.period}

@@ -32,7 +32,7 @@ export default function Footer() {
             <a href="/" className="text-2xl font-bold text-night inline-block mb-3">
               Prenot<span className="text-waDark">ly</span>
             </a>
-            <p className="text-night/60 text-sm leading-relaxed mb-4">
+            <p className="text-night/75 text-sm leading-relaxed mb-4">
               Prenotazioni e ordini su App.<br />
               Senza telefonate.
             </p>
@@ -59,7 +59,7 @@ export default function Footer() {
           {cols.map((c) => (
             <div key={c.title}>
               <h3 className="font-semibold text-night mb-3 text-sm">{c.title}</h3>
-              <ul className="space-y-2 text-sm text-night/60">
+              <ul className="space-y-2 text-sm text-night/75">
                 {c.links.map((l) => (
                   <li key={l.label}>
                     <a href={l.href} className="hover:text-waDark transition">

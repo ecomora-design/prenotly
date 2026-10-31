@@ -270,7 +270,7 @@ export default function Hero() {
           transition={{ delay: 2.2 }}
           className="mt-16 md:mt-20 text-center"
         >
-          <p className="text-[11px] font-semibold text-[#425466]/70 uppercase tracking-widest mb-6">
+          <p className="text-[11px] font-semibold text-[#425466]/85 uppercase tracking-widest mb-6">
             Scelto da ristoranti e professionisti
           </p>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 opacity-50">

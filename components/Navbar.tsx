@@ -67,7 +67,7 @@ export default function Navbar() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="text-night/60 hover:text-night transition text-[13px] font-semibold tracking-wide"
+                className="text-night/75 hover:text-night transition text-[13px] font-semibold tracking-wide"
               >
                 {l.label}
               </Link>
@@ -101,7 +101,7 @@ export default function Navbar() {
               </div>
             ) : (
               <>
-                <Link href="/login" className="text-night/60 hover:text-night font-semibold transition text-[13px]">
+                <Link href="/login" className="text-night/75 hover:text-night font-semibold transition text-[13px]">
                   Accedi
                 </Link>
                 <Link
