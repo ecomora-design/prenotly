@@ -31,12 +31,13 @@ export default function TablesView({ tenantId }: Props) {
   const [bookings, setBookings] = useState<TableBooking[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
 
   async function load() {
     setRefreshing(true);
-    const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(new Date());
-    const dayStart = new Date(todayStr + "T00:00:00").toISOString();
-    const dayEnd = new Date(todayStr + "T23:59:59").toISOString();
+    const dateStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(selectedDate);
+    const dayStart = new Date(dateStr + "T00:00:00").toISOString();
+    const dayEnd = new Date(dateStr + "T23:59:59").toISOString();
 
     const { data, error } = await supabase
       .from("bookings")
@@ -73,7 +74,7 @@ export default function TablesView({ tenantId }: Props) {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, [tenantId]);
+  useEffect(() => { load(); }, [tenantId, selectedDate]);
 
   async function updateStatus(id: string, status: string) {
     await supabase.from("bookings").update({ status }).eq("id", id);
@@ -97,6 +98,49 @@ export default function TablesView({ tenantId }: Props) {
           </button>
           <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-1 bg-night hover:bg-night/90 text-white px-3 py-2 rounded-full text-xs font-bold transition active:scale-95">
             <Plus size={14} /> Nuovo
+          </button>
+        </div>
+      </div>
+
+      {/* DATE SELECTOR */}
+      <div className="bg-white rounded-2xl p-2 border border-night/[0.06] shadow-sm mb-4">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              const d = new Date(selectedDate);
+              d.setDate(d.getDate() - 1);
+              setSelectedDate(d);
+            }}
+            className="p-2 text-night/50 hover:text-night hover:bg-night/5 rounded-lg transition shrink-0"
+            aria-label="Giorno precedente"
+          >
+            ‹
+          </button>
+          <div className="flex-1 flex items-center justify-center gap-2">
+            <button
+              onClick={() => setSelectedDate(new Date())}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition ${
+                new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(selectedDate) === new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(new Date())
+                  ? "bg-night text-white"
+                  : "bg-white text-night/60 border border-night/[0.08] hover:text-night"
+              }`}
+            >
+              Oggi
+            </button>
+            <span className="text-sm font-bold text-night">
+              {selectedDate.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })}
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              const d = new Date(selectedDate);
+              d.setDate(d.getDate() + 1);
+              setSelectedDate(d);
+            }}
+            className="p-2 text-night/50 hover:text-night hover:bg-night/5 rounded-lg transition shrink-0"
+            aria-label="Giorno successivo"
+          >
+            ›
           </button>
         </div>
       </div>
