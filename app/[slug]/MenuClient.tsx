@@ -162,7 +162,7 @@ export default function MenuClient({
   const translationCache = useRef<Record<string, string>>({});
   const [view, setView] = useState<"welcome" | "order" | "menu">("welcome");
   const isMenuOnly = planType === "food_menu";
-  const [orderSuccess, setOrderSuccess] = useState<{ code: string; total: number } | null>(null);
+  const [orderSuccess, setOrderSuccess] = useState<{ code: string; total: number; trackingToken: string | null } | null>(null);
   const [lastOrderSnapshot, setLastOrderSnapshot] = useState<any>(null);
 
   const [customerName, setCustomerName] = useState("");
@@ -404,7 +404,7 @@ export default function MenuClient({
         })),
       });
 
-      setOrderSuccess({ code, total: cartTotal });
+      setOrderSuccess({ code, total: cartTotal, trackingToken: data.order?.tracking_token || null });
       setCheckoutOpen(false);
       setCart({});
       setSubmitting(false);
@@ -1234,14 +1234,31 @@ export default function MenuClient({
                 </div>
               </div>
 
-              <div className="rounded-2xl p-4 mb-6 text-sm" style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}>
-                <p className="text-night font-semibold mb-1">📲 Ultimo passaggio</p>
-                <p className="text-gray-600 text-xs">Clicca il pulsante per inviare l&apos;ordine al ristorante su App.</p>
+              {orderSuccess.trackingToken && (
+                <>
+                  <a
+                    href={`/track/${orderSuccess.trackingToken}`}
+                    className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3"
+                    style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}
+                  >
+                    <Clock size={20} />
+                    Segui il tuo ordine →
+                  </a>
+                  <div className="rounded-2xl p-3 mb-4 text-xs" style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}>
+                    <p className="text-night font-semibold mb-1">💡 Salva il link</p>
+                    <p className="text-gray-600">Potrai vedere lo stato del tuo ordine in tempo reale (In cucina, Pronto, ecc.)</p>
+                  </div>
+                </>
+              )}
+
+              <div className="rounded-2xl p-4 mb-4 text-sm" style={{ backgroundColor: `${brandColor}10`, border: `1px solid ${brandColor}30` }}>
+                <p className="text-night font-semibold mb-1">📲 Notifica al ristorante</p>
+                <p className="text-gray-600 text-xs">Clicca per avvisare il ristorante su App.</p>
               </div>
 
-              <a href={buildOrderAppUrl()} target="_blank" rel="noopener noreferrer" className="w-full text-white py-4 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3" style={{ backgroundColor: brandColor, boxShadow: `0 8px 24px ${brandColor}40` }}>
-                <MessageCircle size={20} />
-                {t.sendWhatsapp}
+              <a href={buildOrderAppUrl()} target="_blank" rel="noopener noreferrer" className="w-full text-night py-3.5 rounded-2xl font-bold transition active:scale-95 flex items-center justify-center gap-2 mb-3 bg-soft border border-gray-200">
+                <MessageCircle size={18} />
+                Avvisa su App
               </a>
 
               <button

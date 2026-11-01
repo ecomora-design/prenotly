@@ -53,6 +53,9 @@ export async function POST(req: Request) {
     // 2. Salviamo l'ordine collegato al cliente
     const orderCode = "OR-" + Math.random().toString(36).substring(2, 8).toUpperCase();
     
+    // Token pubblico per tracking (12 caratteri, non indovinabile)
+    const trackingToken = Array.from({length: 12}, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]).join("");
+    
     // Ricalcolo server-side: ignora il total dal client (anti-manomissione)
     const serverSubtotal = items.reduce((sum: number, i: Item) => sum + (Number(i.price) * Number(i.qty)), 0);
     const serverDelivery = orderType === "delivery" ? (Number((tenant as any).delivery_fee) || 0) : 0;
@@ -72,6 +75,7 @@ export async function POST(req: Request) {
         scheduled_for: scheduledFor || null,
         notes: notes || null,
         status: "pending",
+        tracking_token: trackingToken,
       }).select().single();
 
     if (orderError) {
