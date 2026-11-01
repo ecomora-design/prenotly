@@ -157,6 +157,17 @@ export default function OrdersView({ tenantId }: Props) {
                     </div>
                     <span className="font-mono text-[10px] font-bold text-night/40 bg-night/5 px-2 py-1 rounded">{o.order_code}</span>
                   </div>
+                  
+                  {/* Lista prodotti */}
+                  {o.items && o.items.length > 0 && (
+                    <div className="mt-2 px-3 py-2 bg-night/[0.03] rounded-lg space-y-0.5">
+                      {o.items.map((item, idx) => (
+                        <p key={idx} className="text-[11px] text-night/70">
+                          <strong>{item.qty}×</strong> {item.name}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                   <div className="mt-3 pt-3 border-t border-night/[0.04]">
                     {config.next ? (
                       <button onClick={() => advance(o.id, config.next!.to)} className="w-full text-white text-xs font-black py-2 rounded-lg inline-flex items-center justify-center gap-1" style={{ backgroundColor: config.accent }}>
