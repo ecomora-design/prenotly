@@ -33,9 +33,16 @@ function LoginForm() {
     }
 
     const next = searchParams.get("next");
-
-    // Controlla se l'utente è uno staff (operatore)
     const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+    // Se è admin → /admin
+    if (currentUser?.email === "movisicily@gmail.com") {
+      router.push("/admin");
+      router.refresh();
+      return;
+    }
+
+    // Se è staff → errore (deve usare /staff/login)
     if (currentUser) {
       const { data: staffRow } = await supabase
         .from("staff")
@@ -45,9 +52,9 @@ function LoginForm() {
         .maybeSingle();
 
       if (staffRow) {
-        // È un operatore → dashboard staff
-        router.push("/staff/dashboard");
-        router.refresh();
+        await supabase.auth.signOut();
+        setError("Sei un operatore. Accedi da /staff/login");
+        setLoading(false);
         return;
       }
     }

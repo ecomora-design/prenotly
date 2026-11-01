@@ -32,8 +32,8 @@ export default function AdminLayout({
   useEffect(() => {
     async function check() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login"); return; }
-      if (user.email !== ADMIN_EMAIL) { router.push("/dashboard"); return; }
+      if (!user) { router.push("/admin/login"); return; }
+      if (user.email !== ADMIN_EMAIL) { router.push("/admin/login"); return; }
       setUserEmail(user.email);
       setLoading(false);
 

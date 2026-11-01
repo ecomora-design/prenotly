@@ -15,6 +15,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const protectedPaths = ['/dashboard', '/staff', '/onboarding']
+  const staffProtectedPaths = ['/staff']
   const authPaths = ['/login', '/signup']
 
   const isProtected = protectedPaths.some((p) => path.startsWith(p))
@@ -54,7 +55,12 @@ export async function proxy(request: NextRequest) {
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    // Se la rotta è /staff/*, redirect a /staff/login
+    if (path.startsWith('/staff')) {
+      url.pathname = '/staff/login'
+    } else {
+      url.pathname = '/login'
+    }
     url.searchParams.set('next', path)
     return NextResponse.redirect(url)
   }

@@ -60,8 +60,27 @@ export default function DashboardLayout({
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // Se non è un titolare (nessun tenant_users), verifica se è staff
+      if (!link || !link.tenants) {
+        const { data: staffRow } = await supabase
+          .from("staff")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (staffRow) {
+          // È uno staff → non può stare qui
+          router.push("/staff/login");
+          return;
+        }
+
+        // Né titolare né staff → onboarding
+        router.push("/onboarding");
+        return;
+      }
+
       setUser(user);
-      if (!link || !link.tenants) { router.push("/onboarding"); return; }
 
       const t = link.tenants as any;
       setTenant(t);
