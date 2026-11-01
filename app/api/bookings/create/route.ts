@@ -243,6 +243,31 @@ export async function POST(req: Request) {
       }
     }
 
+    // 🔔 NOTIFICA PUSH STAFF (fire-and-forget, non blocca la risposta)
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.prenotly-italia.it";
+      const title = bookingType === "table"
+        ? `🍽️ Nuova prenotazione tavolo`
+        : `📅 Nuovo appuntamento`;
+      const body = bookingType === "table"
+        ? `${customerName} · ${partySize || 1} coperti · ${new Date(scheduledAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome" })}`
+        : `${customerName} · ${new Date(scheduledAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome" })}`;
+
+      fetch(baseUrl + "/api/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId: tenant.id,
+          title,
+          body,
+          url: "/staff/dashboard",
+          tag: "booking-" + booking.id,
+        }),
+      }).catch(err => console.error("push send error:", err));
+    } catch (pushErr) {
+      console.error("push trigger error:", pushErr);
+    }
+
     return NextResponse.json({ booking });
   } catch (err) {
     console.error("API bookings error:", err);

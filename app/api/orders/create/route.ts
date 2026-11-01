@@ -78,6 +78,25 @@ export async function POST(req: Request) {
       console.error("Errore salvataggio ordine:", orderError);
       return NextResponse.json({ error: orderError.message }, { status: 500 });
     }
+
+    // 🔔 NOTIFICA PUSH STAFF (fire-and-forget)
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.prenotly-italia.it";
+      fetch(baseUrl + "/api/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId: tenant.id,
+          title: "🛍️ Nuovo ordine",
+          body: customerName + " · " + orderType + " · €" + serverSubtotal.toFixed(2),
+          url: "/staff/dashboard",
+          tag: "order-" + Date.now(),
+        }),
+      }).catch(err => console.error("push send error:", err));
+    } catch (pushErr) {
+      console.error("push trigger error:", pushErr);
+    }
+
     
     return NextResponse.json({ order });
   } catch (err) {
