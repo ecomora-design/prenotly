@@ -5,7 +5,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { planHasFeature } from "@/lib/planFeatures";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Plus, Trash2, X, Save, Pencil, Crown, Lock, UserCircle2, CheckCircle2, Circle } from "lucide-react";
+import { Loader2, Plus, Trash2, X, Save, Pencil, Crown, Lock, UserCircle2, CheckCircle2, Circle, Calendar } from "lucide-react";
+import TimeOffApproval from "@/components/TimeOffApproval";
 
 type Staff = { id: string; name: string; role: string | null; color: string; is_active: boolean; sort_order: number; email: string | null; user_id: string | null; };
 const PALETTE = ["#25D366","#3B82F6","#8B5CF6","#EC4899","#F97316","#EAB308","#14B8A6","#EF4444","#6366F1","#10B981"];
@@ -21,6 +22,8 @@ export default function StaffPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: "", role: "", color: "#25D366", email: "", password: "" });
+  const [approvalStaff, setApprovalStaff] = useState<Staff | null>(null);
+  const [pendingCounts, setPendingCounts] = useState<Record<string, number>>({});
   const hasStaff = planHasFeature(planType, "staff");
 
   async function load() {
@@ -35,6 +38,18 @@ export default function StaffPage() {
     const { data } = await supabase.from("staff").select("*").eq("tenant_id", link.tenant_id).order("sort_order");
     setStaff((data || []) as Staff[]);
     setLoading(false);
+
+    // Conta richieste ferie pending per ogni operatore
+    const { data: pendingData } = await supabase
+      .from("staff_time_off")
+      .select("staff_id")
+      .eq("tenant_id", link.tenant_id)
+      .eq("status", "pending");
+    const counts: Record<string, number> = {};
+    (pendingData || []).forEach((r: any) => {
+      counts[r.staff_id] = (counts[r.staff_id] || 0) + 1;
+    });
+    setPendingCounts(counts);
   }
   useEffect(() => { load(); }, []);
 
@@ -182,6 +197,16 @@ export default function StaffPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {approvalStaff && (
+        <TimeOffApproval
+          isOpen={!!approvalStaff}
+          onClose={() => { setApprovalStaff(null); load(); }}
+          staffId={approvalStaff.id}
+          staffName={approvalStaff.name}
+          staffColor={approvalStaff.color}
+        />
+      )}
     </div>
   );
 }
