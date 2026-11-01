@@ -279,9 +279,12 @@ export default function StaffDashboardPage() {
 
       <div className="max-w-4xl mx-auto px-4 pt-6">
         {/* TABS PRINCIPALI (condizionali per tipo attività) */}
-        <div className={`mb-5 grid ${isFood ? "grid-cols-2" : "grid-cols-1"} gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm`}>
+        <div className="mb-5 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
           {!isFood && (
-            <button onClick={() => setMainTab("appointments")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "appointments" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Appuntamenti</button>
+            <>
+              <button onClick={() => setMainTab("appointments")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "appointments" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Appuntamenti</button>
+              <button onClick={() => setMainTab("timeoff")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "timeoff" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ferie</button>
+            </>
           )}
           {isFood && (
             <>
@@ -469,6 +472,10 @@ export default function StaffDashboardPage() {
 
         <div className={isFood && mainTab === "orders" ? "block" : "hidden"}>
           <OrdersView tenantId={staffInfo.tenant_id} />
+        </div>
+
+        <div className={!isFood && mainTab === "timeoff" ? "block" : "hidden"}>
+          <TimeOffView staffId={staffInfo.id} tenantId={staffInfo.tenant_id} />
         </div>
       </div>
     </div>
