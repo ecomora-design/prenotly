@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { planHasFeature } from "@/lib/planFeatures";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Plus, Trash2, X, Save, Pencil, Crown, Lock, UserCircle2, CheckCircle2, Circle, Calendar } from "lucide-react";
+import { Loader2, Plus, Trash2, X, Save, Pencil, Crown, Lock, UserCircle2, CheckCircle2, Circle, Calendar, Copy, Link2, ExternalLink } from "lucide-react";
 import TimeOffApproval from "@/components/TimeOffApproval";
 
 type Staff = { id: string; name: string; role: string | null; color: string; is_active: boolean; sort_order: number; email: string | null; user_id: string | null; };
@@ -24,6 +24,7 @@ export default function StaffPage() {
   const [form, setForm] = useState({ name: "", role: "", color: "#25D366", email: "", password: "" });
   const [approvalStaff, setApprovalStaff] = useState<Staff | null>(null);
   const [pendingCounts, setPendingCounts] = useState<Record<string, number>>({});
+  const [copied, setCopied] = useState(false);
   const hasStaff = planHasFeature(planType, "staff");
 
   async function load() {
@@ -99,6 +100,17 @@ export default function StaffPage() {
     load();
   }
 
+  async function copyStaffLink() {
+    const url = window.location.origin + "/staff/login";
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (err) {
+      alert("Link: " + url);
+    }
+  }
+
   async function toggleActive(s: Staff) {
     const { error } = await supabase.from("staff").update({ is_active: !s.is_active }).eq("id", s.id);
     if (error) alert("Errore: " + error.message);
@@ -131,6 +143,37 @@ export default function StaffPage() {
       <div className="flex items-center justify-between mb-6">
         <div><h1 className="text-2xl md:text-3xl font-bold text-night mb-1">Staff</h1><p className="text-gray-500 text-sm">Gestisci gli operatori del tuo team</p></div>
         <button onClick={openNew} className="inline-flex items-center gap-2 bg-wa hover:bg-waDark text-white px-5 py-2.5 rounded-full text-sm font-bold transition shadow-md"><Plus size={16} /> Nuovo operatore</button>
+      </div>
+
+      {/* Card accesso staff */}
+      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-5">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+            <Link2 size={18} className="text-blue-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-night mb-1">Link di accesso per i tuoi operatori</p>
+            <p className="text-xs text-blue-800/80 mb-3">
+              Condividi questo link con il tuo team. Ogni operatore accede con la propria email e password.
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={copyStaffLink}
+                className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition active:scale-95"
+              >
+                {copied ? <><CheckCircle2 size={13} /> Copiato!</> : <><Copy size={13} /> Copia link</>}
+              </button>
+              <a
+                href="/staff/login"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-white hover:bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-lg text-xs font-bold transition"
+              >
+                <ExternalLink size={13} /> Apri
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
       {staff.length === 0 ? (
