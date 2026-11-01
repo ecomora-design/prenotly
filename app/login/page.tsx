@@ -35,10 +35,11 @@ function LoginForm() {
     const next = searchParams.get("next");
     const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-    // Se è admin → /admin
+    // Se è admin → errore (deve usare /admin/login)
     if (currentUser?.email === "movisicily@gmail.com") {
-      router.push("/admin");
-      router.refresh();
+      await supabase.auth.signOut();
+      setError("Sei un amministratore. Accedi da /admin/login");
+      setLoading(false);
       return;
     }
 
