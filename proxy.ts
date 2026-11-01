@@ -15,10 +15,13 @@ export async function proxy(request: NextRequest) {
   }
 
   const protectedPaths = ['/dashboard', '/staff', '/onboarding']
+  const publicStaffPaths = ['/staff/login', '/staff/manifest']
   const staffProtectedPaths = ['/staff']
   const authPaths = ['/login', '/signup']
 
-  const isProtected = protectedPaths.some((p) => path.startsWith(p))
+  // Escludi pagine pubbliche staff (login, manifest)
+  const isPublicStaffPath = publicStaffPaths.some((p) => path.startsWith(p))
+  const isProtected = !isPublicStaffPath && protectedPaths.some((p) => path.startsWith(p))
   const isAuthPath = authPaths.some((p) => path.startsWith(p))
 
   // 3. Se la rotta non è né protetta né di autenticazione, non sprecare risorse

@@ -30,6 +30,12 @@ export default function AdminLayout({
   const [notifications, setNotifications] = useState(0);
 
   useEffect(() => {
+    // Se siamo sulla pagina di login admin, non fare check auth
+    if (pathname === "/admin/login") {
+      setLoading(false);
+      return;
+    }
+
     async function check() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/admin/login"); return; }
