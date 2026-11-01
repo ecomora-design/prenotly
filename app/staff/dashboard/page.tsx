@@ -10,6 +10,7 @@ import WeekView from "./WeekView";
 import TablesView from "./TablesView";
 import OrdersView from "./OrdersView";
 import TimeOffView from "./TimeOffView";
+import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { planHasFeature } from "@/lib/planFeatures";
 import {
   Loader2, Calendar, Clock, CheckCircle2, XCircle, LogOut, Lock, Crown,
@@ -271,13 +272,19 @@ export default function StaffDashboardPage() {
               <p className="text-[11px] text-night/50">{staffInfo.role || "Operatore"} · {staffInfo.tenants?.business_name}</p>
             </div>
           </div>
-          <button onClick={handleLogout} className="p-2 text-night/50 hover:text-red-500 rounded-lg hover:bg-red-50 transition">
-            <LogOut size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            <PushNotificationToggle staffId={staffInfo.id} tenantId={staffInfo.tenant_id} />
+            <button onClick={handleLogout} className="p-2 text-night/50 hover:text-red-500 rounded-lg hover:bg-red-50 transition">
+              <LogOut size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 pt-6">
+        {/* Banner notifiche (se non ancora attive) */}
+        <PushNotificationToggle staffId={staffInfo.id} tenantId={staffInfo.tenant_id} />
+
         {/* TABS PRINCIPALI (condizionali per tipo attività) */}
         <div className="mb-5 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
           {!isFood && (
