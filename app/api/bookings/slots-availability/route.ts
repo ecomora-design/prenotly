@@ -23,13 +23,29 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Tenant non trovato" }, { status: 404 });
     }
 
-    // Capacità = numero operatori attivi (default 1)
+    // Capacità = operatori attivi - operatori in ferie approvate per quella data
     const { data: activeStaff } = await supabase
       .from("staff")
       .select("id")
       .eq("tenant_id", tenant.id)
       .eq("is_active", true);
-    const capacity = (activeStaff && activeStaff.length > 0) ? activeStaff.length : 1;
+
+    let capacity: number;
+    if (!activeStaff || activeStaff.length === 0) {
+      capacity = 1; // fallback: tenant senza staff configurato
+    } else {
+      const { data: onLeave } = await supabase
+        .from("staff_time_off")
+        .select("staff_id")
+        .eq("tenant_id", tenant.id)
+        .eq("status", "approved")
+        .lte("start_date", date)
+        .gte("end_date", date);
+
+      const onLeaveIds = new Set((onLeave || []).map((r: any) => r.staff_id));
+      const availableStaff = activeStaff.filter((s: any) => !onLeaveIds.has(s.id));
+      capacity = availableStaff.length; // può essere 0 se tutti in ferie
+    }
 
     // Prenotazioni del giorno (solo appuntamenti, non cancellati)
     const dayStart = new Date(date + "T00:00:00.000Z").toISOString();

@@ -103,13 +103,32 @@ export async function POST(req: Request) {
         return requestedStart.getTime() < bEnd && requestedEnd.getTime() > bStart;
       }).length;
 
-      // Capacità = numero di operatori attivi (o 1 di default)
+      // Capacità = operatori attivi - operatori in ferie approvate per quella data
       const { data: activeStaff } = await supabase
         .from("staff")
         .select("id")
         .eq("tenant_id", tenant.id)
         .eq("is_active", true);
-      const capacity = (activeStaff && activeStaff.length > 0) ? activeStaff.length : 1;
+
+      let capacity: number;
+      if (!activeStaff || activeStaff.length === 0) {
+        capacity = 1; // fallback: tenant senza staff configurato
+      } else {
+        // Data della prenotazione (YYYY-MM-DD in timezone Europe/Rome)
+        const bookingDate = new Date(scheduledAt).toLocaleDateString("en-CA", { timeZone: "Europe/Rome" });
+
+        const { data: onLeave } = await supabase
+          .from("staff_time_off")
+          .select("staff_id")
+          .eq("tenant_id", tenant.id)
+          .eq("status", "approved")
+          .lte("start_date", bookingDate)
+          .gte("end_date", bookingDate);
+
+        const onLeaveIds = new Set((onLeave || []).map((r: any) => r.staff_id));
+        const availableStaff = activeStaff.filter((s: any) => !onLeaveIds.has(s.id));
+        capacity = availableStaff.length;
+      }
 
       if (overlappingCount >= capacity) {
         return NextResponse.json(
