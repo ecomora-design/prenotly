@@ -30,7 +30,7 @@ const FOOD_PLANS = {
   },
   food_standard: {
     id: "food_standard", name: "Food + Ordini", subtitle: "Menu, Ordini e Tavoli",
-    icon: Calendar, color: "#25D366", badge: "POPOLARE", price: "29,99", interval: "/mese",
+    icon: Calendar, color: "#25D366", badge: "POPOLARE", price: "29,99", priceYearly: "299,99", interval: "/mese",
     features: ["✨ Tutto del Menu Digitale", "🛍️ Ordini asporto e domicilio", "📅 Prenotazione tavoli online", "🔔 Notifiche realtime", "👥 Gestione capienza e turni", "📊 Statistiche di base"],
     upgradeNote: null,
   },
