@@ -20,7 +20,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { data: order } = await admin.from("table_orders").select("*").eq("id", id).single();
     if (!order) return NextResponse.json({ error: "Comanda non trovata" }, { status: 404 });
     if (order.status === "paid" || order.status === "cancelled") {
-      return NextResponse.json({ error: "Comanda già pagata o annullata" }, { status: 400 });
+      return NextResponse.json({ error: "Comanda già pagata o annullata, impossibile modificare" }, { status: 400 });
     }
 
     // Verifica autorizzazione

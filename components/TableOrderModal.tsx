@@ -291,7 +291,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
 
   if (!table) return null;
 
-  const isModifiable = order && ["open", "sent", "sent_partial", "preparing", "ready"].includes(order.status);
+  const isModifiable = order && ["open", "sent", "sent_partial", "preparing", "ready", "closed"].includes(order.status);
   const isSent = order?.status === "sent";
   const isClosed = order?.status === "closed";
   const isPaid = order?.status === "paid";
@@ -538,14 +538,16 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
                                 Tutto in cucina
                               </div>
                             )}
-                            <button
-                              onClick={closeOrder}
-                              disabled={saving}
-                              className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white py-3.5 rounded-2xl font-black transition flex items-center justify-center gap-2"
-                            >
-                              {saving ? <Loader2 className="animate-spin" size={16} /> : <Receipt size={16} />}
-                              Chiudi (€{subtotal.toFixed(2)})
-                            </button>
+                            {order.status !== "closed" && (
+                              <button
+                                onClick={closeOrder}
+                                disabled={saving}
+                                className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white py-3.5 rounded-2xl font-black transition flex items-center justify-center gap-2"
+                              >
+                                {saving ? <Loader2 className="animate-spin" size={16} /> : <Receipt size={16} />}
+                                Chiudi (€{subtotal.toFixed(2)})
+                              </button>
+                            )}
                           </div>
                         );
                       })()}
