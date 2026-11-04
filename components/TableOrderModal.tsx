@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Plus, Loader2, CheckCircle2, Trash2, Utensils,
-  CreditCard, Banknote, Receipt, Users, Minus, AlertCircle
+  CreditCard, Banknote, Receipt, Users, Minus, AlertCircle, ArrowRightLeft
 } from "lucide-react";
 
 type TableItem = { service_id?: string; name: string; price: number; qty: number };
@@ -34,9 +34,10 @@ type Props = {
   table: { id: string; table_number: number; capacity: number; zone: string | null } | null;
   existingOrder: TableOrder | null;
   onSaved: () => void;
+  tables?: any[];
 };
 
-export default function TableOrderModal({ isOpen, onClose, tenantId, table, existingOrder, onSaved }: Props) {
+export default function TableOrderModal({ isOpen, onClose, tenantId, table, existingOrder, onSaved, tables = [] }: Props) {
   const supabase = createClient();
   const [order, setOrder] = useState<TableOrder | null>(existingOrder);
   const [services, setServices] = useState<Service[]>([]);
@@ -48,6 +49,8 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [qty, setQty] = useState(1);
   const [customItem, setCustomItem] = useState({ name: "", price: "" });
+  const [showTableSelector, setShowTableSelector] = useState(false);
+  const [currentTableNumber, setCurrentTableNumber] = useState<number | null>(table?.table_number || null);
 
   // Carica servizi del menu + ordine esistente
   useEffect(() => {
@@ -175,6 +178,35 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
     }
   }
 
+  // Cambia tavolo
+  async function changeTable(newTableId: string) {
+    if (!order) return;
+    if (!confirm("Spostare la comanda su un altro tavolo?")) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/table-orders/${order.id}/change-table`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newTableId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Errore");
+
+      // Trova il numero del nuovo tavolo per aggiornare il titolo
+      const newTable = tables.find((t: any) => t.id === newTableId);
+      if (newTable) setCurrentTableNumber(newTable.table_number);
+
+      setOrder(data.order);
+      setShowTableSelector(false);
+      onSaved();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   // Invia in cucina
   async function sendToKitchen() {
     if (!order) return;
@@ -284,10 +316,20 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
                     <span className="text-[#25D366] text-xl font-black">{table.table_number}</span>
                   </div>
                   <div>
-                    <h3 className="text-lg font-black leading-tight">Tavolo {table.table_number}</h3>
-                    <p className="text-xs text-white/40 flex items-center gap-1.5 mt-0.5">
-                      <Users size={11} /> {table.capacity} posti · {table.zone || "Sala"}
-                    </p>
+                    <h3 className="text-lg font-black leading-tight">Tavolo {currentTableNumber || table.table_number}</h3>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-xs text-white/40 flex items-center gap-1.5">
+                        <Users size={11} /> {table.capacity} posti · {table.zone || "Sala"}
+                      </p>
+                      {order && order.status !== "paid" && order.status !== "cancelled" && tables.length > 1 && (
+                        <button
+                          onClick={() => setShowTableSelector(!showTableSelector)}
+                          className="text-[10px] font-bold text-[#25D366] hover:text-white px-1.5 py-0.5 rounded bg-[#25D366]/10 hover:bg-[#25D366]/20 transition flex items-center gap-1"
+                        >
+                          <ArrowRightLeft size={9} /> Cambia
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <button onClick={onClose} className="text-white/40 hover:text-white p-2 rounded-full hover:bg-white/5 transition">
@@ -311,6 +353,31 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
                 <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
                   <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
                   <p className="text-xs text-red-300 flex-1">{error}</p>
+                </div>
+              )}
+
+              {/* SELETTORE CAMBIO TAVOLO */}
+              {showTableSelector && order && (
+                <div className="bg-white/[0.03] border border-[#25D366]/30 rounded-2xl p-4">
+                  <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-3">Sposta su quale tavolo?</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {tables.filter((t: any) => t.id !== order.table_id).map((t: any) => (
+                      <button
+                        key={t.id}
+                        onClick={() => changeTable(t.id)}
+                        disabled={saving}
+                        className="bg-white/[0.05] hover:bg-[#25D366]/20 border border-white/[0.08] hover:border-[#25D366]/40 rounded-xl py-3 font-black text-sm transition disabled:opacity-50"
+                      >
+                        {t.table_number}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setShowTableSelector(false)}
+                    className="w-full mt-2 text-xs font-bold text-white/40 hover:text-white py-2 transition"
+                  >
+                    Annulla
+                  </button>
                 </div>
               )}
 

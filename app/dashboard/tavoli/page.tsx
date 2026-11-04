@@ -510,6 +510,7 @@ export default function GestioneTavoliPage() {
         table={selectedTable ? { id: selectedTable.id, table_number: selectedTable.table_number, capacity: selectedTable.capacity, zone: selectedTable.zone } : null}
         existingOrder={selectedTable ? (tableOrders[selectedTable.id] || null) : null}
         onSaved={() => { loadData(); }}
+        tables={tables}
       />
     </div>
   );

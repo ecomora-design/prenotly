@@ -321,6 +321,7 @@ export default function TablesView({ tenantId }: Props) {
         table={selectedTable ? { id: selectedTable.id, table_number: selectedTable.table_number, capacity: selectedTable.capacity, zone: selectedTable.zone } : null}
         existingOrder={selectedTable ? (tableOrders[selectedTable.id] || null) : null}
         onSaved={() => { load(); }}
+        tables={tables}
       />
     </div>
   );
