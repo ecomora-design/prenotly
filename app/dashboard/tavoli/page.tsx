@@ -90,7 +90,7 @@ export default function GestioneTavoliPage() {
       .from("table_orders")
       .select("*")
       .eq("tenant_id", link.tenant_id)
-      .in("status", ["open", "sent", "closed"]);
+      .in("status", ["open", "sent", "sent_partial", "preparing", "ready", "closed"]);
     const ordersMap: Record<string, any> = {};
     (openOrders || []).forEach((o: any) => { ordersMap[o.table_id] = o; });
     setTableOrders(ordersMap);

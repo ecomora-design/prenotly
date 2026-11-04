@@ -127,6 +127,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Errore");
+      setError(null);
       setOrder(data.order);
       onSaved();
     } catch (err: any) {
@@ -290,9 +291,9 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
 
   if (!table) return null;
 
-  const isModifiable = order && ["open", "sent", "sent_partial", "ready"].includes(order.status);
+  const isModifiable = order && ["open", "sent", "sent_partial", "preparing", "ready"].includes(order.status);
   const isSent = order?.status === "sent";
-  const isClosed = order?.status === "closed" || order?.status === "sent";
+  const isClosed = order?.status === "closed";
   const isPaid = order?.status === "paid";
   const subtotal = order?.items?.reduce((s, i) => s + i.price * i.qty, 0) || 0;
 
@@ -340,7 +341,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
               {/* BADGE STATO */}
               {order && (
                 <div className="mt-3 flex items-center gap-2">
-                  {isModifiable && <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">● Aperta</span>}
+                  {order.status === "open" && <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">● Aperta</span>}
                   {order.status === "sent" && <span className="inline-flex items-center gap-1 bg-orange-500/20 text-orange-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">👨‍🍳 In cucina</span>}
                   {order.status === "closed" && <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">⏸ Chiusa</span>}
                   {isPaid && <span className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">✓ Pagata</span>}

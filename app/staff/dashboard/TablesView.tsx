@@ -95,7 +95,7 @@ export default function TablesView({ tenantId }: Props) {
       .from("table_orders")
       .select("*")
       .eq("tenant_id", tenantId)
-      .in("status", ["open", "sent", "closed"]);
+      .in("status", ["open", "sent", "sent_partial", "preparing", "ready", "closed"]);
     const ordersMap: Record<string, any> = {};
     (openOrders || []).forEach((o: any) => { ordersMap[o.table_id] = o; });
     setTableOrders(ordersMap);

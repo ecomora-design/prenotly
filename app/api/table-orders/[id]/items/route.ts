@@ -19,7 +19,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // Carica comanda
     const { data: order } = await admin.from("table_orders").select("*").eq("id", id).single();
     if (!order) return NextResponse.json({ error: "Comanda non trovata" }, { status: 404 });
-    if (order.status !== "open") return NextResponse.json({ error: "Comanda non più aperta" }, { status: 400 });
+    if (order.status === "paid" || order.status === "cancelled") {
+      return NextResponse.json({ error: "Comanda già pagata o annullata" }, { status: 400 });
+    }
 
     // Verifica autorizzazione
     const { data: owner } = await admin
