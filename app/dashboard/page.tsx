@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const [counts, setCounts] = useState({
     bookings: 0, orders: 0, services: 0, customers: 0,
     todayOrders: 0, todayBookings: 0, weekOrders: 0, weekBookings: 0,
-    todayRevenue: 0, totalRevenue: 0,
+    todayRevenue: 0, totalRevenue: 0, todayCovered: 0, todayTableRevenue: 0,
   });
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function DashboardPage() {
       const weekStart = new Date();
       weekStart.setDate(weekStart.getDate() - 7);
 
-      const [b, o, s, c, todayO, todayB, weekO, weekB, ordersData] = await Promise.all([
+      const [b, o, s, c, todayO, todayB, weekO, weekB, ordersData, tableOrdersData] = (await Promise.all([
         supabase.from("bookings").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
         supabase.from("orders").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
         supabase.from("services").select("*", { count: "exact", head: true }).eq("tenant_id", t.id),
@@ -73,22 +73,71 @@ export default function DashboardPage() {
         supabase.from("orders").select("*", { count: "exact", head: true }).eq("tenant_id", t.id).gte("created_at", weekStart.toISOString()),
         supabase.from("bookings").select("*", { count: "exact", head: true }).eq("tenant_id", t.id).gte("scheduled_at", weekStart.toISOString()),
         supabase.from("orders").select("total, created_at").eq("tenant_id", t.id).eq("status", "delivered"),
-      ]);
+        supabase.from("table_orders").select("paid_amount, total, party_size, paid_at").eq("tenant_id", t.id).eq("status", "paid").gte("paid_at", todayStart.toISOString()),
+      ])) as any[];
 
-      const orders = ordersData.data || [];
-      const todayRevenue = orders.filter((od: any) => od.created_at >= todayStart.toISOString()).reduce((sum, od: any) => sum + Number(od.total), 0);
-      const totalRevenue = orders.reduce((sum, od: any) => sum + Number(od.total), 0);
+      const orders = ordersData?.data || [];
+      const todayRevenue = orders.filter((od: any) => od.created_at >= todayStart.toISOString()).reduce((sum: number, od: any) => sum + Number(od.total), 0);
+      const totalRevenue = orders.reduce((sum: number, od: any) => sum + Number(od.total), 0);
+
+      // Tavoli pagati oggi
+      const tableOrders = tableOrdersData?.data || [];
+      const todayTableRevenue = tableOrders.reduce((sum: number, o: any) => sum + Number(o.paid_amount || o.total || 0), 0);
+      const todayCovered = tableOrders.reduce((sum: number, o: any) => sum + (o.party_size || 0), 0);
 
       setCounts({
         bookings: b.count || 0, orders: o.count || 0, services: s.count || 0, customers: c.count || 0,
         todayOrders: todayO.count || 0, todayBookings: todayB.count || 0, weekOrders: weekO.count || 0, weekBookings: weekB.count || 0,
-        todayRevenue, totalRevenue,
+        todayRevenue: todayRevenue + todayTableRevenue,
+        totalRevenue: totalRevenue + todayTableRevenue,
+        todayCovered,
+        todayTableRevenue,
       });
 
       setLoading(false);
     }
     load();
   }, []);
+
+  // REALTIME: quando una comanda viene pagata, ricarica la dashboard
+  useEffect(() => {
+    if (!tenant) return;
+    const channel = supabase
+      .channel("dashboard-payments")
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "table_orders",
+        filter: `tenant_id=eq.${tenant.id}`,
+      }, (payload: any) => {
+        if (payload.new.status === "paid") {
+          console.log("[REALTIME] Nuovo pagamento ricevuto, ricarico...");
+          // Trigger ricarica silenziosa: richiama load() e aggiorna stato
+          (async () => {
+            const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+            const { data: todayTableOrders } = await supabase
+              .from("table_orders")
+              .select("paid_amount, total, party_size, paid_at")
+              .eq("tenant_id", tenant.id)
+              .eq("status", "paid")
+              .gte("paid_at", todayStart.toISOString());
+
+            const todayTableRevenue = (todayTableOrders || []).reduce((sum, o) => sum + Number(o.paid_amount || o.total || 0), 0);
+            const todayCovered = (todayTableOrders || []).reduce((sum, o) => sum + (o.party_size || 0), 0);
+
+            setCounts(prev => ({
+              ...prev,
+              todayRevenue: prev.todayRevenue + Number(payload.new.paid_amount || payload.new.total || 0),
+              todayCovered,
+              todayTableRevenue,
+            }));
+          })();
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [tenant]);
 
   if (loading || !tenant) {
     return (
@@ -177,7 +226,7 @@ export default function DashboardPage() {
             value: isFood ? `€${counts.todayRevenue.toFixed(0)}` : weekMain, 
             icon: isFood ? Wallet : TrendingUp,
             color: "#10B981",
-            hint: isFood ? `€${counts.totalRevenue.toFixed(0)} totali` : `${totalMain} totali`,
+            hint: isFood ? `€${counts.totalRevenue.toFixed(0)} totali · ${counts.todayCovered} coperti` : `${totalMain} totali`,
             href: isFood ? "/dashboard/ordini" : "/dashboard/prenotazioni"
           },
           { 
