@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import TableMap from "@/components/TableMap";
+import TableOrderModal from "@/components/TableOrderModal";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Trash2, Lock, Unlock, Save, X, Loader2, Users, LayoutGrid, 
@@ -16,7 +17,7 @@ type Table = {
   capacity: number;
   shape: string;
   is_active: boolean;
-  zone: string;
+  zone: string | null;
   parent_table_id: string | null;
 };
 
@@ -42,6 +43,11 @@ export default function GestioneTavoliPage() {
   const [isCombined, setIsCombined] = useState(false);
   const [tableError, setTableError] = useState<string | null>(null);
   const [tablesToMerge, setTablesToMerge] = useState<string[]>([]);
+
+  // Comande
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [tableOrders, setTableOrders] = useState<Record<string, any>>({});
 
   const loadData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -238,11 +244,17 @@ export default function GestioneTavoliPage() {
             {/* Mappa */}
             {activeTab && (
               <TableMap 
-                tables={tables.filter(t => (t.zone || 'Sala Principale') === activeTab)} 
-                selectedId={null} 
-                onSelect={() => {}} 
+                tables={tables.filter(t => (t.zone || 'Sala Principale') === activeTab).map(t => ({
+                  ...t,
+                  isBusy: !!tableOrders[t.id]
+                }))} 
+                selectedId={selectedTable?.id || null} 
+                onSelect={(t) => {
+                  setSelectedTable(t as Table);
+                  setOrderModalOpen(true);
+                }} 
                 brandColor="#25D366"
-                isAdmin={true}
+                isAdmin={false}
               />
             )}
           </div>
@@ -452,6 +464,15 @@ export default function GestioneTavoliPage() {
           </div>
         )}
       </AnimatePresence>
+
+      <TableOrderModal
+        isOpen={orderModalOpen}
+        onClose={() => { setOrderModalOpen(false); setSelectedTable(null); }}
+        tenantId={tenantId || ""}
+        table={selectedTable ? { id: selectedTable.id, table_number: selectedTable.table_number, capacity: selectedTable.capacity, zone: selectedTable.zone } : null}
+        existingOrder={selectedTable ? (tableOrders[selectedTable.id] || null) : null}
+        onSaved={() => { loadData(); }}
+      />
     </div>
   );
 }
