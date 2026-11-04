@@ -88,6 +88,16 @@ export default function GestioneTavoliPage() {
 
   useEffect(() => { loadData(); }, []);
 
+  // REALTIME: ascolta cambiamenti su table_orders
+  useEffect(() => {
+    if (!tenantId) return;
+    const channel = supabase
+      .channel("owner-tables-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "table_orders", filter: `tenant_id=eq.${tenantId}` }, () => loadData())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [tenantId]);
+
   const handleAddTable = async () => {
     if (!tenantId || !newTable.table_number) return;
     setTableError(null);

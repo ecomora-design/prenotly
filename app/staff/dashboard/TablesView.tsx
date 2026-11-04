@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Calendar, Users, Clock, CheckCircle2, XCircle, RefreshCw, MapPin, Plus } from "lucide-react";
 import ManualTableModal from "./ManualTableModal";
+import TableOrderModal from "@/components/TableOrderModal";
+import TableMap from "@/components/TableMap";
 
 type TableBooking = {
   id: string;
@@ -32,6 +34,11 @@ export default function TablesView({ tenantId }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [tab, setTab] = useState<"prenotazioni" | "comande">("prenotazioni");
+  const [tables, setTables] = useState<any[]>([]);
+  const [tableOrders, setTableOrders] = useState<Record<string, any>>({});
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<any>(null);
 
   async function load() {
     setRefreshing(true);
@@ -72,9 +79,39 @@ export default function TablesView({ tenantId }: Props) {
     })));
     setRefreshing(false);
     setLoading(false);
+
+    // Carica tavoli (per tab Comande)
+    const { data: tablesData } = await supabase
+      .from("tables")
+      .select("*")
+      .eq("tenant_id", tenantId)
+      .eq("is_active", true)
+      .order("table_number");
+    setTables(tablesData || []);
+
+    // Carica comande aperte/chiuse
+    const { data: openOrders } = await supabase
+      .from("table_orders")
+      .select("*")
+      .eq("tenant_id", tenantId)
+      .in("status", ["open", "closed"]);
+    const ordersMap: Record<string, any> = {};
+    (openOrders || []).forEach((o: any) => { ordersMap[o.table_id] = o; });
+    setTableOrders(ordersMap);
   }
 
   useEffect(() => { load(); }, [tenantId, selectedDate]);
+
+  // REALTIME: ascolta cambiamenti su table_orders e bookings
+  useEffect(() => {
+    if (!tenantId) return;
+    const channel = supabase
+      .channel("staff-tables-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "table_orders", filter: `tenant_id=eq.${tenantId}` }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings", filter: `tenant_id=eq.${tenantId}` }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [tenantId]);
 
   async function updateStatus(id: string, status: string) {
     await supabase.from("bookings").update({ status }).eq("id", id);
@@ -87,6 +124,21 @@ export default function TablesView({ tenantId }: Props) {
 
   return (
     <div>
+      {/* TABS Prenotazioni / Comande */}
+      <div className="mb-4 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+        <button
+          onClick={() => setTab("prenotazioni")}
+          className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${tab === "prenotazioni" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}
+        >Prenotazioni</button>
+        <button
+          onClick={() => setTab("comande")}
+          className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${tab === "comande" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}
+        >Comande</button>
+      </div>
+
+      {/* TAB PRENOTAZIONI */}
+      {tab === "prenotazioni" && (
+        <>
       <div className="flex items-center justify-between mb-4 gap-2">
         <div className="min-w-0">
           <h2 className="text-lg font-bold text-night">Prenotazioni tavoli · Oggi</h2>
@@ -203,11 +255,55 @@ export default function TablesView({ tenantId }: Props) {
         </div>
       )}
 
+      </>
+      )}
+
+      {/* TAB COMANDDE */}
+      {tab === "comande" && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-bold text-night">Comande · Tavoli</h2>
+              <p className="text-xs text-night/50">{Object.keys(tableOrders).length} comande aperte</p>
+            </div>
+            <button onClick={load} disabled={refreshing} className="p-2 text-night/60 hover:text-night rounded-lg hover:bg-white">
+              <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+            </button>
+          </div>
+
+          {tables.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center border border-night/[0.06]">
+              <p className="font-bold text-night mb-1">Nessun tavolo configurato</p>
+              <p className="text-sm text-night/50">Il titolare deve prima aggiungere i tavoli.</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl p-4 border border-night/[0.06]">
+              <TableMap
+                tables={tables.map(t => ({ ...t, isBusy: !!tableOrders[t.id] }))}
+                selectedId={selectedTable?.id || null}
+                onSelect={(t) => { setSelectedTable(t); setOrderModalOpen(true); }}
+                brandColor="#25D366"
+                isAdmin={false}
+              />
+            </div>
+          )}
+        </>
+      )}
+
       <ManualTableModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         tenantId={tenantId}
         onSaved={load}
+      />
+
+      <TableOrderModal
+        isOpen={orderModalOpen}
+        onClose={() => { setOrderModalOpen(false); setSelectedTable(null); }}
+        tenantId={tenantId}
+        table={selectedTable ? { id: selectedTable.id, table_number: selectedTable.table_number, capacity: selectedTable.capacity, zone: selectedTable.zone } : null}
+        existingOrder={selectedTable ? (tableOrders[selectedTable.id] || null) : null}
+        onSaved={() => { load(); }}
       />
     </div>
   );
