@@ -13,7 +13,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const admin = createAdminClient();
     const { data: order } = await admin.from("table_orders").select("*").eq("id", id).single();
     if (!order) return NextResponse.json({ error: "Comanda non trovata" }, { status: 404 });
-    if (order.status !== "open" && order.status !== "sent" && order.status !== "sent_partial") {
+    if (!["open", "sent", "sent_partial", "preparing", "ready"].includes(order.status)) {
       return NextResponse.json({ error: "Comanda non può essere inviata in questo stato" }, { status: 400 });
     }
 
