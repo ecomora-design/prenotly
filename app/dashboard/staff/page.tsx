@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Plus, Trash2, X, Save, Pencil, Crown, Lock, UserCircle2, CheckCircle2, Circle, Calendar, Copy, Link2, ExternalLink } from "lucide-react";
 import TimeOffApproval from "@/components/TimeOffApproval";
 
-type Staff = { id: string; name: string; role: string | null; color: string; is_active: boolean; sort_order: number; email: string | null; user_id: string | null; };
+type Staff = { id: string; name: string; role: string | null; color: string; is_active: boolean; sort_order: number; email: string | null; user_id: string | null; reparto: string | null; };
 const PALETTE = ["#25D366","#3B82F6","#8B5CF6","#EC4899","#F97316","#EAB308","#14B8A6","#EF4444","#6366F1","#10B981"];
 
 export default function StaffPage() {
@@ -21,7 +21,7 @@ export default function StaffPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: "", role: "", color: "#25D366", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", role: "", color: "#25D366", email: "", password: "", reparto: "floor" });
   const [approvalStaff, setApprovalStaff] = useState<Staff | null>(null);
   const [pendingCounts, setPendingCounts] = useState<Record<string, number>>({});
   const [copied, setCopied] = useState(false);
@@ -54,8 +54,8 @@ export default function StaffPage() {
   }
   useEffect(() => { load(); }, []);
 
-  function openNew() { setEditingId(null); setForm({ name: "", role: "", color: "#25D366", email: "", password: "" }); setShowModal(true); }
-  function openEdit(s: Staff) { setEditingId(s.id); setForm({ name: s.name, role: s.role || "", color: s.color, email: s.email || "", password: "" }); setShowModal(true); }
+  function openNew() { setEditingId(null); setForm({ name: "", role: "", color: "#25D366", email: "", password: "", reparto: "floor" }); setShowModal(true); }
+  function openEdit(s: Staff) { setEditingId(s.id); setForm({ name: s.name, role: s.role || "", color: s.color, email: s.email || "", password: "", reparto: s.reparto || "floor" }); setShowModal(true); }
 
   async function handleSave() {
     if (!form.name.trim()) { alert("Inserisci un nome"); return; }
@@ -63,7 +63,7 @@ export default function StaffPage() {
     setSaving(true);
 
     if (editingId) {
-      const { error } = await supabase.from("staff").update({ name: form.name.trim(), role: form.role.trim() || null, color: form.color }).eq("id", editingId);
+      const { error } = await supabase.from("staff").update({ name: form.name.trim(), role: form.role.trim() || null, color: form.color, reparto: form.reparto }).eq("id", editingId);
       setSaving(false);
       if (error) { alert("Errore: " + error.message); return; }
       setShowModal(false);
@@ -91,6 +91,7 @@ export default function StaffPage() {
         color: form.color,
         email: form.email.trim(),
         password: form.password,
+        reparto: form.reparto,
       }),
     });
     const data = await res.json();
@@ -190,7 +191,16 @@ export default function StaffPage() {
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0" style={{ backgroundColor: s.color }}>{s.name.charAt(0).toUpperCase()}</div>
-                  <div className="min-w-0"><p className="font-bold text-night truncate">{s.name}</p><p className="text-xs text-gray-500">{s.role || "Operatore"}</p></div>
+                  <div className="min-w-0"><p className="font-bold text-night truncate">{s.name}</p><p className="text-xs text-gray-500 flex items-center gap-1.5 flex-wrap">
+                        {s.role || "Operatore"}
+                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase ${
+                          s.reparto === "kitchen" ? "bg-orange-100 text-orange-700" :
+                          s.reparto === "both" ? "bg-purple-100 text-purple-700" :
+                          "bg-blue-100 text-blue-700"
+                        }`}>
+                          {s.reparto === "kitchen" ? "Cucina" : s.reparto === "both" ? "Sala+Cucina" : "Sala"}
+                        </span>
+                      </p></div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => openEdit(s)} className="p-2 hover:bg-gray-100 rounded-lg"><Pencil size={14} className="text-gray-400" /></button>
@@ -216,6 +226,15 @@ export default function StaffPage() {
               <div className="space-y-4">
                 <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Nome *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Es. Mario" className="w-full bg-soft border border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-wa focus:outline-none" /></div>
                 <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Ruolo</label><input type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Es. Parrucchiere" className="w-full bg-soft border border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-wa focus:outline-none" /></div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Reparto</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button type="button" onClick={() => setForm({ ...form, reparto: "floor" })} className={`py-2.5 rounded-xl text-xs font-bold transition ${form.reparto === "floor" ? "bg-blue-600 text-white" : "bg-soft text-gray-600"}`}>Sala</button>
+                    <button type="button" onClick={() => setForm({ ...form, reparto: "kitchen" })} className={`py-2.5 rounded-xl text-xs font-bold transition ${form.reparto === "kitchen" ? "bg-orange-500 text-white" : "bg-soft text-gray-600"}`}>Cucina</button>
+                    <button type="button" onClick={() => setForm({ ...form, reparto: "both" })} className={`py-2.5 rounded-xl text-xs font-bold transition ${form.reparto === "both" ? "bg-purple-600 text-white" : "bg-soft text-gray-600"}`}>Entrambi</button>
+                  </div>
+                </div>
 
                 {!editingId && (
                   <>

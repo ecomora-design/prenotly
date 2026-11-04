@@ -24,6 +24,7 @@ type TableOrder = {
   closed_at: string | null;
   paid_at: string | null;
   payment_method: string | null;
+  sent_items_count?: number;
 };
 
 type Props = {
@@ -257,7 +258,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
 
   if (!table) return null;
 
-  const isOpen2 = order?.status === "open";
+  const isModifiable = order && ["open", "sent", "sent_partial"].includes(order.status);
   const isSent = order?.status === "sent";
   const isClosed = order?.status === "closed" || order?.status === "sent";
   const isPaid = order?.status === "paid";
@@ -297,7 +298,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
               {/* BADGE STATO */}
               {order && (
                 <div className="mt-3 flex items-center gap-2">
-                  {isOpen2 && <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">● Aperta</span>}
+                  {isModifiable && <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">● Aperta</span>}
                   {order.status === "sent" && <span className="inline-flex items-center gap-1 bg-orange-500/20 text-orange-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">👨‍🍳 In cucina</span>}
                   {order.status === "closed" && <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">⏸ Chiusa</span>}
                   {isPaid && <span className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">✓ Pagata</span>}
@@ -360,7 +361,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
                             <span className="text-xs font-black text-[#25D366] w-6">{item.qty}×</span>
                             <span className="text-sm font-bold flex-1 truncate">{item.name}</span>
                             <span className="text-xs font-bold text-white/60">€{(item.qty * item.price).toFixed(2)}</span>
-                            {isOpen2 && (
+                            {isModifiable && (
                               <>
                                 <button onClick={() => updateQty(idx, item.qty - 1)} className="p-1 hover:bg-white/10 rounded" disabled={saving}>
                                   <Minus size={12} />
@@ -386,7 +387,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
                   </div>
 
                   {/* AGGIUNGI PIATTO (solo se open) */}
-                  {isOpen2 && (
+                  {isModifiable && (
                     <>
                       <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 space-y-3">
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Aggiungi piatto</p>

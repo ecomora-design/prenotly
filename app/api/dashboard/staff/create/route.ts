@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, role, color, email, password } = body;
+    const { name, role, color, email, password, reparto } = body;
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Nome, email e password obbligatori" }, { status: 400 });
     }
@@ -69,6 +69,7 @@ export async function POST(req: Request) {
         color: color || "#25D366",
         email: cleanEmail,
         user_id: authData.user.id,
+        reparto: ["kitchen", "floor", "both"].includes(reparto) ? reparto : "floor",
         sort_order: nextOrder,
       })
       .select()

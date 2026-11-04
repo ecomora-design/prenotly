@@ -13,8 +13,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const admin = createAdminClient();
     const { data: order } = await admin.from("table_orders").select("*").eq("id", id).single();
     if (!order) return NextResponse.json({ error: "Comanda non trovata" }, { status: 404 });
-    if (order.status !== "open") {
-      return NextResponse.json({ error: "Comanda non è in stato 'open', non può essere inviata" }, { status: 400 });
+    if (order.status !== "open" && order.status !== "sent" && order.status !== "sent_partial") {
+      return NextResponse.json({ error: "Comanda non può essere inviata in questo stato" }, { status: 400 });
     }
 
     const items = (order.items as any[]) || [];
@@ -42,9 +42,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
     if (!isAuthorized) return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
 
+    // Se tutti gli items sono già inviati → "sent", altrimenti "sent_partial"
+    const newCount = items.length;
+    const newStatus = newCount > (order.sent_items_count || 0) && (order.sent_items_count || 0) === 0 ? "sent" : "sent_partial";
+
     const { data: updated, error } = await admin
       .from("table_orders")
-      .update({ status: "sent" })
+      .update({ status: "sent", sent_items_count: newCount })
       .eq("id", id)
       .select()
       .single();
