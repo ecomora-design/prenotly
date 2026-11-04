@@ -10,6 +10,7 @@ import WeekView from "./WeekView";
 import TablesView from "./TablesView";
 import OrdersView from "./OrdersView";
 import TimeOffView from "./TimeOffView";
+import KitchenView from "./KitchenView";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { planHasFeature } from "@/lib/planFeatures";
 import {
@@ -22,6 +23,7 @@ type StaffInfo = {
   name: string;
   role: string | null;
   color: string;
+  reparto: string | null;
   tenant_id: string;
   tenants: { business_name: string; slug: string; brand_color: string | null; plan_type: string | null; category: string | null; product_type: string | null; business_type: string | null } | null;
 };
@@ -56,7 +58,7 @@ export default function StaffDashboardPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
-  const [mainTab, setMainTab] = useState<"appointments" | "tables" | "orders" | "timeoff">("appointments");
+  const [mainTab, setMainTab] = useState<"appointments" | "tables" | "orders" | "timeoff" | "kitchen">("appointments");
 
   // Determina se l'attività è food (ristorante/pizzeria) o service (estetista/parrucchiere)
   const isFood = !!(
@@ -71,8 +73,14 @@ export default function StaffDashboardPage() {
 
   // Imposta il tab di default in base al tipo di attività
   useEffect(() => {
-    if (staffInfo) {
-      setMainTab(isFood ? "tables" : "appointments");
+    if (!staffInfo) return;
+    if (isFood) {
+      const r = staffInfo.reparto || "floor";
+      if (r === "kitchen") setMainTab("kitchen");
+      else if (r === "floor") setMainTab("tables");
+      else setMainTab("tables"); // both
+    } else {
+      setMainTab("appointments");
     }
   }, [staffInfo, isFood]);
   const [weekAppointments, setWeekAppointments] = useState<Appointment[]>([]);
@@ -94,7 +102,7 @@ export default function StaffDashboardPage() {
 
       const { data: s } = await supabase
         .from("staff")
-        .select("id, name, role, color, tenant_id, tenants(business_name, slug, brand_color, plan_type, category, product_type, business_type)")
+        .select("id, name, role, color, reparto, tenant_id, tenants(business_name, slug, brand_color, plan_type, category, product_type, business_type)")
         .eq("user_id", user.id)
         .eq("is_active", true)
         .maybeSingle();
@@ -285,21 +293,50 @@ export default function StaffDashboardPage() {
         {/* Banner notifiche (se non ancora attive) */}
         <PushNotificationToggle staffId={staffInfo.id} tenantId={staffInfo.tenant_id} />
 
-        {/* TABS PRINCIPALI (condizionali per tipo attività) */}
-        <div className="mb-5 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
-          {!isFood && (
-            <>
-              <button onClick={() => setMainTab("appointments")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "appointments" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Appuntamenti</button>
-              <button onClick={() => setMainTab("timeoff")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "timeoff" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ferie</button>
-            </>
-          )}
-          {isFood && (
-            <>
-              <button onClick={() => setMainTab("tables")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "tables" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Tavoli</button>
-              <button onClick={() => setMainTab("orders")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "orders" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ordini</button>
-            </>
-          )}
-        </div>
+        {/* TABS PRINCIPALI in base a reparto */}
+        {(() => {
+          const reparto = staffInfo.reparto || "floor";
+          const isKitchen = reparto === "kitchen";
+          const isFloor = reparto === "floor";
+          const isBoth = reparto === "both";
+
+          if (!isFood) {
+            return (
+              <div className="mb-5 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+                <button onClick={() => setMainTab("appointments")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "appointments" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Appuntamenti</button>
+                <button onClick={() => setMainTab("timeoff")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "timeoff" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ferie</button>
+              </div>
+            );
+          }
+
+          if (isKitchen) {
+            return (
+              <div className="mb-5 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+                <button onClick={() => setMainTab("kitchen")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "kitchen" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>👨‍🍳 Cucina</button>
+                <button onClick={() => setMainTab("orders")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "orders" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>📦 Ordini</button>
+              </div>
+            );
+          }
+
+          if (isFloor) {
+            return (
+              <div className="mb-5 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+                <button onClick={() => setMainTab("tables")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "tables" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>🍽️ Tavoli</button>
+                <button onClick={() => setMainTab("timeoff")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "timeoff" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ferie</button>
+              </div>
+            );
+          }
+
+          // both
+          return (
+            <div className="mb-5 grid grid-cols-4 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+              <button onClick={() => setMainTab("tables")} className={`py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition ${mainTab === "tables" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>🍽️ Tavoli</button>
+              <button onClick={() => setMainTab("kitchen")} className={`py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition ${mainTab === "kitchen" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>👨‍🍳 Cucina</button>
+              <button onClick={() => setMainTab("orders")} className={`py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition ${mainTab === "orders" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>📦 Ordini</button>
+              <button onClick={() => setMainTab("timeoff")} className={`py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition ${mainTab === "timeoff" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ferie</button>
+            </div>
+          );
+        })()}
 
         <div className={!isFood && mainTab === "appointments" ? "block" : "hidden"}>
         <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
@@ -475,6 +512,10 @@ export default function StaffDashboardPage() {
 
         <div className={isFood && mainTab === "tables" ? "block" : "hidden"}>
           <TablesView tenantId={staffInfo.tenant_id} />
+        </div>
+
+        <div className={isFood && mainTab === "kitchen" ? "block" : "hidden"}>
+          <KitchenView tenantId={staffInfo.tenant_id} />
         </div>
 
         <div className={isFood && mainTab === "orders" ? "block" : "hidden"}>

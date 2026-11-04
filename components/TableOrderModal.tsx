@@ -258,7 +258,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
 
   if (!table) return null;
 
-  const isModifiable = order && ["open", "sent", "sent_partial"].includes(order.status);
+  const isModifiable = order && ["open", "sent", "sent_partial", "ready"].includes(order.status);
   const isSent = order?.status === "sent";
   const isClosed = order?.status === "closed" || order?.status === "sent";
   const isPaid = order?.status === "paid";
