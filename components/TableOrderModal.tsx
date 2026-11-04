@@ -233,6 +233,7 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
   // Chiudi comanda (senza pagamento)
   async function closeOrder() {
     if (!order) return;
+    setError(null);
     if (!confirm("Chiudere la comanda? Non sarà più possibile aggiungere piatti.")) return;
     setSaving(true);
     try {

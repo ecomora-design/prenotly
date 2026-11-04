@@ -15,8 +15,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const admin = createAdminClient();
     const { data: order } = await admin.from("table_orders").select("*").eq("id", id).single();
     if (!order) return NextResponse.json({ error: "Comanda non trovata" }, { status: 404 });
-    if (order.status !== "open" && order.status !== "closed") {
-      return NextResponse.json({ error: "Comanda già chiusa o pagata" }, { status: 400 });
+    // Se già paid/cancelled, errore
+    if (order.status === "paid" || order.status === "cancelled") {
+      return NextResponse.json({ error: "Comanda già pagata o annullata" }, { status: 400 });
+    }
+    // Se già closed, restituisci 200 con l'ordine (idempotente)
+    if (order.status === "closed") {
+      return NextResponse.json({ order });
     }
 
     // Verifica autorizzazione
