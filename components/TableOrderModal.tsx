@@ -89,8 +89,11 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
       });
       const data = await res.json();
       if (!res.ok) {
-        if (data.orderId) {
-          // Già esiste, caricalo
+        if (data.order) {
+          // Comanda già esistente, usala direttamente
+          setOrder(data.order);
+        } else if (data.orderId) {
+          // Fallback: carica dal DB
           const { data: existing } = await supabase.from("table_orders").select("*").eq("id", data.orderId).single();
           if (existing) setOrder(existing);
         } else {

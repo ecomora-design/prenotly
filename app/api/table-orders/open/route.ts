@@ -52,7 +52,13 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (existing) {
-      return NextResponse.json({ error: "Esiste già una comanda aperta per questo tavolo", orderId: existing.id }, { status: 409 });
+      // Carica la comanda completa per restituirla al client
+      const { data: fullOrder } = await admin
+        .from("table_orders")
+        .select("*")
+        .eq("id", existing.id)
+        .single();
+      return NextResponse.json({ error: "Esiste già una comanda aperta per questo tavolo", order: fullOrder, orderId: existing.id }, { status: 409 });
     }
 
     const { data: order, error } = await admin
@@ -75,7 +81,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ order });
+    return NextResponse.json({ order }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   } catch (err: any) {
     console.error("API open error:", err);
     return NextResponse.json({ error: err.message || "Errore" }, { status: 500 });
