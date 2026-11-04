@@ -24,7 +24,7 @@ type Tenant = {
 const FOOD_PLANS = {
   food_menu: {
     id: "food_menu", name: "Menu Digitale", subtitle: "Solo visualizzazione",
-    icon: Utensils, color: "#64748B", price: "9,99", interval: "/mese",
+    icon: Utensils, color: "#64748B", price: "4,99", priceYearly: "49,99", interval: "/mese",
     features: ["Menu digitale personalizzabile", "Categorie, foto e allergeni", "QR Code per il tavolo", "Web app brandizzata", "Aggiornamenti illimitati"],
     upgradeNote: "Nessun ordine o prenotazione incluso",
   },
@@ -36,7 +36,7 @@ const FOOD_PLANS = {
   },
   food_premium: {
     id: "food_premium", name: "Premium Pro", subtitle: "Pagamenti, QR e Fatturazione",
-    icon: Crown, color: "#8B5CF6", badge: "TUTTO INCLUSO", price: "99,99", interval: "/mese",
+    icon: Crown, color: "#8B5CF6", badge: "TUTTO INCLUSO", price: "79,99", priceYearly: "799,99", interval: "/mese",
     features: ["✨ Tutto di Food + Ordini", "💳 Pagamenti in-app (Stripe)", "📱 Ordini diretti da QR Code", "🧾 Fatturazione automatica", "🗄️ Database e report su misura", "🔒 Sicurezza avanzata"],
     upgradeNote: "Software interno per comande e cucina",
   },
@@ -45,7 +45,7 @@ const FOOD_PLANS = {
 const SERVICE_PLANS = {
   food_standard: {
     id: "food_standard", name: "Prenotly Pro", subtitle: "Agenda intelligente",
-    icon: Calendar, color: "#8B5CF6", badge: "CONSIGLIATO", price: "29,99", interval: "/mese",
+    icon: Calendar, color: "#8B5CF6", badge: "CONSIGLIATO", price: "29,99", priceYearly: "299,99", interval: "/mese",
     features: [
       "📅 Agenda intelligente con slot in tempo reale",
       "🔗 Sincronizzazione con Google Calendar",
@@ -58,7 +58,7 @@ const SERVICE_PLANS = {
   },
   services_premium: {
     id: "services_premium", name: "Servizi Premium", subtitle: "Tutto + staff + pagamenti",
-    icon: Crown, color: "#8B5CF6", badge: "TUTTO INCLUSO", price: "99,99", interval: "/mese",
+    icon: Crown, color: "#8B5CF6", badge: "TUTTO INCLUSO", price: "79,99", priceYearly: "799,99", interval: "/mese",
     features: [
       "✨ Tutto di Prenotly Pro",
       "👥 Staff illimitato (gestione team)",
@@ -79,6 +79,7 @@ function AbbonamentoContent() {
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
 
   const isSuccess = searchParams.get("success") === "true";
 
@@ -117,7 +118,7 @@ function AbbonamentoContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planType: planId }),
+        body: JSON.stringify({ planType: planId, interval: billingInterval }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
@@ -195,6 +196,27 @@ function AbbonamentoContent() {
         </div>
       )}
 
+      {/* TOGGLE MENSILE/ANNUALE */}
+      <div className="px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="max-w-6xl mx-auto flex flex-col items-center">
+          <div className="inline-flex items-center bg-white border border-[#E6EBF1] rounded-full p-1 shadow-sm">
+            <button
+              onClick={() => setBillingInterval("monthly")}
+              className={"px-5 py-2 rounded-full text-sm font-bold transition " + (billingInterval === "monthly" ? "bg-[#0A2540] text-white" : "text-[#425466] hover:text-[#0A2540]")}
+            >
+              Mensile
+            </button>
+            <button
+              onClick={() => setBillingInterval("yearly")}
+              className={"px-5 py-2 rounded-full text-sm font-bold transition flex items-center gap-2 " + (billingInterval === "yearly" ? "bg-[#0A2540] text-white" : "text-[#425466] hover:text-[#0A2540]")}
+            >
+              Annuale
+              <span className="bg-[#25D366] text-white text-[9px] font-black px-2 py-0.5 rounded-full">2 MESI GRATIS</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-5">
           {(Object.values(PLANS) as any[]).map((plan) => {
@@ -229,10 +251,16 @@ function AbbonamentoContent() {
                 <div className="pb-6 mb-6 border-b border-[#E6EBF1]">
                   <div className="flex items-baseline gap-1">
                     <span className="text-xs font-semibold text-[#425466]">€</span>
-                    <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{plan.price}</span>
-                    <span className="text-sm text-[#425466]/60 font-semibold">{plan.interval}</span>
+                    <span className="text-5xl font-bold text-[#0A2540] tracking-tight">
+                      {billingInterval === "yearly" && plan.priceYearly ? plan.priceYearly : plan.price}
+                    </span>
+                    <span className="text-sm text-[#425466]/60 font-semibold">
+                      {billingInterval === "yearly" ? "/anno" : plan.interval}
+                    </span>
                   </div>
-                  <p className="text-[11px] text-[#425466]/60 mt-2">Fatturazione mensile + IVA</p>
+                  <p className="text-[11px] text-[#425466]/60 mt-2">
+                    {billingInterval === "yearly" ? "Fatturazione annuale + IVA (2 mesi gratis)" : "Fatturazione mensile + IVA"}
+                  </p>
                 </div>
                 <ul className="space-y-2.5 mb-6 flex-1">
                   {plan.features.map((f: string) => (

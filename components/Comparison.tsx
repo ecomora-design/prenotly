@@ -4,7 +4,7 @@ import { Check, X, ArrowRight, Sparkles, TrendingDown } from "lucide-react";
 export default function Comparison() {
   const rows = [
     { feature: "Commissioni su ogni prenotazione", competitor: "20-30%", prenotly: "0%", highlight: true },
-    { feature: "Costo fisso mensile", competitor: "Nascosto", prenotly: "da 9,99 €", highlight: true },
+    { feature: "Costo fisso mensile", competitor: "Nascosto", prenotly: "da 4,99 €", highlight: true },
     { feature: "Gestione staff (turni, ruoli)", competitor: "A pagamento extra", prenotly: "Incluso*", highlight: false },
     { feature: "Sync Google Calendar", competitor: "A pagamento extra", prenotly: "Incluso", highlight: false },
     { feature: "Menu digitale + QR", competitor: null, prenotly: "Incluso", highlight: false },
@@ -29,7 +29,7 @@ export default function Comparison() {
           </h2>
           <p className="text-gray-600 text-[15px] md:text-lg max-w-xl mx-auto">
             TheFork e Treatwell ti prendono il <strong>20-30% su ogni prenotazione</strong>.
-            Prenotly parte da <strong>9,99 € al mese</strong>. Punto.
+            Prenotly parte da <strong>4,99 € al mese</strong>. Punto.
           </p>
         </div>
 
@@ -69,7 +69,7 @@ export default function Comparison() {
           </div>
 
           <p className="text-[11px] text-gray-600 text-center mt-4">
-            * Staff illimitato incluso nel piano Servizi Premium / Premium Pro (99,99 €/mese). Sugli altri piani è disponibile come upgrade.
+            * Staff illimitato incluso nel piano Servizi Premium / Premium Pro (79,99 €/mese). Sugli altri piani è disponibile come upgrade.
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export default function Comparison() {
             </div>
           ))}
           <p className="text-[10px] text-gray-600 text-center pt-2 px-2">
-            * Staff illimitato incluso nel piano Servizi Premium / Premium Pro (99,99 €/mese).
+            * Staff illimitato incluso nel piano Servizi Premium / Premium Pro (79,99 €/mese).
           </p>
         </div>
 

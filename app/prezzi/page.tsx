@@ -11,7 +11,7 @@ import {
 export const metadata = {
   title: "Prezzi — Prenotly Menu, Food, Premium, Servizi, Servizi Premium e Service",
   description:
-    "Prenotly Menu da €9,99/mese, Food da €29,99/mese, Premium Pro da €99,99/mese. Servizi da €29,99/mese, Servizi Premium €99,99/mese. Service su preventivo. Prova gratuita 7 giorni.",
+    "Prenotly Menu da €4,99/mese, Food da €29,99/mese, Premium Pro da €79,99/mese. Servizi da €29,99/mese, Servizi Premium €79,99/mese. Service su preventivo. Prova gratuita 7 giorni.",
 };
 
 export default function PrezziPage() {
@@ -22,7 +22,8 @@ export default function PrezziPage() {
       name: "Menu Digitale",
       subtitle: "Solo visualizzazione",
       description: "Il menu del tuo locale online, sempre aggiornato e accessibile via QR Code.",
-      price: "9,99",
+      price: "4,99",
+      priceYearly: "49,99",
       color: "#64748B",
       features: [
         "Menu digitale personalizzabile",
@@ -43,6 +44,7 @@ export default function PrezziPage() {
       subtitle: "Menu, Ordini e Tavoli",
       description: "Tutto il necessario per gestire ordini e prenotazioni in un unico strumento.",
       price: "29,99",
+      priceYearly: "299,99",
       color: "#25D366",
       features: [
         "✨ Tutto del Menu Digitale",
@@ -64,7 +66,8 @@ export default function PrezziPage() {
       name: "Premium Pro",
       subtitle: "Pagamenti, QR e Fatturazione",
       description: "Software completo con pagamenti, ordini da QR e fatturazione automatica.",
-      price: "99,99",
+      price: "79,99",
+      priceYearly: "799,99",
       color: "#8B5CF6",
       features: [
         "✨ Tutto di Food + Ordini",
@@ -90,6 +93,7 @@ export default function PrezziPage() {
       subtitle: "Agenda intelligente",
       description: "Per parrucchieri, estetiste, studi e professionisti su appuntamento.",
       price: "29,99",
+      priceYearly: "299,99",
       color: "#8B5CF6",
       features: [
         "Agenda intelligente",
@@ -106,7 +110,7 @@ export default function PrezziPage() {
       name: "Servizi Premium",
       subtitle: "Tutto + staff + pagamenti",
       description: "La soluzione completa per studi e saloni che gestiscono un team e vogliono incassare online.",
-      price: "99,99",
+      price: "79,99",
       color: "#8B5CF6",
       features: [
         "✨ Tutto di Prenotly Servizi",
@@ -176,7 +180,7 @@ export default function PrezziPage() {
             </span>
           </h1>
           <p className="text-[#425466] text-base md:text-xl leading-relaxed max-w-2xl mx-auto">
-            Scegli il piano adatto a te: dal menu base a <strong className="text-[#0A2540]">9,99 €/mese</strong> fino al software completo con pagamenti e QR. <strong className="text-[#0A2540]">Prova 7 giorni gratis</strong>, nessuna carta richiesta.
+            Scegli il piano adatto a te: dal menu base a <strong className="text-[#0A2540]">4,99 €/mese</strong> fino al software completo con pagamenti e QR. <strong className="text-[#0A2540]">Prova 7 giorni gratis</strong>, nessuna carta richiesta.
           </p>
         </div>
       </section>
@@ -231,7 +235,12 @@ export default function PrezziPage() {
                       <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{plan.price}</span>
                       <span className="text-sm text-[#425466]/60 font-semibold">/mese</span>
                     </div>
-                    <p className="text-[11px] text-[#425466]/60 mt-2">Fatturazione mensile + IVA</p>
+                    {(plan as any).priceYearly && (
+                      <p className="text-[12px] text-[#128C7E] font-bold mt-2">
+                        o €{(plan as any).priceYearly}/anno <span className="text-[#425466]/60 font-normal">(2 mesi gratis)</span>
+                      </p>
+                    )}
+                    <p className="text-[11px] text-[#425466]/60 mt-1">Fatturazione mensile o annuale + IVA</p>
                   </div>
 
                   <ul className="space-y-2.5 mb-6 flex-1">
@@ -309,18 +318,25 @@ export default function PrezziPage() {
 
                   <div className="pb-6 mb-6 border-b border-[#E6EBF1]">
                     {plan.price ? (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xs font-semibold text-[#425466]">€</span>
-                        <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{plan.price}</span>
-                        <span className="text-sm text-[#425466]/60 font-semibold">/mese</span>
-                      </div>
+                      <>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xs font-semibold text-[#425466]">€</span>
+                          <span className="text-5xl font-bold text-[#0A2540] tracking-tight">{plan.price}</span>
+                          <span className="text-sm text-[#425466]/60 font-semibold">/mese</span>
+                        </div>
+                        {(plan as any).priceYearly && (
+                          <p className="text-[12px] text-[#128C7E] font-bold mt-2">
+                            o €{(plan as any).priceYearly}/anno <span className="text-[#425466]/60 font-normal">(2 mesi gratis)</span>
+                          </p>
+                        )}
+                      </>
                     ) : (
                       <div>
                         <p className="text-3xl font-bold text-[#0A2540] tracking-tight">Su preventivo</p>
                         <p className="text-xs text-[#425466]/60 mt-1">Gratuito e senza impegno</p>
                       </div>
                     )}
-                    {plan.price && <p className="text-[11px] text-[#425466]/60 mt-2">Fatturazione mensile + IVA</p>}
+                    {plan.price && <p className="text-[11px] text-[#425466]/60 mt-1">Fatturazione mensile o annuale + IVA</p>}
                   </div>
 
                   <ul className="space-y-2.5 mb-6 flex-1">

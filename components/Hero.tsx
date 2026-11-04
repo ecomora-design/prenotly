@@ -64,7 +64,7 @@ export default function Hero() {
         <h1 className="text-center text-[44px] leading-[1.05] sm:text-6xl md:text-7xl md:leading-[1.02] font-bold text-[#0A2540] tracking-[-0.04em] max-w-5xl mx-auto">
           Prenotazioni e ordini.<br />
           <span className="bg-gradient-to-r from-[#0F766E] via-[#25D366] to-[#128C7E] bg-clip-text text-transparent">
-            Zero commissioni. Da 9,99 €/mese.
+            Zero commissioni. Da 4,99 €/mese.
           </span>
         </h1>
 

@@ -46,7 +46,7 @@ export const PLAN_FEATURES: Record<PlanKey, Record<FeatureKey, boolean>> = {
   },
   services_premium: {
     clientNotes: true,
-    staff: true,    // 99,99 €/mese - staff abilitato
+    staff: true,    // 79,99 €/mese - staff abilitato
     expenses: true,
     suppliers: false,
     loyalty: false,
@@ -71,5 +71,5 @@ export function planHasFeature(planType: string | null | undefined, feature: Fea
 
 export function getRequiredPlanLabel(feature: FeatureKey): string {
   // Tutte le feature premium richiedono "Premium Pro"
-  return 'Premium Pro (99,99 €/mese)';
+  return 'Premium Pro (79,99 €/mese)';
 }

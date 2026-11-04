@@ -16,7 +16,7 @@ export default function ThreeSoftware() {
         "Dashboard gestionale completa",
       ],
       note: "Prenotazione tavoli opzionale (+10 €/mese)",
-      price: "9,99",
+      price: "4,99",
       period: "/mese",
       cta: "Scopri i piani",
       link: "/prezzi",

@@ -233,7 +233,7 @@ export default function ProPage() {
               <ArrowRight size={15} />
             </Link>
             <p className="text-[10px] text-[#425466]/50 text-center mt-3">
-              Pagamento annuale · 359,88 € + IVA · Nessuna carta richiesta
+              Pagamento annuale · 299,99 € + IVA · Nessuna carta richiesta
             </p>
           </div>
         </div>

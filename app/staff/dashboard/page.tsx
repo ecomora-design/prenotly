@@ -247,7 +247,7 @@ export default function StaffDashboardPage() {
           </div>
           <h1 className="text-2xl font-bold text-night mb-3">Area Staff Bloccata</h1>
           <p className="text-gray-500 text-sm mb-6">
-            L&apos;area operatore è disponibile solo per gli account con piano <strong>Premium Pro (99,99 €/mese)</strong>.
+            L&apos;area operatore è disponibile solo per gli account con piano <strong>Premium Pro (79,99 €/mese)</strong>.
             Chiedi al titolare dell&apos;attività di effettuare l&apos;upgrade.
           </p>
           <button onClick={handleLogout} className="w-full bg-night hover:bg-night/90 text-white py-3 rounded-full font-bold text-sm transition">

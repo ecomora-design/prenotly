@@ -6,18 +6,29 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const PRICE_MAP: Record<string, string> = {
+  // Mensili Food
   "food_menu": process.env.STRIPE_PRICE_FOOD_MENU!,
   "food_standard": process.env.STRIPE_PRICE_FOOD_STANDARD!,
   "food_premium": process.env.STRIPE_PRICE_FOOD_PREMIUM!,
-  "services_premium": process.env.STRIPE_PRICE_SERVICES_PREMIUM!,
+  // Annuali Food
+  "food_menu_yearly": process.env.STRIPE_PRICE_FOOD_MENU_YEARLY!,
+  "food_standard_yearly": process.env.STRIPE_PRICE_FOOD_STANDARD_YEARLY!,
+  "food_premium_yearly": process.env.STRIPE_PRICE_FOOD_PREMIUM_YEARLY!,
+  // Servizi (usano gli stessi ID di Food: 29,99 e 79,99)
+  "servizi": process.env.STRIPE_PRICE_FOOD_STANDARD!,
+  "servizi_yearly": process.env.STRIPE_PRICE_FOOD_STANDARD_YEARLY!,
+  "services_premium": process.env.STRIPE_PRICE_FOOD_PREMIUM!,
+  "services_premium_yearly": process.env.STRIPE_PRICE_FOOD_PREMIUM_YEARLY!,
 };
 
 export async function POST(req: Request) {
   try {
-    const { planType } = await req.json();
+    const { planType, interval } = await req.json();
     if (!planType) return NextResponse.json({ error: "Parametri mancanti" }, { status: 400 });
 
-    const priceId = PRICE_MAP[planType];
+    const finalInterval: "monthly" | "yearly" = interval === "yearly" ? "yearly" : "monthly";
+    const priceKey = finalInterval === "yearly" ? `${planType}_yearly` : planType;
+    const priceId = PRICE_MAP[priceKey];
     if (!priceId) return NextResponse.json({ error: "Piano non valido" }, { status: 400 });
 
     const supabase = await createClient();
@@ -54,9 +65,9 @@ export async function POST(req: Request) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: appUrl + "/dashboard/abbonamento?success=true&session_id={CHECKOUT_SESSION_ID}",
       cancel_url: appUrl + "/dashboard/abbonamento?canceled=true",
-      metadata: { tenant_id: tenant.id, plan_type: planType, interval: "monthly" },
+      metadata: { tenant_id: tenant.id, plan_type: planType, interval: finalInterval },
       subscription_data: {
-        metadata: { tenant_id: tenant.id, plan_type: planType, interval: "monthly" },
+        metadata: { tenant_id: tenant.id, plan_type: planType, interval: finalInterval },
       },
     });
 

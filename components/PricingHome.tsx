@@ -8,7 +8,7 @@ export default function PricingHome() {
       icon: Utensils,
       name: "Menu Digitale",
       subtitle: "Solo visualizzazione",
-      price: "9,99",
+      price: "4,99",
       color: "#64748B",
       microcopy: "Meno di un caffè al giorno",
       features: [
@@ -43,7 +43,7 @@ export default function PricingHome() {
       icon: Crown,
       name: "Premium Pro",
       subtitle: "Tutto incluso + staff",
-      price: "99,99",
+      price: "79,99",
       color: "#8B5CF6",
       microcopy: null,
       features: [
@@ -71,7 +71,7 @@ export default function PricingHome() {
             <span className="text-[#128C7E]">per la tua attività</span>
           </h2>
           <p className="text-gray-600 text-[15px] md:text-lg">
-            Inizia da <strong>9,99 €/mese</strong>. Prova gratis 7 giorni, senza carta.
+            Inizia da <strong>4,99 €/mese</strong>. Prova gratis 7 giorni, senza carta.
           </p>
         </div>
 

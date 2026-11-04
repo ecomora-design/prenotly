@@ -11,7 +11,7 @@ import {
 export const metadata = {
   title: "Prenotly Food — Menu digitale e ordini per ristoranti",
   description:
-    "Menu digitale, ordini, prenotazioni tavoli. Da 9,99 €/mese (solo menu) o 29,99 €/mese (completo).",
+    "Menu digitale, ordini, prenotazioni tavoli. Da 4,99 €/mese (solo menu) o 29,99 €/mese (completo).",
 };
 
 export default function RistorantiPage() {
@@ -196,7 +196,7 @@ export default function RistorantiPage() {
 
             <div className="flex items-baseline gap-1 mb-6">
               <span className="text-sm text-night/50">da €</span>
-              <span className="text-5xl font-bold text-night tracking-tighter">9,99</span>
+              <span className="text-5xl font-bold text-night tracking-tighter">4,99</span>
               <span className="text-sm text-night/50">/mese</span>
             </div>
 
@@ -226,7 +226,7 @@ export default function RistorantiPage() {
                 <ArrowRight size={18} />
               </Link>
               <p className="text-xs text-night/50 text-center">
-                Pagamento annuale · 359,88 € + IVA · Nessuna carta richiesta
+                Pagamento annuale · 299,99 € + IVA · Nessuna carta richiesta
               </p>
             </div>
           </div>
