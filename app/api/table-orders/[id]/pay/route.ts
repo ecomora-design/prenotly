@@ -55,6 +55,35 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    // LIBERA IL TAVOLO: chiudi il booking associato (se esiste) per oggi
+    try {
+      const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(new Date());
+      const todayStart = new Date(todayStr + "T00:00:00").toISOString();
+      const todayEnd = new Date(todayStr + "T23:59:59").toISOString();
+
+      const { data: bookingsToClose } = await admin
+        .from("bookings")
+        .select("id")
+        .eq("tenant_id", order.tenant_id)
+        .eq("table_id", order.table_id)
+        .eq("booking_type", "table")
+        .neq("status", "cancelled")
+        .neq("status", "completed")
+        .gte("scheduled_at", todayStart)
+        .lte("scheduled_at", todayEnd);
+
+      if (bookingsToClose && bookingsToClose.length > 0) {
+        await admin
+          .from("bookings")
+          .update({ status: "completed" })
+          .in("id", bookingsToClose.map((b: any) => b.id));
+        console.log(`[PAY] Chiusi ${bookingsToClose.length} booking per tavolo ${order.table_id}`);
+      }
+    } catch (bookingErr) {
+      console.error("[PAY] Errore chiusura booking:", bookingErr);
+      // Non bloccare il pagamento se la chiusura booking fallisce
+    }
+
     return NextResponse.json({ order: updated });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Errore" }, { status: 500 });
