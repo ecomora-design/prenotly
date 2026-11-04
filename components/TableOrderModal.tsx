@@ -174,6 +174,28 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
     }
   }
 
+  // Invia in cucina
+  async function sendToKitchen() {
+    if (!order) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/table-orders/${order.id}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Errore");
+      setOrder(data.order);
+      onSaved();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   // Chiudi comanda (senza pagamento)
   async function closeOrder() {
     if (!order) return;
@@ -236,7 +258,8 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
   if (!table) return null;
 
   const isOpen2 = order?.status === "open";
-  const isClosed = order?.status === "closed";
+  const isSent = order?.status === "sent";
+  const isClosed = order?.status === "closed" || order?.status === "sent";
   const isPaid = order?.status === "paid";
   const subtotal = order?.items?.reduce((s, i) => s + i.price * i.qty, 0) || 0;
 
@@ -275,7 +298,8 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
               {order && (
                 <div className="mt-3 flex items-center gap-2">
                   {isOpen2 && <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">● Aperta</span>}
-                  {isClosed && <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">⏸ Chiusa</span>}
+                  {order.status === "sent" && <span className="inline-flex items-center gap-1 bg-orange-500/20 text-orange-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">👨‍🍳 In cucina</span>}
+                  {order.status === "closed" && <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">⏸ Chiusa</span>}
                   {isPaid && <span className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-300 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">✓ Pagata</span>}
                 </div>
               )}
@@ -424,14 +448,24 @@ export default function TableOrderModal({ isOpen, onClose, tenantId, table, exis
 
                       {/* AZIONI CHIUSURA */}
                       {order.items && order.items.length > 0 && (
-                        <button
-                          onClick={closeOrder}
-                          disabled={saving}
-                          className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white py-3.5 rounded-2xl font-black transition flex items-center justify-center gap-2"
-                        >
-                          {saving ? <Loader2 className="animate-spin" size={16} /> : <Receipt size={16} />}
-                          Chiudi comanda (€{subtotal.toFixed(2)})
-                        </button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={sendToKitchen}
+                            disabled={saving}
+                            className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white py-3.5 rounded-2xl font-black transition flex items-center justify-center gap-2"
+                          >
+                            {saving ? <Loader2 className="animate-spin" size={16} /> : <Utensils size={16} />}
+                            Invia in cucina
+                          </button>
+                          <button
+                            onClick={closeOrder}
+                            disabled={saving}
+                            className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white py-3.5 rounded-2xl font-black transition flex items-center justify-center gap-2"
+                          >
+                            {saving ? <Loader2 className="animate-spin" size={16} /> : <Receipt size={16} />}
+                            Chiudi (€{subtotal.toFixed(2)})
+                          </button>
+                        </div>
                       )}
                     </>
                   )}

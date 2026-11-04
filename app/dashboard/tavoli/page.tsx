@@ -48,6 +48,7 @@ export default function GestioneTavoliPage() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [tableOrders, setTableOrders] = useState<Record<string, any>>({});
+  const [tableBookingsOggi, setTableBookingsOggi] = useState<Record<string, boolean>>({});
 
   const loadData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -83,6 +84,33 @@ export default function GestioneTavoliPage() {
       .lte("scheduled_at", `${today}T23:59:59`);
 
     setTodaysBookings(count || 0);
+
+    // Carica comande aperte/chiuse/sent
+    const { data: openOrders } = await supabase
+      .from("table_orders")
+      .select("*")
+      .eq("tenant_id", link.tenant_id)
+      .in("status", ["open", "sent", "closed"]);
+    const ordersMap: Record<string, any> = {};
+    (openOrders || []).forEach((o: any) => { ordersMap[o.table_id] = o; });
+    setTableOrders(ordersMap);
+
+    // Carica prenotazioni tavoli di OGGI
+    const todayStr2 = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(new Date());
+    const todayStart = new Date(todayStr2 + "T00:00:00").toISOString();
+    const todayEnd = new Date(todayStr2 + "T23:59:59").toISOString();
+    const { data: todayBookings } = await supabase
+      .from("bookings")
+      .select("table_id")
+      .eq("tenant_id", link.tenant_id)
+      .eq("booking_type", "table")
+      .neq("status", "cancelled")
+      .gte("scheduled_at", todayStart)
+      .lte("scheduled_at", todayEnd);
+    const bookingsOggiMap: Record<string, boolean> = {};
+    (todayBookings || []).forEach((b: any) => { if (b.table_id) bookingsOggiMap[b.table_id] = true; });
+    setTableBookingsOggi(bookingsOggiMap);
+
     setLoading(false);
   };
 
@@ -256,7 +284,7 @@ export default function GestioneTavoliPage() {
               <TableMap 
                 tables={tables.filter(t => (t.zone || 'Sala Principale') === activeTab).map(t => ({
                   ...t,
-                  isBusy: !!tableOrders[t.id]
+                  isBusy: !!tableOrders[t.id] || !!tableBookingsOggi[t.id]
                 }))} 
                 selectedId={selectedTable?.id || null} 
                 onSelect={(t) => {

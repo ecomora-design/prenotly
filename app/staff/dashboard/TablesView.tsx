@@ -39,6 +39,7 @@ export default function TablesView({ tenantId }: Props) {
   const [tableOrders, setTableOrders] = useState<Record<string, any>>({});
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<any>(null);
+  const [tableBookingsOggi, setTableBookingsOggi] = useState<Record<string, boolean>>({});
 
   async function load() {
     setRefreshing(true);
@@ -94,10 +95,26 @@ export default function TablesView({ tenantId }: Props) {
       .from("table_orders")
       .select("*")
       .eq("tenant_id", tenantId)
-      .in("status", ["open", "closed"]);
+      .in("status", ["open", "sent", "closed"]);
     const ordersMap: Record<string, any> = {};
     (openOrders || []).forEach((o: any) => { ordersMap[o.table_id] = o; });
     setTableOrders(ordersMap);
+
+    // Carica prenotazioni tavoli di OGGI (per tavolo rosso)
+    const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(new Date());
+    const todayStart = new Date(todayStr + "T00:00:00").toISOString();
+    const todayEnd = new Date(todayStr + "T23:59:59").toISOString();
+    const { data: todayBookings } = await supabase
+      .from("bookings")
+      .select("table_id")
+      .eq("tenant_id", tenantId)
+      .eq("booking_type", "table")
+      .neq("status", "cancelled")
+      .gte("scheduled_at", todayStart)
+      .lte("scheduled_at", todayEnd);
+    const bookingsOggiMap: Record<string, boolean> = {};
+    (todayBookings || []).forEach((b: any) => { if (b.table_id) bookingsOggiMap[b.table_id] = true; });
+    setTableBookingsOggi(bookingsOggiMap);
   }
 
   useEffect(() => { load(); }, [tenantId, selectedDate]);
@@ -279,7 +296,7 @@ export default function TablesView({ tenantId }: Props) {
           ) : (
             <div className="bg-white rounded-2xl p-4 border border-night/[0.06]">
               <TableMap
-                tables={tables.map(t => ({ ...t, isBusy: !!tableOrders[t.id] }))}
+                tables={tables.map(t => ({ ...t, isBusy: !!tableOrders[t.id] || !!tableBookingsOggi[t.id] }))}
                 selectedId={selectedTable?.id || null}
                 onSelect={(t) => { setSelectedTable(t); setOrderModalOpen(true); }}
                 brandColor="#25D366"
