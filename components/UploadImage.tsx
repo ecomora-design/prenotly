@@ -30,7 +30,7 @@ async function compressImage(file: File, maxSize = 1200, quality = 0.82): Promis
     const timeout = setTimeout(() => {
       URL.revokeObjectURL(url);
       reject(new Error("Timeout conversione immagine"));
-    }, 30000);
+    }, 45000);
 
     img.onload = () => {
       clearTimeout(timeout);
@@ -113,14 +113,16 @@ export default function UploadImage({
     setError(null);
     setProgress("Preparazione...");
 
-    if (!file.type.startsWith("image/") && !/heic|heif/i.test(file.name)) {
-      setError("Il file selezionato non è un'immagine.");
+    const isHeic = /heic|heif/i.test(file.name) || /heic|heif/i.test(file.type);
+    const hasValidType = file.type.startsWith("image/") || file.type === "" || isHeic;
+    if (!hasValidType) {
+      setError("Il file selezionato non è un'immagine. Prova con JPG o PNG.");
       return;
     }
 
     // Limite 20MB per input (verrà compresso)
     if (file.size > 20 * 1024 * 1024) {
-      setError("File troppo grande. Max 20MB.");
+      setError("File troppo grande (max 20MB). La foto verrà compressa automaticamente.");
       return;
     }
 
@@ -133,11 +135,13 @@ export default function UploadImage({
       try {
         processedFile = await compressImage(file);
       } catch (compressErr: any) {
-        // Se la conversione fallisce ma il file è già JPEG/WEBP, prova a caricarlo
-        if (/jpeg|jpg|webp|png/i.test(file.type)) {
+        // Se la conversione fallisce, prova a caricare il file raw se è un formato accettato
+        if (/jpeg|jpg|webp|png/i.test(file.type) || /jpeg|jpg|webp|png/i.test(file.name)) {
           processedFile = file;
+        } else if (isHeic) {
+          throw new Error("Impossibile convertire la foto HEIC. Prova a scattarla di nuovo o a convertirla in JPG prima di caricarla.");
         } else {
-          throw new Error(compressErr.message || "Formato non supportato. Prova a scattare la foto con un'altra app.");
+          throw new Error(compressErr.message || "Errore conversione. Riprova con JPG o PNG.");
         }
       }
 
@@ -260,7 +264,6 @@ export default function UploadImage({
         ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleChange}
         className="hidden"
       />
