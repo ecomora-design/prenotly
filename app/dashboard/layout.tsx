@@ -9,7 +9,7 @@ import OnboardingGuide from "@/components/OnboardingGuide";
 import PWABanner from "@/components/PWABanner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, Utensils, ShoppingBag, Calendar,
+  LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarClock,
   CreditCard, QrCode, Settings, LogOut, Menu, X, Loader2,
   ExternalLink, Users, ChevronRight, Sparkles, Bell, LayoutGrid, BarChart3, TrendingDown, UserCircle2
 } from "lucide-react";
@@ -224,6 +224,7 @@ export default function DashboardLayout({
       label: "Panoramica",
       items: [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/dashboard/turni", label: "Turni", icon: CalendarClock },
       ],
     },
     {
