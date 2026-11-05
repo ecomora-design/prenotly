@@ -191,34 +191,34 @@ export default function KitchenView({ tenantId }: Props) {
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
-                          className={`bg-white rounded-2xl border-2 overflow-hidden ${
+                          className={`bg-white rounded-2xl overflow-hidden border-l-4 border-t border-r border-b border-night/[0.08] shadow-sm ${
                             o.status === "ready" ? "border-emerald-300" :
                             o.status === "preparing" ? "border-orange-300" :
                             "border-amber-300"
                           }`}
                         >
                           {/* Header card */}
-                          <div className="px-3 py-2 flex items-center justify-between" style={{ backgroundColor: col.accent + "15" }}>
+                          <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: col.accent + "25" }}>
                             <div className="flex items-center gap-2">
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg" style={{ backgroundColor: col.accent + "25", color: col.accent }}>
+                              <div className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-sm" style={{ backgroundColor: col.accent }}>
                                 {tavolo}
                               </div>
                               <div>
-                                <p className="font-black text-night text-sm leading-tight">Tavolo {tavolo}</p>
-                                <p className="text-[10px] text-night/50">{zone} · {o.party_size} coperti</p>
+                                <p className="font-black text-night text-base leading-tight">Tavolo {tavolo}</p>
+                                <p className="text-xs text-night/60 font-bold">{zone} · {o.party_size} coperti</p>
                               </div>
                             </div>
-                            <p className="text-[10px] font-bold text-night/40">
+                            <p className="text-sm font-black text-night">
                               {new Date(o.opened_at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome" })}
                             </p>
                           </div>
 
                           {/* Lista piatti */}
-                          <div className="px-3 py-2">
-                            <div className="space-y-1">
+                          <div className="px-4 py-3">
+                            <div className="space-y-1.5">
                               {getNewItems(o).map((item, idx) => (
-                                <div key={idx} className="flex items-baseline gap-2 text-sm">
-                                  <span className="font-black text-night w-6 shrink-0">{item.qty}×</span>
+                                <div key={idx} className="flex items-baseline gap-2.5 text-base">
+                                  <span className="font-black w-7 shrink-0" style={{ color: col.accent }}>{item.qty}×</span>
                                   <span className="font-bold text-night flex-1">{item.name}</span>
                                 </div>
                               ))}
@@ -235,7 +235,7 @@ export default function KitchenView({ tenantId }: Props) {
                                 <button
                                   onClick={() => setStatus(o.id, "preparing")}
                                   disabled={isUpdating}
-                                  className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white py-2.5 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5"
+                                  className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white py-3.5 rounded-2xl font-black text-sm transition flex items-center justify-center gap-2 shadow-sm"
                                 >
                                   {isUpdating ? <RefreshCw className="animate-spin" size={12} /> : <Flame size={14} />}
                                   Inizia preparazione
@@ -244,7 +244,7 @@ export default function KitchenView({ tenantId }: Props) {
                                 <button
                                   onClick={() => setStatus(o.id, "ready")}
                                   disabled={isUpdating}
-                                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white py-2.5 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5"
+                                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white py-3.5 rounded-2xl font-black text-sm transition flex items-center justify-center gap-2 shadow-sm"
                                 >
                                   {isUpdating ? <RefreshCw className="animate-spin" size={12} /> : <CheckCircle2 size={14} />}
                                   Segna come pronta

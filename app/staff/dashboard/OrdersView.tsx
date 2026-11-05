@@ -181,44 +181,44 @@ export default function OrdersView({ tenantId }: Props) {
             const itemCount = (o.items || []).reduce((s, i) => s + i.qty, 0);
             const TypeIcon = o.order_type === "delivery" ? Truck : Store;
             return (
-              <div key={o.id} className="bg-white rounded-2xl border border-night/[0.06] overflow-hidden">
+              <div key={o.id} className="bg-white rounded-3xl overflow-hidden shadow-md border-l-4" style={{ borderLeftColor: config.accent }}>
                 <div className="h-1" style={{ backgroundColor: config.accent }} />
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: config.accent + "15" }}>
-                        <ShoppingBag size={18} style={{ color: config.accent }} />
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm" style={{ backgroundColor: config.accent }}>
+                        <ShoppingBag size={24} className="text-white" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-night text-sm truncate">{o.customers?.name || "Cliente"}</p>
+                        <p className="font-black text-night text-lg truncate leading-tight">{o.customers?.name || "Cliente"}</p>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase" style={{ backgroundColor: config.bg, color: config.text }}>{config.label}</span>
-                          <span className="text-[10px] font-bold text-night/60 flex items-center gap-0.5"><TypeIcon size={10} /> {o.order_type === "delivery" ? "Domicilio" : "Asporto"}</span>
-                          <span className="text-[10px] font-bold text-night/60 flex items-center gap-0.5"><Clock size={10} /> {time}</span>
-                          <span className="text-[10px] font-bold text-night/60">{itemCount} articol{itemCount === 1 ? "o" : "i"}</span>
+                          <span className="text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider" style={{ backgroundColor: config.accent, color: "white" }}>{config.label}</span>
+                          <span className="text-xs font-bold text-night/70 flex items-center gap-1 bg-white/70 px-2 py-1 rounded-full"><TypeIcon size={10} /> {o.order_type === "delivery" ? "Domicilio" : "Asporto"}</span>
+                          <span className="text-xs font-bold text-night/70 flex items-center gap-1 bg-white/70 px-2 py-1 rounded-full"><Clock size={10} /> {time}</span>
+                          <span className="text-xs font-bold text-night/70 bg-white/70 px-2 py-1 rounded-full">{itemCount} art.</span>
                         </div>
                       </div>
                     </div>
-                    <span className="font-mono text-[10px] font-bold text-night/40 bg-night/5 px-2 py-1 rounded">{o.order_code}</span>
+                    <span className="font-mono text-[11px] font-black text-white bg-night/80 px-2.5 py-1.5 rounded-lg">{o.order_code}</span>
                   </div>
                   
                   {/* Lista prodotti */}
                   {o.items && o.items.length > 0 && (
-                    <div className="mt-2 px-3 py-2 bg-night/[0.03] rounded-lg space-y-0.5">
+                    <div className="mt-3 px-4 py-3 bg-white/70 rounded-xl space-y-1">
                       {o.items.map((item, idx) => (
-                        <p key={idx} className="text-[11px] text-night/70">
-                          <strong>{item.qty}×</strong> {item.name}
+                        <p key={idx} className="text-sm text-night/80">
+                          <strong className="font-black" style={{ color: config.accent }}>{item.qty}×</strong> <span className="font-bold">{item.name}</span>
                         </p>
                       ))}
                     </div>
                   )}
                   <div className="mt-3 pt-3 border-t border-night/[0.04]">
                     {config.next ? (
-                      <button onClick={() => advance(o.id, config.next!.to)} className="w-full text-white text-xs font-black py-2 rounded-lg inline-flex items-center justify-center gap-1" style={{ backgroundColor: config.accent }}>
+                      <button onClick={() => advance(o.id, config.next!.to)} className="w-full text-white text-sm font-black py-3.5 rounded-xl inline-flex items-center justify-center gap-1.5 shadow-sm" style={{ backgroundColor: config.accent }}>
                         {config.next.label} →
                       </button>
                     ) : (
-                      <span className="block text-center text-[10px] font-black text-night/40 uppercase tracking-widest">— {config.label} —</span>
+                      <span className="block text-center text-xs font-black text-night/40 uppercase tracking-widest py-3">— {config.label} —</span>
                     )}
                   </div>
                 </div>

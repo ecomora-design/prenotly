@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { calcolaIncassi } from "@/lib/incassi";
+import UpgradeBanner from "@/components/UpgradeBanner";
 import { motion } from "framer-motion";
 import {
   Loader2, ShoppingBag, Calendar, Users, QrCode, Plus, AlertCircle,
@@ -209,6 +210,8 @@ export default function DashboardPage() {
           </Link>
         </motion.div>
       )}
+
+      <UpgradeBanner tenant={tenant} />
 
       {/* KPI CARDS - Design Premium */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

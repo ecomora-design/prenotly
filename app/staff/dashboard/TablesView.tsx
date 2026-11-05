@@ -228,42 +228,42 @@ export default function TablesView({ tenantId }: Props) {
             const config = STATUS_CONFIG[b.status] || STATUS_CONFIG.pending;
             const time = new Date(b.scheduled_at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome" });
             return (
-              <div key={b.id} className="bg-white rounded-2xl border border-night/[0.06] overflow-hidden">
+              <div key={b.id} className="bg-white rounded-3xl overflow-hidden shadow-md border-l-4" style={{ borderLeftColor: config.accent }}>
                 <div className="h-1" style={{ backgroundColor: config.accent }} />
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: config.accent + "15" }}>
-                        <Clock size={18} style={{ color: config.accent }} />
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm" style={{ backgroundColor: config.accent }}>
+                        <Clock size={24} className="text-white" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-night text-sm truncate">{time} · {b.customers?.name || "Cliente"}</p>
+                        <p className="font-black text-night text-lg truncate leading-tight">{time} · {b.customers?.name || "Cliente"}</p>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase" style={{ backgroundColor: config.bg, color: config.text }}>{config.label}</span>
-                          {b.party_size && <span className="text-[10px] font-bold text-night/60 flex items-center gap-0.5"><Users size={10} /> {b.party_size} coperti</span>}
-                          {b.tables && <span className="text-[10px] font-bold text-night/60 flex items-center gap-0.5"><MapPin size={10} /> Tav. {b.tables.table_number}</span>}
+                          <span className="text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider" style={{ backgroundColor: config.accent, color: "white" }}>{config.label}</span>
+                          {b.party_size && <span className="text-xs font-bold text-night/70 flex items-center gap-1 bg-white/70 px-2 py-1 rounded-full"><Users size={10} /> {b.party_size} coperti</span>}
+                          {b.tables && <span className="text-xs font-bold text-night/70 flex items-center gap-1 bg-white/70 px-2 py-1 rounded-full"><MapPin size={10} /> Tav. {b.tables.table_number}</span>}
                         </div>
                       </div>
                     </div>
-                    <span className="font-mono text-[10px] font-bold text-night/40 bg-night/5 px-2 py-1 rounded">{b.booking_code}</span>
+                    <span className="font-mono text-[11px] font-black text-white bg-night/80 px-2.5 py-1.5 rounded-lg">{b.booking_code}</span>
                   </div>
-                  {b.notes && <div className="mt-2 px-3 py-2 bg-orange-50 text-[11px] text-orange-800 font-bold rounded-lg">📝 {b.notes}</div>}
+                  {b.notes && <div className="mt-3 px-4 py-2.5 bg-orange-100 text-sm text-orange-900 font-bold rounded-xl">📝 {b.notes}</div>}
                   <div className="mt-3 pt-3 border-t border-night/[0.04] flex items-center gap-2">
                     {b.status === "pending" && (
-                      <button onClick={() => updateStatus(b.id, "confirmed")} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black py-2 rounded-lg">Conferma</button>
+                      <button onClick={() => updateStatus(b.id, "confirmed")} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-black py-3 rounded-xl shadow-sm">Conferma</button>
                     )}
                     {b.status === "confirmed" && (
-                      <button onClick={() => updateStatus(b.id, "completed")} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2 rounded-lg inline-flex items-center justify-center gap-1">
+                      <button onClick={() => updateStatus(b.id, "completed")} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black py-3 rounded-xl shadow-sm inline-flex items-center justify-center gap-1.5">
                         <CheckCircle2 size={12} /> Arrivato
                       </button>
                     )}
                     {(b.status === "pending" || b.status === "confirmed") && (
-                      <button onClick={() => updateStatus(b.id, "cancelled")} className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg" aria-label="Annulla">
+                      <button onClick={() => updateStatus(b.id, "cancelled")} className="px-4 py-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl shadow-sm" aria-label="Annulla">
                         <XCircle size={14} />
                       </button>
                     )}
-                    {b.status === "completed" && <span className="flex-1 text-center text-[10px] font-black text-emerald-600 uppercase tracking-widest">✓ Arrivato</span>}
-                    {b.status === "cancelled" && <span className="flex-1 text-center text-[10px] font-black text-red-500 uppercase tracking-widest">✗ Annullato</span>}
+                    {b.status === "completed" && <span className="flex-1 text-center text-xs font-black text-emerald-700 uppercase tracking-widest bg-emerald-100 py-3 rounded-xl">✓ Arrivato</span>}
+                    {b.status === "cancelled" && <span className="flex-1 text-center text-xs font-black text-red-600 uppercase tracking-widest bg-red-100 py-3 rounded-xl">✗ Annullato</span>}
                   </div>
                 </div>
               </div>

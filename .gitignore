@@ -51,6 +51,7 @@ convert-icons.mjs
 .next
 .DS_Store
 *.bak
+*.bak.*
 prenotly-snapshot.txt
 home.html
 prezzi.html
