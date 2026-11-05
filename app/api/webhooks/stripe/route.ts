@@ -21,6 +21,50 @@ export async function POST(req: Request) {
   }
 
   const supabase = createAdminClient();
+  // ── ORDINI PAGATI CON STRIPE (Connect) ──
+  if (event.type === "checkout.session.completed" && (event.data.object as any).metadata?.type === "order") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const orderId = session.metadata?.order_id;
+    const tenantId = session.metadata?.tenant_id;
+    const paymentIntentId = typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : (session.payment_intent as any)?.id || null;
+
+    if (orderId && tenantId) {
+      await supabase.from("orders").update({
+        status: "pending",
+        stripe_payment_intent_id: paymentIntentId,
+        paid_at: new Date().toISOString(),
+      }).eq("id", orderId);
+
+      try {
+        const { data: order } = await supabase
+          .from("orders")
+          .select("order_code, total, order_type")
+          .eq("id", orderId)
+          .single();
+        if (order) {
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.prenotly-italia.it";
+          await fetch(baseUrl + "/api/push/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tenantId,
+              title: "💰 Ordine pagato",
+              body: order.order_code + " · €" + Number(order.total).toFixed(2) + " · " + (order.order_type === "delivery" ? "Domicilio" : "Asporto"),
+              url: "/staff/dashboard",
+              tag: "order-" + orderId,
+            }),
+          });
+        }
+      } catch (pushErr) {
+        console.error("push order paid error:", pushErr);
+      }
+    }
+
+    return NextResponse.json({ received: true, order: true });
+  }
+
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
@@ -128,5 +172,13 @@ export async function POST(req: Request) {
     const customerId = sub.customer as string;
     await supabase.from("tenants").update({ subscription_status: "expired" }).eq("stripe_customer_id", customerId);
   }
+  if (event.type === "account.updated") {
+    const account = event.data.object as Stripe.Account;
+    const isEnabled = account.charges_enabled && account.payouts_enabled;
+    const status = isEnabled ? "active" : "pending";
+    console.log("[WEBHOOK] account.updated:", account.id, "->", status);
+    await supabase.from("tenants").update({ stripe_connect_status: status }).eq("stripe_account_id", account.id);
+  }
+
   return NextResponse.json({ received: true });
 }

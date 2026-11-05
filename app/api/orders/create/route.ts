@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const supabase = createAdminClient();
-    const { data: tenant } = await supabase.from("tenants").select("id, web_discount_enabled, web_discount_percent, delivery_fee").eq("slug", slug).single();
+    const { data: tenant } = await supabase.from("tenants").select("id, plan_type, stripe_account_id, stripe_connect_status, web_discount_enabled, web_discount_percent, delivery_fee").eq("slug", slug).single();
     if (!tenant) return NextResponse.json({ error: "Attività non trovata" }, { status: 404 });
 
     const phone = customerPhone.trim();
@@ -64,6 +64,11 @@ export async function POST(req: Request) {
       : 0;
     const serverTotal = Math.max(0, serverSubtotal + serverDelivery - serverDiscount);
 
+    const paymentRequired =
+      (tenant as any).plan_type === "food_premium" &&
+      !!(tenant as any).stripe_account_id &&
+      (tenant as any).stripe_connect_status === "active";
+
     const { data: order, error: orderError } = await supabase.from("orders").insert({
         tenant_id: tenant.id,
         customer_id: customerId,
@@ -74,7 +79,8 @@ export async function POST(req: Request) {
         delivery_address: deliveryAddress || null,
         scheduled_for: scheduledFor || null,
         notes: notes || null,
-        status: "pending",
+        status: paymentRequired ? "pending_payment" : "pending",
+        payment_required: paymentRequired,
         tracking_token: trackingToken,
       }).select().single();
 
@@ -83,7 +89,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: orderError.message }, { status: 500 });
     }
 
-    // 🔔 NOTIFICA PUSH STAFF (fire-and-forget)
+    if (paymentRequired) {
+      return NextResponse.json({ order, requires_payment: true });
+    }
+
     try {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.prenotly-italia.it";
       fetch(baseUrl + "/api/push/send", {

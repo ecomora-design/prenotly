@@ -387,6 +387,30 @@ export default function MenuClient({
 
       const code = data.order?.order_code || "ORDINE";
 
+      // Pagamento online richiesto (Premium Pro + Stripe attivo)
+      if (data.requires_payment === true && data.order?.id) {
+        try {
+          const payRes = await fetch("/api/orders/" + data.order.id + "/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ trackingToken: data.order.tracking_token }),
+          });
+          const payData = await payRes.json();
+          if (!payRes.ok || !payData.url) {
+            setSubmitError(payData.error || "Errore nell avvio del pagamento. Riprova.");
+            setSubmitting(false);
+            return;
+          }
+          window.location.href = payData.url;
+          return;
+        } catch (payErr) {
+          console.error("payment redirect error:", payErr);
+          setSubmitError("Errore di connessione al pagamento. Riprova.");
+          setSubmitting(false);
+          return;
+        }
+      }
+
       setLastOrderSnapshot({
         code,
         subtotal: cartSubtotal,
