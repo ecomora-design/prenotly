@@ -6,74 +6,43 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import {
-  Loader2, Wallet, TrendingUp, ReceiptText, Users, Calendar,
-  ShoppingBag, ArrowUpRight, ArrowDownRight, Download, Filter,
-  ChevronLeft, ChevronRight, BarChart3, PieChart, Clock
+  Loader2, Wallet, TrendingUp, Calendar, ShoppingBag,
+  ChefHat, ArrowUpRight, Clock, Crown, Star, Utensils
 } from "lucide-react";
 
-type Order = {
-  id: string;
-  order_code: string;
-  total: number;
-  created_at: string;
-  status: string;
-  order_type: string;
-  customers: { name: string | null } | null;
-};
-
-type Booking = {
-  id: string;
-  booking_code: string;
-  scheduled_at: string;
-  status: string;
-  party_size: number | null;
-  customers: { name: string | null } | null;
-};
-
 type Range = "today" | "week" | "month" | "year" | "all";
+
+type DayData = {
+  date: string; // YYYY-MM-DD
+  ordini: number;
+  tavoli: number;
+  appuntamenti: number;
+  totale: number;
+  ordiniCount: number;
+  tavoliCount: number;
+  appuntamentiCount: number;
+};
+
+type TopItem = { name: string; qty: number; total: number };
+type TopTable = { number: number; total: number; orders: number };
 
 export default function ReportPage() {
   const router = useRouter();
   const supabase = createClient();
 
   const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [copertoPrice, setCopertoPrice] = useState(0);
   const [range, setRange] = useState<Range>("month");
+  const [tenantId, setTenantId] = useState<string | null>(null);
   const [tenantName, setTenantName] = useState("");
+  const [isFood, setIsFood] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login"); return; }
-
-      const { data: link } = await supabase
-        .from("tenant_users")
-        .select("tenant_id, tenants(business_name, coperto_price)")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!link || !link.tenants) { router.push("/onboarding"); return; }
-      const t = link.tenants as any;
-      setTenantName(t.business_name);
-      setCopertoPrice(Number(t.coperto_price) || 0);
-
-      const [ordersRes, bookingsRes, customersRes] = await Promise.all([
-        supabase.from("orders").select("id, order_code, total, created_at, status, order_type, customer_id").eq("tenant_id", link.tenant_id).order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, booking_code, scheduled_at, status, party_size, customer_id").eq("tenant_id", link.tenant_id).order("scheduled_at", { ascending: false }),
-        supabase.from("customers").select("id, name").eq("tenant_id", link.tenant_id),
-      ]);
-
-      const custMap: Record<string, string | null> = {};
-      (customersRes.data || []).forEach((c: any) => { custMap[c.id] = c.name; });
-
-      setOrders((ordersRes.data || []).map((o: any) => ({ ...o, customers: { name: custMap[o.customer_id] || null } })));
-      setBookings((bookingsRes.data || []).map((b: any) => ({ ...b, customers: { name: custMap[b.customer_id] || null } })));
-      setLoading(false);
-    }
-    load();
-  }, [supabase, router]);
+  const [days, setDays] = useState<DayData[]>([]);
+  const [topPiatti, setTopPiatti] = useState<TopItem[]>([]);
+  const [topTavoli, setTopTavoli] = useState<TopTable[]>([]);
+  const [totals, setTotals] = useState({
+    ordini: 0, tavoli: 0, appuntamenti: 0, totale: 0,
+    ordiniCount: 0, tavoliCount: 0, appuntamentiCount: 0,
+  });
 
   // Calcola range temporale
   const { startDate, endDate, rangeLabel } = useMemo(() => {
@@ -102,327 +71,352 @@ export default function ReportPage() {
     return { startDate: start, endDate: end, rangeLabel: label };
   }, [range]);
 
-  // Filtra
-  const filteredOrders = orders.filter(o => {
-    const d = new Date(o.created_at);
-    return d >= startDate && d <= endDate && o.status === "delivered";
-  });
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push("/login"); return; }
 
-  const filteredBookings = bookings.filter(b => {
-    const d = new Date(b.scheduled_at);
-    return d >= startDate && d <= endDate && b.status !== "cancelled";
-  });
+      const { data: link } = await supabase
+        .from("tenant_users")
+        .select("tenant_id, tenants(business_name, category, product_type, business_type)")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-  // Calcola KPI
-  const ordersRevenue = filteredOrders.reduce((s, o) => s + Number(o.total), 0);
-  const totalCovers = filteredBookings.reduce((s, b) => s + (b.party_size || 0), 0);
-  const coversRevenue = totalCovers * copertoPrice;
-  const totalRevenue = ordersRevenue + coversRevenue;
-  const avgOrder = filteredOrders.length > 0 ? ordersRevenue / filteredOrders.length : 0;
+      if (!link || !link.tenants) { router.push("/onboarding"); return; }
+      const t = link.tenants as any;
+      setTenantId(link.tenant_id);
+      setTenantName(t.business_name);
+      const food = t.category === "ristoranti" || t.category === "pizzerie" ||
+        (!t.category && (t.product_type === "food" || t.business_type === "restaurant"));
+      setIsFood(food);
 
-  // Grafico: raggruppa per giorno
-  const chartData = useMemo(() => {
-    const days: Record<string, { orders: number; bookings: number }> = {};
-    const numDays = range === "today" ? 1 : range === "week" ? 7 : range === "month" ? 30 : range === "year" ? 12 : 30;
-    
-    if (range === "year") {
-      for (let i = 11; i >= 0; i--) {
-        const d = new Date();
-        d.setMonth(d.getMonth() - i);
-        const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
-        days[key] = { orders: 0, bookings: 0 };
-      }
-      filteredOrders.forEach(o => {
-        const d = new Date(o.created_at);
-        const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
-        if (days[key]) days[key].orders += Number(o.total);
-      });
-      filteredBookings.forEach(b => {
-        const d = new Date(b.scheduled_at);
-        const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
-        if (days[key]) days[key].bookings += (b.party_size || 0) * copertoPrice;
-      });
-    } else {
-      for (let i = numDays - 1; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const key = d.toISOString().split("T")[0];
-        days[key] = { orders: 0, bookings: 0 };
-      }
-      filteredOrders.forEach(o => {
-        const key = o.created_at.split("T")[0];
-        if (days[key]) days[key].orders += Number(o.total);
-      });
-      filteredBookings.forEach(b => {
-        const key = b.scheduled_at.split("T")[0];
-        if (days[key]) days[key].bookings += (b.party_size || 0) * copertoPrice;
-      });
+      await loadData(link.tenant_id, startDate, endDate);
+      setLoading(false);
     }
-    return Object.entries(days).map(([date, v]) => ({ date, ...v }));
-  }, [filteredOrders, filteredBookings, range, copertoPrice]);
+    load();
+  }, [range]);
 
-  const maxValue = Math.max(...chartData.map(d => d.orders + d.bookings), 1);
+  async function loadData(tenantId: string, start: Date, end: Date) {
+    const startISO = start.toISOString();
+    const endISO = end.toISOString();
 
-  // Export CSV
-  const handleExportCSV = () => {
-    const rows = [["Data", "Tipo", "Codice", "Cliente", "Totale/Coperti", "Importo"]];
-    
-    filteredOrders.forEach(o => {
-      rows.push([
-        new Date(o.created_at).toLocaleDateString("it-IT"),
-        "Ordine",
-        o.order_code,
-        o.customers?.name || "-",
-        "-",
-        Number(o.total).toFixed(2),
-      ]);
+    const [ordersRes, tableOrdersRes, bookingsRes] = await Promise.all([
+      supabase
+        .from("orders")
+        .select("id, total, items, created_at")
+        .eq("tenant_id", tenantId)
+        .eq("status", "delivered")
+        .gte("created_at", startISO)
+        .lte("created_at", endISO),
+      supabase
+        .from("table_orders")
+        .select("id, total, paid_amount, items, party_size, paid_at, tables(table_number)")
+        .eq("tenant_id", tenantId)
+        .eq("status", "paid")
+        .gte("paid_at", startISO)
+        .lte("paid_at", endISO),
+      supabase
+        .from("bookings")
+        .select("id, service_id, scheduled_at, services(price)")
+        .eq("tenant_id", tenantId)
+        .eq("booking_type", "appointment")
+        .eq("status", "completed")
+        .gte("scheduled_at", startISO)
+        .lte("scheduled_at", endISO),
+    ]);
+
+    const orders = ordersRes.data || [];
+    const tableOrders = tableOrdersRes.data || [];
+    const bookings = bookingsRes.data || [];
+
+    // Raggruppa per giorno
+    const byDay: Record<string, DayData> = {};
+
+    const getDayKey = (iso: string) => {
+      const d = new Date(iso);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    };
+
+    const ensureDay = (key: string) => {
+      if (!byDay[key]) byDay[key] = {
+        date: key, ordini: 0, tavoli: 0, appuntamenti: 0, totale: 0,
+        ordiniCount: 0, tavoliCount: 0, appuntamentiCount: 0,
+      };
+      return byDay[key];
+    };
+
+    orders.forEach((o: any) => {
+      const key = getDayKey(o.created_at);
+      const d = ensureDay(key);
+      d.ordini += Number(o.total || 0);
+      d.ordiniCount += 1;
+      d.totale += Number(o.total || 0);
     });
-    filteredBookings.forEach(b => {
-      const covers = b.party_size || 0;
-      rows.push([
-        new Date(b.scheduled_at).toLocaleDateString("it-IT"),
-        "Prenotazione",
-        b.booking_code,
-        b.customers?.name || "-",
-        covers.toString(),
-        (covers * copertoPrice).toFixed(2),
-      ]);
+
+    tableOrders.forEach((o: any) => {
+      const key = getDayKey(o.paid_at);
+      const d = ensureDay(key);
+      const amount = Number(o.paid_amount || o.total || 0);
+      d.tavoli += amount;
+      d.tavoliCount += 1;
+      d.totale += amount;
     });
 
-    const csv = rows.map(r => r.map(c => '"' + c + '"').join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "report-prenotly-" + new Date().toISOString().split("T")[0] + ".csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+    bookings.forEach((b: any) => {
+      const key = getDayKey(b.scheduled_at);
+      const d = ensureDay(key);
+      const price = Number(b.services?.price || 0);
+      d.appuntamenti += price;
+      d.appuntamentiCount += 1;
+      d.totale += price;
+    });
+
+    const daysArr = Object.values(byDay).sort((a, b) => b.date.localeCompare(a.date));
+
+    // Totali
+    const totalsCalc = daysArr.reduce((acc, d) => ({
+      ordini: acc.ordini + d.ordini,
+      tavoli: acc.tavoli + d.tavoli,
+      appuntamenti: acc.appuntamenti + d.appuntamenti,
+      totale: acc.totale + d.totale,
+      ordiniCount: acc.ordiniCount + d.ordiniCount,
+      tavoliCount: acc.tavoliCount + d.tavoliCount,
+      appuntamentiCount: acc.appuntamentiCount + d.appuntamentiCount,
+    }), { ordini: 0, tavoli: 0, appuntamenti: 0, totale: 0, ordiniCount: 0, tavoliCount: 0, appuntamentiCount: 0 });
+
+    // Top piatti
+    const plateCount: Record<string, { qty: number; total: number }> = {};
+    const addItems = (items: any[]) => {
+      (items || []).forEach((it: any) => {
+        if (!it.name) return;
+        if (!plateCount[it.name]) plateCount[it.name] = { qty: 0, total: 0 };
+        plateCount[it.name].qty += Number(it.qty || 1);
+        plateCount[it.name].total += Number(it.qty || 1) * Number(it.price || 0);
+      });
+    };
+    orders.forEach((o: any) => addItems(o.items));
+    tableOrders.forEach((o: any) => addItems(o.items));
+
+    const piatti = Object.entries(plateCount)
+      .map(([name, v]) => ({ name, qty: v.qty, total: v.total }))
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 5);
+
+    // Top tavoli
+    const tableCount: Record<string, TopTable> = {};
+    tableOrders.forEach((o: any) => {
+      const num = o.tables?.table_number;
+      if (!num) return;
+      const key = String(num);
+      if (!tableCount[key]) tableCount[key] = { number: Number(num), total: 0, orders: 0 };
+      tableCount[key].total += Number(o.paid_amount || o.total || 0);
+      tableCount[key].orders += 1;
+    });
+    const tavoli = Object.values(tableCount)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+
+    setDays(daysArr);
+    setTotals(totalsCalc);
+    setTopPiatti(piatti);
+    setTopTavoli(tavoli);
+  }
+
+  const ranges: { key: Range; label: string }[] = [
+    { key: "today", label: "Oggi" },
+    { key: "week", label: "7 giorni" },
+    { key: "month", label: "30 giorni" },
+    { key: "year", label: "12 mesi" },
+    { key: "all", label: "Tutto" },
+  ];
 
   if (loading) {
-    return <div className="flex items-center justify-center h-[70vh]"><Loader2 className="animate-spin text-night" size={40} /></div>;
+    return (
+      <div className="flex items-center justify-center h-[70vh]">
+        <Loader2 className="animate-spin text-night" size={40} />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] pb-24">
-      {/* HEADER */}
-      <div className="px-4 sm:px-6 lg:px-8 pt-6 mb-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest mb-3">
-              <BarChart3 size={12} /> Business Intelligence
-            </div>
-            <h1 className="text-3xl md:text-4xl font-black text-night tracking-tight">Report Incassi</h1>
-            <p className="text-night/50 text-sm mt-1">{tenantName} · {rangeLabel}</p>
-          </div>
-          <button
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 bg-night hover:bg-night/90 text-white px-4 py-2.5 rounded-full text-xs font-bold transition shadow-md active:scale-95"
-          >
-            <Download size={14} /> Esporta CSV
-          </button>
+    <div className="min-h-screen bg-[#FAFAFA] pb-20">
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* HEADER */}
+        <div className="mb-6">
+          <h1 className="text-3xl md:text-4xl font-black text-night tracking-tight">Report</h1>
+          <p className="text-sm text-night/50 mt-1">{tenantName} · {rangeLabel}</p>
         </div>
-      </div>
 
-      {/* FILTRI RANGE */}
-      <div className="px-4 sm:px-6 lg:px-8 mb-6">
-        <div className="inline-flex bg-white rounded-full p-1 border border-night/[0.06] shadow-sm overflow-x-auto max-w-full hide-scrollbar">
-          {([
-            { key: "today", label: "Oggi" },
-            { key: "week", label: "Settimana" },
-            { key: "month", label: "Mese" },
-            { key: "year", label: "Anno" },
-            { key: "all", label: "Tutto" },
-          ] as { key: Range; label: string }[]).map((r) => (
+        {/* RANGE SELECTOR */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+          {ranges.map(r => (
             <button
               key={r.key}
               onClick={() => setRange(r.key)}
-              className={"px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition " + (range === r.key ? "bg-night text-white shadow-md" : "text-night/50 hover:text-night")}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition whitespace-nowrap ${
+                range === r.key ? "bg-night text-white" : "bg-white text-night/60 border border-night/[0.08] hover:text-night"
+              }`}
             >
               {r.label}
             </button>
           ))}
         </div>
-      </div>
 
-      {/* KPI CARDS */}
-      <div className="px-4 sm:px-6 lg:px-8 mb-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          {[
-            { label: "Fatturato Totale", value: "€" + totalRevenue.toFixed(2), icon: Wallet, color: "#10B981", hint: "Ordini + Coperti" },
-            { label: "Da Ordini", value: "€" + ordersRevenue.toFixed(2), icon: ShoppingBag, color: "#3B82F6", hint: filteredOrders.length + " ordini" },
-            { label: "Da Coperti", value: "€" + coversRevenue.toFixed(2), icon: Users, color: "#F97316", hint: totalCovers + " coperti" },
-            { label: "Ticket Medio", value: "€" + avgOrder.toFixed(2), icon: ReceiptText, color: "#8B5CF6", hint: "Per ordine" },
-          ].map((kpi, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="bg-white rounded-2xl p-4 md:p-5 border border-night/[0.06] shadow-sm relative overflow-hidden group hover:shadow-md transition"
-            >
-              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-[0.06] group-hover:opacity-[0.1] transition" style={{ backgroundColor: kpi.color }} />
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: kpi.color + "15" }}>
-                  <kpi.icon size={16} style={{ color: kpi.color }} />
+        {/* KPI CARDS */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 border border-night/[0.06]">
+            <div className="flex items-center gap-2 mb-2">
+              <Wallet size={16} className="text-emerald-600" />
+              <span className="text-[10px] font-black text-night/40 uppercase tracking-wider">Totale</span>
+            </div>
+            <p className="text-2xl font-black text-night">€{totals.totale.toFixed(2)}</p>
+          </motion.div>
+
+          {isFood && (
+            <>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-2xl p-4 border border-night/[0.06]">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShoppingBag size={16} className="text-blue-600" />
+                  <span className="text-[10px] font-black text-night/40 uppercase tracking-wider">Ordini</span>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-night/40">{kpi.label}</p>
+                <p className="text-2xl font-black text-night">€{totals.ordini.toFixed(2)}</p>
+                <p className="text-[10px] text-night/40 mt-1">{totals.ordiniCount} ordini</p>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-4 border border-night/[0.06]">
+                <div className="flex items-center gap-2 mb-2">
+                  <ChefHat size={16} className="text-orange-600" />
+                  <span className="text-[10px] font-black text-night/40 uppercase tracking-wider">Tavoli</span>
+                </div>
+                <p className="text-2xl font-black text-night">€{totals.tavoli.toFixed(2)}</p>
+                <p className="text-[10px] text-night/40 mt-1">{totals.tavoliCount} comande</p>
+              </motion.div>
+            </>
+          )}
+
+          {!isFood && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-2xl p-4 border border-night/[0.06] col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar size={16} className="text-purple-600" />
+                <span className="text-[10px] font-black text-night/40 uppercase tracking-wider">Appuntamenti</span>
               </div>
-              <p className="text-2xl md:text-3xl font-black text-night tracking-tight leading-none">{kpi.value}</p>
-              <p className="text-[11px] text-night/40 mt-2">{kpi.hint}</p>
+              <p className="text-2xl font-black text-night">€{totals.appuntamenti.toFixed(2)}</p>
+              <p className="text-[10px] text-night/40 mt-1">{totals.appuntamentiCount} completati</p>
             </motion.div>
-          ))}
-        </div>
-      </div>
+          )}
 
-      {/* GRAFICO ANDAMENTO */}
-      <div className="px-4 sm:px-6 lg:px-8 mb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="bg-white rounded-3xl p-6 border border-night/[0.06] shadow-sm"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-black text-night flex items-center gap-2">
-                <TrendingUp size={18} className="text-emerald-500" /> Andamento Incassi
-              </h2>
-              <p className="text-xs text-night/40 mt-1">{rangeLabel}</p>
-            </div>
-            <div className="flex items-center gap-3 text-[10px] font-black">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                <span className="text-night/60">Ordini</span>
+          {isFood && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white rounded-2xl p-4 border border-night/[0.06]">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar size={16} className="text-purple-600" />
+                <span className="text-[10px] font-black text-night/40 uppercase tracking-wider">Appuntamenti</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-                <span className="text-night/60">Coperti</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-56 flex items-end gap-1 relative">
-            {chartData.map((d, i) => {
-              const orderH = maxValue > 0 ? (d.orders / maxValue) * 100 : 0;
-              const bookingH = maxValue > 0 ? (d.bookings / maxValue) * 100 : 0;
-              
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                  <div className="w-full flex flex-col justify-end gap-0.5" style={{ height: "100%" }}>
-                    {d.bookings > 0 && (
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: bookingH + "%" }}
-                        transition={{ duration: 0.6, delay: i * 0.02 }}
-                        className="w-full bg-orange-500 rounded-t-md opacity-90"
-                        style={{ minHeight: bookingH > 0 ? "3px" : "0" }}
-                      />
-                    )}
-                    {d.orders > 0 && (
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: orderH + "%" }}
-                        transition={{ duration: 0.6, delay: i * 0.02 + 0.1 }}
-                        className="w-full bg-blue-500 rounded-t-md"
-                        style={{ minHeight: orderH > 0 ? "3px" : "0" }}
-                      />
-                    )}
-                  </div>
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition bg-night text-white text-[10px] font-black px-2 py-1 rounded whitespace-nowrap z-10 pointer-events-none">
-                    €{(d.orders + d.bookings).toFixed(2)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex justify-between mt-3 text-[9px] font-bold text-night/30 uppercase tracking-widest">
-            <span>{chartData[0]?.date.slice(5)}</span>
-            <span>{chartData[Math.floor(chartData.length / 2)]?.date.slice(5)}</span>
-            <span>{chartData[chartData.length - 1]?.date.slice(5)}</span>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* DETTAGLIO ORDINI E PRENOTAZIONI */}
-      <div className="px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-4">
-        {/* Ultimi Ordini */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white rounded-2xl border border-night/[0.06] shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-night/[0.06] flex items-center justify-between">
-            <h3 className="font-black text-night text-sm flex items-center gap-2">
-              <ShoppingBag size={16} className="text-blue-500" /> Ordini Consegnati
-            </h3>
-            <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-              {filteredOrders.length}
-            </span>
-          </div>
-          <div className="max-h-[400px] overflow-y-auto">
-            {filteredOrders.length === 0 ? (
-              <div className="p-8 text-center text-xs text-night/40">Nessun ordine nel periodo</div>
-            ) : (
-              filteredOrders.slice(0, 20).map(o => (
-                <div key={o.id} className="px-5 py-3 border-b border-night/[0.04] last:border-0 hover:bg-cream/30 transition flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-mono text-[10px] font-black text-night/60 bg-night/5 px-1.5 py-0.5 rounded">{o.order_code}</span>
-                      <span className="text-[10px] text-night/40">{new Date(o.created_at).toLocaleDateString("it-IT", { day: "2-digit", month: "short" })}</span>
-                    </div>
-                    <p className="text-sm font-bold text-night truncate">{o.customers?.name || "Cliente"}</p>
-                  </div>
-                  <span className="font-black text-emerald-600 ml-3">€{Number(o.total).toFixed(2)}</span>
-                </div>
-              ))
-            )}
-          </div>
-        </motion.div>
-
-        {/* Prenotazioni */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-white rounded-2xl border border-night/[0.06] shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-night/[0.06] flex items-center justify-between">
-            <h3 className="font-black text-night text-sm flex items-center gap-2">
-              <Calendar size={16} className="text-orange-500" /> Prenotazioni
-            </h3>
-            <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
-              {filteredBookings.length}
-            </span>
-          </div>
-          <div className="max-h-[400px] overflow-y-auto">
-            {filteredBookings.length === 0 ? (
-              <div className="p-8 text-center text-xs text-night/40">Nessuna prenotazione nel periodo</div>
-            ) : (
-              filteredBookings.slice(0, 20).map(b => (
-                <div key={b.id} className="px-5 py-3 border-b border-night/[0.04] last:border-0 hover:bg-cream/30 transition flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-mono text-[10px] font-black text-night/60 bg-night/5 px-1.5 py-0.5 rounded">{b.booking_code}</span>
-                      <span className="text-[10px] text-night/40">{new Date(b.scheduled_at).toLocaleDateString("it-IT", { day: "2-digit", month: "short" })} · {new Date(b.scheduled_at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}</span>
-                    </div>
-                    <p className="text-sm font-bold text-night truncate">{b.customers?.name || "Cliente"}</p>
-                  </div>
-                  <div className="text-right ml-3">
-                    <p className="text-[10px] text-night/40 font-bold">{b.party_size || 0} pers.</p>
-                    <p className="font-black text-orange-600">€{((b.party_size || 0) * copertoPrice).toFixed(2)}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </motion.div>
-      </div>
-
-      {copertoPrice === 0 && (
-        <div className="px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-400 flex items-center justify-center shrink-0">
-              <span className="text-white text-base">💡</span>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-night">Imposta il prezzo del coperto</p>
-              <p className="text-xs text-amber-800 mt-0.5">
-                Vai in <Link href="/dashboard/impostazioni" className="font-bold underline">Impostazioni</Link> per impostare il prezzo del coperto e calcolare anche i ricavi da prenotazioni.
-              </p>
-            </div>
-          </div>
+              <p className="text-2xl font-black text-night">€{totals.appuntamenti.toFixed(2)}</p>
+              <p className="text-[10px] text-night/40 mt-1">{totals.appuntamentiCount} completati</p>
+            </motion.div>
+          )}
         </div>
-      )}
+
+        {/* TABELLA GIORNALIERA */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl border border-night/[0.06] overflow-hidden mb-6">
+          <div className="px-5 py-4 border-b border-night/[0.06]">
+            <h2 className="font-black text-night text-sm flex items-center gap-2">
+              <TrendingUp size={16} className="text-emerald-600" /> Dettaglio giornaliero
+            </h2>
+          </div>
+          {days.length === 0 ? (
+            <div className="p-8 text-center text-sm text-night/40">Nessun dato nel periodo</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-[#FAFBFC] border-b border-night/[0.04]">
+                  <tr className="text-left text-[10px] font-black text-night/40 uppercase tracking-wider">
+                    <th className="px-4 py-3">Data</th>
+                    {isFood && <th className="px-4 py-3 text-right">Ordini</th>}
+                    {isFood && <th className="px-4 py-3 text-right">Tavoli</th>}
+                    <th className="px-4 py-3 text-right">Appuntamenti</th>
+                    <th className="px-4 py-3 text-right">Totale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {days.slice(0, 60).map(d => (
+                    <tr key={d.date} className="border-b border-night/[0.04] last:border-0 hover:bg-cream/30">
+                      <td className="px-4 py-3 font-bold text-night">
+                        {new Date(d.date + "T12:00:00").toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "2-digit" })}
+                      </td>
+                      {isFood && <td className="px-4 py-3 text-right text-blue-600 font-bold">€{d.ordini.toFixed(2)}</td>}
+                      {isFood && <td className="px-4 py-3 text-right text-orange-600 font-bold">€{d.tavoli.toFixed(2)}</td>}
+                      <td className="px-4 py-3 text-right text-purple-600 font-bold">€{d.appuntamenti.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right font-black text-night">€{d.totale.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
+
+        {/* TOP PIATTI + TOP TAVOLI */}
+        {isFood && (
+          <div className="grid md:grid-cols-2 gap-4">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white rounded-2xl border border-night/[0.06] overflow-hidden">
+              <div className="px-5 py-4 border-b border-night/[0.06]">
+                <h3 className="font-black text-night text-sm flex items-center gap-2">
+                  <Star size={16} className="text-amber-500" /> Top 5 Piatti
+                </h3>
+              </div>
+              {topPiatti.length === 0 ? (
+                <div className="p-6 text-center text-xs text-night/40">Nessun piatto venduto</div>
+              ) : (
+                <div className="divide-y divide-night/[0.04]">
+                  {topPiatti.map((p, i) => (
+                    <div key={p.name} className="px-5 py-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-[10px] font-black shrink-0">{i + 1}</span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-night truncate">{p.name}</p>
+                          <p className="text-[10px] text-night/40">{p.qty} venduti</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-black text-emerald-600 shrink-0">€{p.total.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="bg-white rounded-2xl border border-night/[0.06] overflow-hidden">
+              <div className="px-5 py-4 border-b border-night/[0.06]">
+                <h3 className="font-black text-night text-sm flex items-center gap-2">
+                  <Utensils size={16} className="text-orange-500" /> Top 5 Tavoli
+                </h3>
+              </div>
+              {topTavoli.length === 0 ? (
+                <div className="p-6 text-center text-xs text-night/40">Nessun tavolo pagato</div>
+              ) : (
+                <div className="divide-y divide-night/[0.04]">
+                  {topTavoli.map((t, i) => (
+                    <div key={t.number} className="px-5 py-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-[10px] font-black">{i + 1}</span>
+                        <div>
+                          <p className="text-sm font-bold text-night">Tavolo {t.number}</p>
+                          <p className="text-[10px] text-night/40">{t.orders} comande</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-black text-emerald-600">€{t.total.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
