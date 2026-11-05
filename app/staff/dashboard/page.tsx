@@ -11,6 +11,7 @@ import TablesView from "./TablesView";
 import OrdersView from "./OrdersView";
 import KitchenView from "./KitchenView";
 import ShiftsView from "./ShiftsView";
+import NewOrderButton from "./NewOrderButton";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { planHasFeature } from "@/lib/planFeatures";
 import {
@@ -281,6 +282,12 @@ export default function StaffDashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {isFood && (
+              <NewOrderButton
+                tenantId={staffInfo.tenant_id}
+                onSaved={() => {}}
+              />
+            )}
             <PushNotificationToggle staffId={staffInfo.id} tenantId={staffInfo.tenant_id} />
             <button onClick={handleLogout} className="p-2 text-night/50 hover:text-red-500 rounded-lg hover:bg-red-50 transition">
               <LogOut size={18} />
