@@ -12,12 +12,16 @@ import OrdersView from "./OrdersView";
 import KitchenView from "./KitchenView";
 import ShiftsView from "./ShiftsView";
 import NewOrderButton from "./NewOrderButton";
+import StaffBottomNav from "./StaffBottomNav";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { planHasFeature } from "@/lib/planFeatures";
 import {
   Loader2, Calendar, Clock, CheckCircle2, XCircle, LogOut, Lock, Crown,
-  User, RefreshCw, MessageCircle, Timer, ArrowRight, Scissors
-} from "lucide-react";
+  User, RefreshCw, MessageCircle, Timer, ArrowRight, Scissors,
+  Utensils,
+  ChefHat,
+  ShoppingBag,
+  CalendarClock} from "lucide-react";
 
 type StaffInfo = {
   id: string;
@@ -268,7 +272,7 @@ export default function StaffDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] pb-20">
+    <div className="min-h-screen bg-[#FAFAFA] pb-24 md:pb-8">
       {/* HEADER */}
       <div className="bg-white border-b border-night/[0.06] sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
