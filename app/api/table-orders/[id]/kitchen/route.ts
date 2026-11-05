@@ -44,9 +44,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
     if (!isAuthorized) return NextResponse.json({ error: "Non autorizzato (solo cucina può aggiornare)" }, { status: 403 });
 
+    // Se diventa "ready", salva quanti piatti sono stati preparati
+    const updateData: any = { status };
+    if (status === "ready") {
+      const items = (order.items as any[]) || [];
+      updateData.prepared_items_count = items.length;
+    }
+
     const { data: updated, error } = await admin
       .from("table_orders")
-      .update({ status })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();

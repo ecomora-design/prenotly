@@ -16,6 +16,7 @@ type TableOrder = {
   party_size: number;
   items: OrderItem[];
   sent_items_count: number;
+  prepared_items_count?: number;
   opened_at: string;
   tables: { table_number: number; zone: string | null } | null;
 };
@@ -86,6 +87,12 @@ export default function KitchenView({ tenantId }: Props) {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [tenantId]);
+
+  // Restituisce solo i piatti NON ancora preparati
+  function getNewItems(o: TableOrder): OrderItem[] {
+    const preparedCount = o.prepared_items_count || 0;
+    return (o.items || []).slice(preparedCount);
+  }
 
   async function setStatus(id: string, status: "preparing" | "ready" | "sent") {
     setUpdating(id);
@@ -209,12 +216,17 @@ export default function KitchenView({ tenantId }: Props) {
                           {/* Lista piatti */}
                           <div className="px-3 py-2">
                             <div className="space-y-1">
-                              {(o.items || []).map((item, idx) => (
+                              {getNewItems(o).map((item, idx) => (
                                 <div key={idx} className="flex items-baseline gap-2 text-sm">
                                   <span className="font-black text-night w-6 shrink-0">{item.qty}×</span>
                                   <span className="font-bold text-night flex-1">{item.name}</span>
                                 </div>
                               ))}
+                              {getNewItems(o).length === 0 && (
+                                <p className="text-[10px] text-night/40 italic text-center py-1">
+                                  Nessun piatto nuovo da preparare
+                                </p>
+                              )}
                             </div>
 
                             {/* Azioni */}
