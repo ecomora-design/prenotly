@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { calcolaIncassi } from "@/lib/incassi";
 import { motion } from "framer-motion";
 import {
   Loader2, ShoppingBag, Calendar, Users, QrCode, Plus, AlertCircle,
@@ -76,9 +77,8 @@ export default function DashboardPage() {
         supabase.from("table_orders").select("paid_amount, total, party_size, paid_at").eq("tenant_id", t.id).eq("status", "paid").gte("paid_at", todayStart.toISOString()),
       ])) as any[];
 
-      const orders = ordersData?.data || [];
-      const todayRevenue = orders.filter((od: any) => od.created_at >= todayStart.toISOString()).reduce((sum: number, od: any) => sum + Number(od.total), 0);
-      const totalRevenue = orders.reduce((sum: number, od: any) => sum + Number(od.total), 0);
+      // Calcolo incassi centralizzato (ordini + tavoli + appuntamenti)
+      const incassiOggi = await calcolaIncassi(supabase, t.id, todayStart, todayEnd);
 
       // Tavoli pagati oggi
       const tableOrders = tableOrdersData?.data || [];
@@ -88,10 +88,10 @@ export default function DashboardPage() {
       setCounts({
         bookings: b.count || 0, orders: o.count || 0, services: s.count || 0, customers: c.count || 0,
         todayOrders: todayO.count || 0, todayBookings: todayB.count || 0, weekOrders: weekO.count || 0, weekBookings: weekB.count || 0,
-        todayRevenue: todayRevenue + todayTableRevenue,
-        totalRevenue: totalRevenue + todayTableRevenue,
-        todayCovered,
-        todayTableRevenue,
+        todayRevenue: incassiOggi.totaleLordo,
+        totalRevenue: incassiOggi.totaleLordo,
+        todayCovered: incassiOggi.coperti,
+        todayTableRevenue: incassiOggi.tavoli,
       });
 
       setLoading(false);

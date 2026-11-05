@@ -9,7 +9,6 @@ import StatsCards from "./StatsCards";
 import WeekView from "./WeekView";
 import TablesView from "./TablesView";
 import OrdersView from "./OrdersView";
-import TimeOffView from "./TimeOffView";
 import KitchenView from "./KitchenView";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { planHasFeature } from "@/lib/planFeatures";
@@ -302,9 +301,8 @@ export default function StaffDashboardPage() {
 
           if (!isFood) {
             return (
-              <div className="mb-5 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+              <div className="mb-5 grid grid-cols-1 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
                 <button onClick={() => setMainTab("appointments")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "appointments" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Appuntamenti</button>
-                <button onClick={() => setMainTab("timeoff")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "timeoff" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ferie</button>
               </div>
             );
           }
@@ -320,20 +318,18 @@ export default function StaffDashboardPage() {
 
           if (isFloor) {
             return (
-              <div className="mb-5 grid grid-cols-2 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+              <div className="mb-5 grid grid-cols-1 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
                 <button onClick={() => setMainTab("tables")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "tables" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>🍽️ Tavoli</button>
-                <button onClick={() => setMainTab("timeoff")} className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition ${mainTab === "timeoff" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ferie</button>
               </div>
             );
           }
 
           // both
           return (
-            <div className="mb-5 grid grid-cols-4 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
+            <div className="mb-5 grid grid-cols-3 gap-1 bg-white border border-night/[0.08] rounded-2xl p-1 shadow-sm">
               <button onClick={() => setMainTab("tables")} className={`py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition ${mainTab === "tables" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>🍽️ Tavoli</button>
               <button onClick={() => setMainTab("kitchen")} className={`py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition ${mainTab === "kitchen" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>👨‍🍳 Cucina</button>
               <button onClick={() => setMainTab("orders")} className={`py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition ${mainTab === "orders" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>📦 Ordini</button>
-              <button onClick={() => setMainTab("timeoff")} className={`py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition ${mainTab === "timeoff" ? "bg-night text-white" : "text-night/60 hover:text-night"}`}>Ferie</button>
             </div>
           );
         })()}
@@ -522,9 +518,7 @@ export default function StaffDashboardPage() {
           <OrdersView tenantId={staffInfo.tenant_id} />
         </div>
 
-        <div className={!isFood && mainTab === "timeoff" ? "block" : "hidden"}>
-          <TimeOffView staffId={staffInfo.id} tenantId={staffInfo.tenant_id} />
-        </div>
+
       </div>
     </div>
   );
