@@ -50,9 +50,11 @@ export async function POST() {
           },
         },
         configuration: {
-          merchant: {
+          recipient: {
             capabilities: {
-              card_payments: { requested: true },
+              stripe_balance: {
+                stripe_transfers: { requested: true },
+              },
             },
           },
         },
@@ -77,6 +79,7 @@ export async function POST() {
       use_case: {
         type: "account_onboarding",
         account_onboarding: {
+          configurations: ["recipient"],
           refresh_url: `${appUrl}/dashboard/pagamenti?stripe_refresh=true`,
           return_url: `${appUrl}/dashboard/pagamenti?stripe_return=true`,
         },
