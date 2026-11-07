@@ -45,8 +45,8 @@ export async function POST() {
         },
         defaults: {
           responsibilities: {
-            fees_collector: "stripe",
-            losses_collector: "stripe",
+            fees_collector: "application",
+            losses_collector: "application",
           },
         },
         configuration: {
