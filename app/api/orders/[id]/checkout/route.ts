@@ -92,29 +92,22 @@ export async function POST(
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.prenotly-italia.it";
     const basePath = `/${t.slug}/order/success?session_id={CHECKOUT_SESSION_ID}&code=${order.order_code}&token=${order.tracking_token}`;
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: lineItems,
-      customer_creation: "if_required",
-      success_url: `${appUrl}${basePath}`,
-      cancel_url: `${appUrl}/${t.slug}?payment_canceled=true&order=${order.order_code}`,
-      metadata: {
-        type: "order",
-        order_id: order.id,
-        tenant_id: order.tenant_id,
-        order_code: order.order_code,
-      },
-      payment_intent_data: {
-        transfer_data: {
-          destination: t.stripe_account_id,
-        },
+    const session = await (stripe.checkout.sessions.create as any)(
+      {
+        mode: "payment",
+        line_items: lineItems,
+        customer_creation: "if_required",
+        success_url: `${appUrl}${basePath}`,
+        cancel_url: `${appUrl}/${t.slug}?payment_canceled=true&order=${order.order_code}`,
         metadata: {
           type: "order",
           order_id: order.id,
           tenant_id: order.tenant_id,
+          order_code: order.order_code,
         },
       },
-    });
+      { stripeAccount: t.stripe_account_id }
+    );
 
     await supabase
       .from("orders")

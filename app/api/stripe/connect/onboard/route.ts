@@ -39,7 +39,7 @@ export async function POST() {
       const account = await (stripe.v2.core.accounts.create as any)({
         contact_email: user.email,
         display_name: tenant.business_name,
-        dashboard: "full",
+        dashboard: "express",
         identity: {
           country: "IT",
         },
@@ -50,11 +50,9 @@ export async function POST() {
           },
         },
         configuration: {
-          recipient: {
+          merchant: {
             capabilities: {
-              stripe_balance: {
-                stripe_transfers: { requested: true },
-              },
+              card_payments: { requested: true },
             },
           },
         },
@@ -79,7 +77,7 @@ export async function POST() {
       use_case: {
         type: "account_onboarding",
         account_onboarding: {
-          configurations: ["recipient"],
+          configurations: ["merchant"],
           refresh_url: `${appUrl}/dashboard/pagamenti?stripe_refresh=true`,
           return_url: `${appUrl}/dashboard/pagamenti?stripe_return=true`,
         },
