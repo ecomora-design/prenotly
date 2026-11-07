@@ -90,7 +90,7 @@ export async function POST(
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.prenotly-italia.it";
-    const basePath = `/${t.slug}/order/success?session_id={CHECKOUT_SESSION_ID}&code=${order.order_code}`;
+    const basePath = `/${t.slug}/order/success?session_id={CHECKOUT_SESSION_ID}&code=${order.order_code}&token=${order.tracking_token}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",

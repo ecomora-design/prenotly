@@ -30,6 +30,7 @@ export const PLANS = {
       "📅 Prenotazione tavoli online",
       "🔔 Notifiche realtime",
       "💰 Visualizzazione incassi",
+      "💳 Pagamenti online (Stripe)",
       "📊 Statistiche di base",
     ],
   },

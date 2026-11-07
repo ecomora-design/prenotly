@@ -25,7 +25,7 @@ export async function POST() {
     const tenant = link.tenants as any;
 
     // GATE: solo Premium Pro
-    if (tenant.plan_type !== "food_premium") {
+    if (!["food_standard", "food_premium"].includes(tenant.plan_type)) {
       return NextResponse.json(
         { error: "Funzione disponibile solo con il piano Premium Pro" },
         { status: 403 }
@@ -34,20 +34,27 @@ export async function POST() {
 
     let accountId = tenant.stripe_account_id;
 
-    // Crea account Express se non esiste
+    // Crea account Express se non esiste (API Accounts v2)
     if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: "express",
-        country: "IT",
-        email: user.email,
-        business_type: "individual",
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
+      const account = await (stripe.v2.core.accounts.create as any)({
+        contact_email: user.email,
+        display_name: tenant.business_name,
+        dashboard: "express",
+        identity: {
+          country: "IT",
         },
-        metadata: {
-          tenant_id: tenant.id,
-          business_name: tenant.business_name,
+        defaults: {
+          responsibilities: {
+            fees_collector: "stripe",
+            losses_collector: "stripe",
+          },
+        },
+        configuration: {
+          merchant: {
+            capabilities: {
+              card_payments: { requested: true },
+            },
+          },
         },
       });
 
@@ -65,11 +72,16 @@ export async function POST() {
     // Genera link di onboarding (monouso)
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.prenotly-italia.it";
 
-    const accountLink = await stripe.accountLinks.create({
+    const accountLink = await (stripe.v2.core.accountLinks.create as any)({
       account: accountId,
-      refresh_url: `${appUrl}/dashboard/pagamenti?stripe_refresh=true`,
-      return_url: `${appUrl}/dashboard/pagamenti?stripe_return=true`,
-      type: "account_onboarding",
+      use_case: {
+        type: "account_onboarding",
+        account_onboarding: {
+          configurations: ["recipient"],
+          refresh_url: `${appUrl}/dashboard/pagamenti?stripe_refresh=true`,
+          return_url: `${appUrl}/dashboard/pagamenti?stripe_return=true`,
+        },
+      },
     });
 
     return NextResponse.json({ url: accountLink.url });

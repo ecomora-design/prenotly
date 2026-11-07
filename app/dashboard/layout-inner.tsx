@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Utensils, ShoppingBag, Calendar, CalendarClock,
   CreditCard, QrCode, Settings, LogOut, Menu, X, Loader2,
-  ExternalLink, Users, ChevronRight, Sparkles, Bell, LayoutGrid, BarChart3, TrendingDown, UserCircle2
+  ExternalLink, Users, ChevronRight, Sparkles, Bell, LayoutGrid, BarChart3, TrendingDown, UserCircle2, Wallet
 } from "lucide-react";
 
 type Tenant = {
@@ -261,6 +261,7 @@ export default function DashboardLayoutInner({
       label: "Impostazioni",
       items: [
         { href: "/dashboard/impostazioni", label: "Attività", icon: Settings },
+        ...(["food_standard", "food_premium"].includes(tenant.plan_type || "") ? [{ href: "/dashboard/pagamenti", label: "Pagamenti", icon: Wallet }] : []),
         { href: "/dashboard/abbonamento", label: "Abbonamento", icon: CreditCard },
       ],
     },

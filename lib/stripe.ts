@@ -9,7 +9,7 @@ export function getStripe(): Stripe {
       throw new Error("STRIPE_SECRET_KEY mancante. Aggiungila su Vercel.");
     }
     _stripe = new Stripe(apiKey, {
-      apiVersion: "2026-09-30.endive",
+      apiVersion: "2026-08-26.preview" as any,
       typescript: true,
     });
   }

@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     const serverTotal = Math.max(0, serverSubtotal + serverDelivery - serverDiscount);
 
     const paymentRequired =
-      (tenant as any).plan_type === "food_premium" &&
+      ["food_standard", "food_premium"].includes((tenant as any).plan_type) &&
       !!(tenant as any).stripe_account_id &&
       (tenant as any).stripe_connect_status === "active";
 

@@ -44,6 +44,7 @@ const STEPS = [
 const STATUS_ORDER = ["pending", "confirmed", "preparing", "ready", "delivered"];
 
 function stepIndex(status: string): number {
+  if (status === "pending_payment") return 0;
   const idx = STATUS_ORDER.indexOf(status);
   return idx === -1 ? 0 : idx;
 }
@@ -86,6 +87,7 @@ export default function TrackClient({
   }, [order.id, supabase]);
 
   const currentIdx = stepIndex(order.status);
+  const isPendingPayment = order.status === "pending_payment";
   const isCancelled = order.status === "cancelled";
   const isDelivered = order.status === "delivered";
   const TypeIcon = order.order_type === "delivery" ? Truck : Store;
@@ -131,9 +133,21 @@ export default function TrackClient({
               ? "Il tuo ordine è stato annullato."
               : isDelivered
               ? "Il tuo ordine è stato consegnato. Buon appetito! 🍽️"
+              : isPendingPayment
+              ? "Stiamo verificando il pagamento. Ci vorrà solo un momento…"
               : "Il tuo ordine è in lavorazione. Ti aggiorniamo qui in tempo reale."}
           </p>
         </div>
+
+        {isPendingPayment && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex items-start gap-3">
+            <Loader2 size={18} className="text-amber-600 animate-spin shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold text-amber-900">Verifica pagamento in corso</p>
+              <p className="text-[11px] text-amber-800 mt-0.5">Stiamo confermando il pagamento con Stripe. La pagina si aggiornerà automaticamente.</p>
+            </div>
+          </div>
+        )}
 
         {/* STATO ATTUALE */}
         <div className="bg-white rounded-3xl p-5 border border-night/[0.06] shadow-sm mb-4">

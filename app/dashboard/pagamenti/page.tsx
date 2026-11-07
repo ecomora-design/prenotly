@@ -72,7 +72,7 @@ export default function PagamentiPage() {
     );
   }
 
-  const isPremium = tenant?.plan_type === "food_premium";
+  const isPremium = ["food_standard", "food_premium"].includes(tenant?.plan_type || "");
   const isConnected = tenant?.stripe_connect_status === "active";
   const isPending = !!tenant?.stripe_account_id && !isConnected;
 

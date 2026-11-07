@@ -3,12 +3,13 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Loader2, ArrowRight } from "lucide-react";
+import { CheckCircle2, Loader2, ArrowRight, Clock } from "lucide-react";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code") || "";
   const sessionId = searchParams.get("session_id") || "";
+  const token = searchParams.get("token") || "";
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-6">
@@ -39,9 +40,18 @@ function SuccessContent() {
           </p>
         )}
 
+        {token && (
+          <Link
+            href={`/track/${token}`}
+            className="inline-flex items-center justify-center w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3.5 rounded-2xl font-bold transition active:scale-95 mb-3"
+          >
+            <Clock size={20} /> Segui il tuo ordine
+          </Link>
+        )}
+
         <Link
           href="/"
-          className="inline-flex items-center gap-2 bg-night hover:bg-night/90 text-white px-6 py-3.5 rounded-2xl font-bold transition active:scale-95"
+          className="inline-flex items-center justify-center w-full gap-2 bg-night hover:bg-night/90 text-white px-6 py-3.5 rounded-2xl font-bold transition active:scale-95"
         >
           Torna alla home <ArrowRight size={16} />
         </Link>
