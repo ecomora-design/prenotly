@@ -39,7 +39,7 @@ export async function POST() {
       const account = await (stripe.v2.core.accounts.create as any)({
         contact_email: user.email,
         display_name: tenant.business_name,
-        dashboard: "express",
+        dashboard: "full",
         identity: {
           country: "IT",
         },
